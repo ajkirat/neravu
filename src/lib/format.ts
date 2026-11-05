@@ -1,3 +1,6 @@
+import { localeFor, makeT, type Lang, type TFn, type MsgKey } from "./i18n";
+import { messages } from "./i18n/messages";
+
 const inr = new Intl.NumberFormat("en-IN", {
   style: "currency",
   currency: "INR",
@@ -8,26 +11,21 @@ export function rupees(n: number): string {
   return inr.format(n);
 }
 
-const dateFmt = new Intl.DateTimeFormat("en-IN", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-  timeZone: "UTC",
-});
+const dateFmts = new Map<Lang, Intl.DateTimeFormat>();
+const monthFmts = new Map<Lang, Intl.DateTimeFormat>();
+const fmtFor = (cache: Map<Lang, Intl.DateTimeFormat>, lang: Lang, opts: Intl.DateTimeFormatOptions) => {
+  let f = cache.get(lang);
+  if (!f) cache.set(lang, (f = new Intl.DateTimeFormat(localeFor(lang), { ...opts, timeZone: "UTC" })));
+  return f;
+};
 
-export function fmtDate(d: Date | null | undefined): string {
-  return d ? dateFmt.format(d) : "—";
+export function fmtDate(d: Date | null | undefined, lang: Lang = "en"): string {
+  return d ? fmtFor(dateFmts, lang, { day: "numeric", month: "short", year: "numeric" }).format(d) : "—";
 }
 
-const monthFmt = new Intl.DateTimeFormat("en-IN", {
-  month: "long",
-  year: "numeric",
-  timeZone: "UTC",
-});
-
-export function fmtPeriod(period: string): string {
+export function fmtPeriod(period: string, lang: Lang = "en"): string {
   const [y, m] = period.split("-").map(Number);
-  return monthFmt.format(new Date(Date.UTC(y, m - 1, 1)));
+  return fmtFor(monthFmts, lang, { month: "long", year: "numeric" }).format(new Date(Date.UTC(y, m - 1, 1)));
 }
 
 export const PAYMENT_METHODS = ["UPI", "CASH", "BANK", "CARD", "OTHER"] as const;
@@ -72,7 +70,11 @@ export function bedLabels(count: number): string[] {
   return Array.from({ length: count }, (_, i) => String.fromCharCode(65 + i));
 }
 
-/** WhatsApp click-to-chat link with a polite, pre-filled rent reminder. */
+export const chargeText = (t: TFn, type: string): string =>
+  `charge_${type}` in messages ? t(`charge_${type}` as MsgKey) : type;
+export const methodText = (t: TFn, m: string): string => (`method_${m}` in messages ? t(`method_${m}` as MsgKey) : m);
+
+/** WhatsApp click-to-chat link with a polite, pre-filled rent reminder in the tenant's language. */
 export function reminderLink(opts: {
   phone: string;
   tenantName: string;
@@ -80,14 +82,14 @@ export function reminderLink(opts: {
   propertyName: string;
   since?: Date | null;
   payUrl?: string;
+  lang?: Lang;
 }): string {
+  const t = makeT(opts.lang ?? "en");
   const first = opts.tenantName.split(" ")[0];
-  const since = opts.since ? ` (pending since ${fmtDate(opts.since)})` : "";
+  const since = opts.since ? t("rmSince", { date: fmtDate(opts.since, opts.lang) }) : "";
   const text =
-    `Hi ${first}, this is a gentle reminder from ${opts.propertyName}. ` +
-    `Your pending amount is ${rupees(opts.amount)}${since}. ` +
-    `Please pay at the earliest and share the payment reference.` +
-    (opts.payUrl ? ` You can pay online here: ${opts.payUrl}` : "") +
-    ` Thank you!`;
+    t("rmHello", { name: first, pg: opts.propertyName, amt: rupees(opts.amount), since }) +
+    (opts.payUrl ? t("rmPayOnline", { url: opts.payUrl }) : "") +
+    t("rmThanks");
   return `https://wa.me/${whatsappNumber(opts.phone)}?text=${encodeURIComponent(text)}`;
 }

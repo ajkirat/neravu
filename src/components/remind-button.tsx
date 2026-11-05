@@ -2,9 +2,11 @@
 
 import { useTransition } from "react";
 import { markReminded } from "@/app/actions/reminders";
+import { useT } from "@/lib/i18n/client";
 
 /** Opens WhatsApp immediately (so popup blockers allow it), then records that a reminder was sent. */
 export function RemindButton({ href, tenantId, again }: { href: string; tenantId: string; again?: boolean }) {
+  const t = useT();
   const [pending, start] = useTransition();
   return (
     <button
@@ -16,7 +18,7 @@ export function RemindButton({ href, tenantId, again }: { href: string; tenantId
         start(() => markReminded(tenantId));
       }}
     >
-      {again ? "Remind again" : "WhatsApp"}
+      {again ? t("remindAgain") : t("whatsapp")}
     </button>
   );
 }

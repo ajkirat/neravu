@@ -56,7 +56,7 @@ export const currentOwner = cache(async () => {
   if (!id) return null;
   return db.owner.findUnique({
     where: { id },
-    select: { id: true, name: true, email: true, phone: true, businessName: true, upiId: true },
+    select: { id: true, name: true, email: true, phone: true, businessName: true, upiId: true, language: true },
   });
 });
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, startTransition, type ReactNode } from "react";
+import { useT } from "@/lib/i18n/client";
 
 export type FormState = { error?: string; ok?: string; at?: number } | undefined;
 export type FormAction = (state: FormState, formData: FormData) => Promise<FormState>;
@@ -28,6 +29,7 @@ export function ActionForm({
   confirm?: string;
   footer?: ReactNode;
 }) {
+  const t = useT();
   const [state, dispatch, pending] = useActionState(action, undefined);
   const ref = useRef<HTMLFormElement>(null);
 
@@ -59,7 +61,7 @@ export function ActionForm({
       )}
       <div className="flex flex-wrap items-center gap-3">
         <button type="submit" className={submitClassName} disabled={pending}>
-          {pending ? "Saving…" : submitLabel}
+          {pending ? t("saving") : submitLabel}
         </button>
         {footer}
       </div>

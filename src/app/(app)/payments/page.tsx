@@ -2,7 +2,8 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth";
 import { monthRange, periodKey, today } from "@/lib/dates";
-import { fmtDate, methodLabel, rupees } from "@/lib/format";
+import { fmtDate, methodText, rupees } from "@/lib/format";
+import { getT } from "@/lib/i18n/server";
 import { MonthPicker } from "@/components/month-picker";
 import { PaymentForm } from "@/components/payment-form";
 import { Card, EmptyState, PageHeader } from "@/components/ui";
@@ -16,6 +17,7 @@ export default async function PaymentsPage({
 }) {
   const sp = await searchParams;
   const owner = await requireOwner();
+  const { t, lang } = await getT();
   const month = sp.month && monthRange(sp.month) ? sp.month : periodKey(today());
   const range = monthRange(month)!;
   const [payments, tenants] = await Promise.all([
@@ -37,12 +39,12 @@ export default async function PaymentsPage({
   return (
     <>
       <PageHeader
-        title="Payments"
-        subtitle="Every rupee received, with receipts."
+        title={t("paymentsTitle")}
+        subtitle={t("paymentsSub")}
         actions={
           <>
             <Link href="/reminders" className="btn-secondary">
-              Remind overdue
+              {t("remindOverdue")}
             </Link>
             <MonthPicker base="/payments" month={month} />
           </>
@@ -52,34 +54,34 @@ export default async function PaymentsPage({
         <div className="space-y-4 lg:col-span-2">
           <div className="card flex flex-wrap items-center gap-x-8 gap-y-2 p-4">
             <div>
-              <p className="text-xs text-muted uppercase">Net received</p>
+              <p className="text-xs text-muted uppercase">{t("netReceived")}</p>
               <p className="text-2xl font-bold text-brand-900">{rupees(total)}</p>
             </div>
             {[...byMethod].map(([m, v]) => (
               <div key={m}>
-                <p className="text-xs text-muted uppercase">{methodLabel[m] ?? m}</p>
+                <p className="text-xs text-muted uppercase">{methodText(t, m)}</p>
                 <p className="font-semibold">{rupees(v)}</p>
               </div>
             ))}
           </div>
           {payments.length === 0 ? (
-            <EmptyState title="No payments this month" body="Payments you record will show up here." />
+            <EmptyState title={t("noPayments")} body={t("noPaymentsBody")} />
           ) : (
             <div className="card overflow-x-auto">
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Tenant</th>
-                    <th>Method</th>
-                    <th className="text-right">Amount</th>
+                    <th>{t("date")}</th>
+                    <th>{t("colTenant")}</th>
+                    <th>{t("colMethod")}</th>
+                    <th className="text-right">{t("colAmount")}</th>
                     <th />
                   </tr>
                 </thead>
                 <tbody>
                   {payments.map((p) => (
                     <tr key={p.id}>
-                      <td className="text-sm whitespace-nowrap text-muted">{fmtDate(p.paidOn)}</td>
+                      <td className="text-sm whitespace-nowrap text-muted">{fmtDate(p.paidOn, lang)}</td>
                       <td>
                         <Link href={`/tenants/${p.tenantId}`} className="font-medium hover:underline">
                           {p.tenant.name}
@@ -87,7 +89,7 @@ export default async function PaymentsPage({
                         <div className="text-xs text-muted">{p.tenant.property.name}</div>
                       </td>
                       <td className="text-sm">
-                        {methodLabel[p.method] ?? p.method}
+                        {methodText(t, p.method)}
                         {p.reference && <div className="text-xs text-muted">{p.reference}</div>}
                       </td>
                       <td className={`text-right font-semibold ${p.amount < 0 ? "text-red-700" : ""}`}>
@@ -95,7 +97,7 @@ export default async function PaymentsPage({
                       </td>
                       <td className="text-right">
                         <Link href={`/payments/${p.id}/receipt`} className="text-xs text-brand-600 hover:underline">
-                          Receipt
+                          {t("receipt")}
                         </Link>
                       </td>
                     </tr>
@@ -105,7 +107,7 @@ export default async function PaymentsPage({
             </div>
           )}
         </div>
-        <Card title="Record a payment">
+        <Card title={t("recordPaymentCard")}>
           {tenants.length ? (
             <PaymentForm
               tenants={tenants.map((t) => ({
@@ -115,7 +117,7 @@ export default async function PaymentsPage({
               }))}
             />
           ) : (
-            <p className="text-sm text-muted">Add tenants first to record their payments.</p>
+            <p className="text-sm text-muted">{t("addTenantsFirst")}</p>
           )}
         </Card>
       </div>

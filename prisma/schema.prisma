@@ -19,11 +19,14 @@ model Owner {
   businessName String?
   // UPI ID (e.g. name@bank) rent is paid to; enables tenant pay links
   upiId        String?
+  // en | kn | te: the language the app opens in
+  language     String    @default("en")
   createdAt    DateTime   @default(now())
   properties   Property[]
   tenants      Tenant[]
   expenses     Expense[]
   leads        Lead[]
+  complaints   Complaint[]
 }
 
 model Property {
@@ -38,6 +41,7 @@ model Property {
   tenants   Tenant[]
   expenses  Expense[]
   leads     Lead[]
+  complaints Complaint[]
 
   @@index([ownerId])
 }
@@ -99,6 +103,9 @@ model Tenant {
   // Set when the tenant taps "I've paid"; cleared when the owner records a payment
   payClaimedAt   DateTime?
   lastRemindedAt DateTime?
+  // en | kn | te: language of messages and the pay page for this tenant
+  language       String?
+  complaints     Complaint[]
   createdAt      DateTime  @default(now())
   charges        Charge[]
   payments       Payment[]
@@ -169,6 +176,23 @@ model Lead {
   // NEW | CONTACTED | VISIT | WON | LOST
   status     String    @default("NEW")
   followUpOn DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([ownerId, status])
+}
+
+model Complaint {
+  id         String    @id @default(cuid())
+  ownerId    String
+  owner      Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  tenantId   String?
+  tenant     Tenant?   @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  title      String
+  details    String?
+  // OPEN | IN_PROGRESS | RESOLVED
+  status     String    @default("OPEN")
   createdAt  DateTime  @default(now())
 
   @@index([ownerId, status])

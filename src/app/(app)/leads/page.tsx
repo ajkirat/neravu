@@ -3,8 +3,11 @@ import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth";
 import { today, toDateInput } from "@/lib/dates";
 import { fmtDate, whatsappNumber } from "@/lib/format";
-import { followUpDue, isOpenLead, leadStatusLabel } from "@/lib/leads";
+import { followUpDue, isOpenLead } from "@/lib/leads";
+import type { MsgKey } from "@/lib/i18n";
 import { createLead } from "@/app/actions/leads";
+import { getT } from "@/lib/i18n/server";
+import { VoiceInput } from "@/components/voice-input";
 import { ActionForm } from "@/components/action-form";
 import { LeadControls } from "@/components/lead-controls";
 import { Badge, Card, EmptyState, Field, PageHeader, Stat } from "@/components/ui";
@@ -14,6 +17,7 @@ export const metadata = { title: "Leads" };
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<{ show?: string }> }) {
   const sp = await searchParams;
   const owner = await requireOwner();
+  const { t, lang } = await getT();
   const showAll = sp.show === "all";
   const [all, properties] = await Promise.all([
     db.lead.findMany({
@@ -30,26 +34,26 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
   return (
     <>
       <PageHeader
-        title="Leads"
-        subtitle="Enquiries from your property QR codes, plus anyone you add by hand."
+        title={t("leadsTitle")}
+        subtitle={t("leadsSub")}
         actions={
           <Link href={showAll ? "/leads" : "/leads?show=all"} className="btn-secondary">
-            {showAll ? "Show open only" : "Show all"}
+            {showAll ? t("showOpen") : t("showAll")}
           </Link>
         }
       />
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label="Open leads" value={all.filter((l) => isOpenLead(l.status)).length} />
-        <Stat label="New" value={all.filter((l) => l.status === "NEW").length} tone="good" />
-        <Stat label="Follow-ups due" value={dueCount} tone={dueCount ? "warn" : "default"} />
-        <Stat label="Won" value={all.filter((l) => l.status === "WON").length} />
+        <Stat label={t("openLeads")} value={all.filter((l) => isOpenLead(l.status)).length} />
+        <Stat label={t("newLeads")} value={all.filter((l) => l.status === "NEW").length} tone="good" />
+        <Stat label={t("followUpsDue")} value={dueCount} tone={dueCount ? "warn" : "default"} />
+        <Stat label={t("won")} value={all.filter((l) => l.status === "WON").length} />
       </div>
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-3 lg:col-span-2">
           {leads.length === 0 ? (
             <EmptyState
-              title="No leads yet"
-              body="Open a property and print its enquiry QR code. Anyone who scans it lands here."
+              title={t("noLeads")}
+              body={t("noLeadsBody")}
             />
           ) : (
             leads.map((l) => (
@@ -59,19 +63,19 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                     <p className="font-medium">
                       {l.name}{" "}
                       <Badge tone={l.status === "WON" ? "green" : l.status === "LOST" ? "gray" : "amber"}>
-                        {leadStatusLabel[l.status] ?? l.status}
+                        {t(`lead_${l.status}` as MsgKey)}
                       </Badge>{" "}
-                      {l.source === "QR" && <Badge tone="green">QR</Badge>}
+                      {l.source === "QR" && <Badge tone="green">{t("qrBadge")}</Badge>}
                     </p>
                     <p className="text-sm text-muted">
                       <a href={`tel:${l.phone}`} className="hover:underline">
                         {l.phone}
                       </a>{" "}
-                      · {l.property?.name ?? "Any property"} · {fmtDate(l.createdAt)}
+                      · {l.property?.name ?? t("anyProperty")} · {fmtDate(l.createdAt, lang)}
                     </p>
                     {l.note && <p className="mt-1 text-sm">{l.note}</p>}
                     {followUpDue(l, asOf) && (
-                      <p className="mt-1 text-xs font-medium text-red-700">Follow up due {fmtDate(l.followUpOn)}</p>
+                      <p className="mt-1 text-xs font-medium text-red-700">{t("followUpDueOn", { date: fmtDate(l.followUpOn, lang) })}</p>
                     )}
                   </div>
                   <a
@@ -79,10 +83,10 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                     target="_blank"
                     rel="noreferrer"
                     href={`https://wa.me/${whatsappNumber(l.phone)}?text=${encodeURIComponent(
-                      `Hi ${l.name.split(" ")[0]}, thanks for your enquiry about ${owner.businessName ?? l.property?.name ?? "our PG"}. When would you like to visit?`,
+                      t("leadMsg", { name: l.name.split(" ")[0], pg: owner.businessName ?? l.property?.name ?? "PG" }),
                     )}`}
                   >
-                    WhatsApp
+                    {t("whatsapp")}
                   </a>
                 </div>
                 <div className="mt-3 border-t border-line pt-3">
@@ -92,17 +96,17 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
             ))
           )}
         </div>
-        <Card title="Add a lead">
-          <ActionForm action={createLead} submitLabel="Add lead" resetOnSuccess>
-            <Field label="Name">
+        <Card title={t("addLead")}>
+          <ActionForm action={createLead} submitLabel={t("addLeadBtn")} resetOnSuccess>
+            <Field label={t("name")}>
               <input name="name" className="input" required maxLength={80} />
             </Field>
-            <Field label="Phone">
+            <Field label={t("phone")}>
               <input name="phone" type="tel" className="input" required />
             </Field>
-            <Field label="Interested in">
+            <Field label={t("interestedIn")}>
               <select name="propertyId" className="input" defaultValue="">
-                <option value="">Any property</option>
+                <option value="">{t("anyProperty")}</option>
                 {properties.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
@@ -110,10 +114,10 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                 ))}
               </select>
             </Field>
-            <Field label="Note">
-              <input name="note" className="input" maxLength={500} />
+            <Field label={t("note")}>
+              <VoiceInput name="note" maxLength={500} />
             </Field>
-            <Field label="Follow up on">
+            <Field label={t("followUpOn")}>
               <input name="followUpOn" type="date" className="input" />
             </Field>
           </ActionForm>

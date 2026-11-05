@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useT } from "@/lib/i18n/client";
 
-export function CopyButton({ text, label = "Copy link" }: { text: string; label?: string }) {
+export function CopyButton({ text, label }: { text: string; label?: string }) {
+  const t = useT();
   const [done, setDone] = useState(false);
   return (
     <button
@@ -18,7 +20,7 @@ export function CopyButton({ text, label = "Copy link" }: { text: string; label?
         }
       }}
     >
-      {done ? "Copied ✓" : label}
+      {done ? t("copied") : (label ?? t("copyLink"))}
     </button>
   );
 }
