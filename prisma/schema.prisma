@@ -30,6 +30,13 @@ model Owner {
   razorpayWebhookSecretEnc  String?
   // True once the keys were saved and passed a live check
   razorpayEnabled  Boolean  @default(false)
+  // Automatic WhatsApp reminders (needs WhatsApp to be connected by whoever runs Neravu)
+  autoReminders  Boolean  @default(false)
+  // Days before the due date to send a heads-up (0 = never)
+  remindBefore  Int  @default(2)
+  // Repeat overdue reminders every N days (0 = never)
+  remindOverdueEvery  Int  @default(3)
+  reminderLogs  ReminderLog[]
   // Sessions issued before this moment are rejected (set on password reset)
   passwordChangedAt DateTime?
   authTokens   AuthToken[]
@@ -118,6 +125,7 @@ model Tenant {
   // en | kn | te: language of messages and the pay page for this tenant
   language       String?
   complaints     Complaint[]
+  reminderLogs   ReminderLog[]
   createdAt      DateTime  @default(now())
   charges        Charge[]
   payments       Payment[]
@@ -244,4 +252,24 @@ model ExpenseItem {
   amount    Int
 
   @@index([expenseId])
+}
+
+// One row per automatic WhatsApp reminder attempt, so the owner can see what went out.
+model ReminderLog {
+  id       String   @id @default(cuid())
+  ownerId  String
+  owner    Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  tenantId String?
+  tenant   Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  // DUE_SOON | OVERDUE | TEST
+  kind     String
+  // SENT | FAILED
+  status   String
+  amount   Int?
+  // Short reason when it failed (never contains keys)
+  detail   String?
+  sentAt   DateTime @default(now())
+
+  @@index([ownerId, sentAt])
+  @@index([tenantId, kind, sentAt])
 }
