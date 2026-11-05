@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { BedOption } from "@/lib/beds";
+import { useT } from "@/lib/i18n/client";
 
 /** Bed select that pre-fills the rent field with the room's per-bed rent. */
 export function BedPicker({
@@ -13,6 +14,7 @@ export function BedPicker({
   defaultBed?: string;
   withRent?: boolean;
 }) {
+  const t = useT();
   const initial = beds.find((b) => b.id === defaultBed) ?? null;
   const [rent, setRent] = useState(initial ? String(initial.rent) : "");
   const groups = new Map<string, BedOption[]>();
@@ -21,7 +23,7 @@ export function BedPicker({
   return (
     <div className={withRent ? "grid gap-3 sm:grid-cols-2" : ""}>
       <label className="block">
-        <span className="label">Bed</span>
+        <span className="label">{t("bed")}</span>
         <select
           className="input"
           name="bedId"
@@ -33,7 +35,7 @@ export function BedPicker({
           }}
         >
           <option value="" disabled>
-            {beds.length ? "Choose a vacant bed" : "No vacant beds"}
+            {beds.length ? t("chooseBed") : t("noVacantBeds")}
           </option>
           {[...groups].map(([property, list]) => (
             <optgroup key={property} label={property}>
@@ -48,7 +50,7 @@ export function BedPicker({
       </label>
       {withRent && (
         <label className="block">
-          <span className="label">Monthly rent (₹)</span>
+          <span className="label">{t("monthlyRentRs")}</span>
           <input
             className="input"
             name="monthlyRent"

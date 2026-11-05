@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { getT } from "@/lib/i18n/server";
 
 export function PageHeader({
   title,
@@ -145,8 +146,9 @@ export function Field({
   );
 }
 
-export function TenantStatusBadge({ status }: { status: string }) {
-  if (status === "NOTICE") return <Badge tone="amber">On notice</Badge>;
-  if (status === "MOVED_OUT") return <Badge>Moved out</Badge>;
-  return <Badge tone="green">Active</Badge>;
+export async function TenantStatusBadge({ status }: { status: string }) {
+  const { t } = await getT();
+  if (status === "NOTICE") return <Badge tone="amber">{t("statusNotice")}</Badge>;
+  if (status === "MOVED_OUT") return <Badge>{t("statusMovedOut")}</Badge>;
+  return <Badge tone="green">{t("statusActive")}</Badge>;
 }

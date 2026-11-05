@@ -2,7 +2,9 @@ import Link from "next/link";
 import { requireOwner } from "@/lib/auth";
 import { vacantBeds } from "@/lib/beds";
 import { toDateInput, today } from "@/lib/dates";
-import { ID_TYPES, PAYMENT_METHODS, methodLabel } from "@/lib/format";
+import { ID_TYPES, PAYMENT_METHODS, methodText } from "@/lib/format";
+import { getT } from "@/lib/i18n/server";
+import { LANGS } from "@/lib/i18n";
 import { ActionForm } from "@/components/action-form";
 import { BedPicker } from "@/components/bed-picker";
 import { Card, EmptyState, Field, PageHeader } from "@/components/ui";
@@ -17,65 +19,75 @@ export default async function NewTenantPage({
 }) {
   const { bed, property } = await searchParams;
   const owner = await requireOwner();
+  const { t, lang } = await getT();
   const beds = await vacantBeds(owner.id);
   const defaultBed = bed ?? beds.find((b) => b.propertyId === property)?.id;
 
   return (
     <>
       <PageHeader
-        back={{ href: "/tenants", label: "Tenants" }}
-        title="Add a tenant"
-        subtitle="Onboard a tenant to a vacant bed. Rent starts billing from the move-in date."
+        back={{ href: "/tenants", label: t("tenantsTitle") }}
+        title={t("addATenant")}
+        subtitle={t("onboardSub")}
       />
       {beds.length === 0 ? (
         <EmptyState
-          title="No vacant beds"
-          body="Add a property and rooms first, or free up a bed by moving a tenant out."
+          title={t("noVacantTitle")}
+          body={t("noVacantBody")}
           action={
             <Link href="/properties" className="btn-primary">
-              Go to properties
+              {t("goToProperties")}
             </Link>
           }
         />
       ) : (
-        <ActionForm action={createTenant} submitLabel="Add tenant" className="space-y-6">
-          <Card title="Tenant details">
+        <ActionForm action={createTenant} submitLabel={t("addTenant")} className="space-y-6">
+          <Card title={t("tenantDetails")}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Full name">
+              <Field label={t("fullName")}>
                 <input className="input" name="name" required />
               </Field>
-              <Field label="Mobile">
+              <Field label={t("mobile")}>
                 <input className="input" name="phone" type="tel" placeholder="98xxxxxxxx" required />
               </Field>
-              <Field label="Email">
+              <Field label={t("email")}>
                 <input className="input" name="email" type="email" />
               </Field>
-              <Field label="Occupation / college">
+              <Field label={t("occupation")}>
                 <input className="input" name="occupation" />
               </Field>
-              <Field label="ID proof">
+              <Field label={t("idProof")}>
                 <select className="input" name="idType" defaultValue="Aadhaar">
-                  {ID_TYPES.map((t) => (
-                    <option key={t}>{t}</option>
+                  {ID_TYPES.map((idt) => (
+                    <option key={idt}>{idt}</option>
                   ))}
                 </select>
               </Field>
-              <Field label="ID number">
+              <Field label={t("idNumber")}>
                 <input className="input" name="idNumber" />
               </Field>
-              <Field label="Emergency contact name">
+              <Field label={t("emergencyName")}>
                 <input className="input" name="emergencyName" />
               </Field>
-              <Field label="Emergency contact phone">
+              <Field label={t("emergencyPhone")}>
                 <input className="input" name="emergencyPhone" type="tel" />
+              </Field>
+              <Field label={t("tenantLanguage")} hint={t("tenantLanguageHint")}>
+                <select className="input" name="language" defaultValue={lang}>
+                  {LANGS.map((l) => (
+                    <option key={l.code} value={l.code}>
+                      {l.label}
+                    </option>
+                  ))}
+                </select>
               </Field>
             </div>
           </Card>
-          <Card title="Stay and rent">
+          <Card title={t("stayAndRent")}>
             <div className="space-y-4">
               <BedPicker beds={beds} defaultBed={defaultBed} />
               <div className="grid gap-4 sm:grid-cols-3">
-                <Field label="Move-in date">
+                <Field label={t("moveInDate")}>
                   <input
                     className="input"
                     type="date"
@@ -84,31 +96,31 @@ export default async function NewTenantPage({
                     required
                   />
                 </Field>
-                <Field label="Rent due day" hint="Day of the month (1-28). Defaults to the move-in day.">
+                <Field label={t("rentDueDayShort")} hint={t("rentDueDayHint")}>
                   <input className="input" name="rentDueDay" inputMode="numeric" placeholder="e.g. 5" />
                 </Field>
-                <Field label="Security deposit (₹)">
+                <Field label={t("depositRs")}>
                   <input className="input" name="deposit" inputMode="numeric" placeholder="0" />
                 </Field>
               </div>
               <div className="grid gap-4 rounded-xl bg-canvas p-4 sm:grid-cols-2">
                 <Field
-                  label="Amount collected today (₹)"
-                  hint="Optional. First month's rent and deposit received at move-in."
+                  label={t("collectedToday")}
+                  hint={t("collectedTodayHint")}
                 >
                   <input className="input" name="paidNow" inputMode="numeric" placeholder="0" />
                 </Field>
-                <Field label="Paid via">
+                <Field label={t("paidVia")}>
                   <select className="input" name="method" defaultValue="UPI">
                     {PAYMENT_METHODS.map((m) => (
                       <option key={m} value={m}>
-                        {methodLabel[m]}
+                        {methodText(t, m)}
                       </option>
                     ))}
                   </select>
                 </Field>
               </div>
-              <Field label="Notes">
+              <Field label={t("notes")}>
                 <textarea className="input" name="notes" rows={2} />
               </Field>
             </div>

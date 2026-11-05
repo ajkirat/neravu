@@ -20,6 +20,9 @@ hunt through notebooks and chats.
 | **Expenses** | Log expenses by category (groceries, salaries, electricity, etc.) per property or as general overhead, with a monthly category breakdown. |
 | **Dashboard** | Occupancy, pending dues, this month's collections and expenses, a "dues to collect" list with remind/collect actions, rent due this week, upcoming move-outs and occupancy by property. |
 | **Reports** | Monthly billed vs collected vs expenses vs net, by property; a six-month collections and expenses trend; dues export to CSV. |
+| **Kannada, Telugu and English** | Switch the whole app (menus, forms, messages) with one tap. WhatsApp reminders and the tenant pay page go out in each tenant's own language. Remembered on your account across devices. Translations should be reviewed by a native speaker. |
+| **Made for everyone** | Big picture buttons on the home screen, a "More" screen of large tiles, one-tap "Paid cash / Paid UPI" for dues, voice typing for notes (Chrome), a large-text switch, a plain-language Help page, and install-to-home-screen. |
+| **Complaints** | Write down tenant problems (by voice or typing) and mark them open, being fixed or fixed. |
 | **Online pay links (UPI)** | Add your UPI ID in Settings. Every tenant gets a private pay link (`/pay/...`) showing what they owe, a "Pay with UPI app" button and a QR code. Money goes straight to your UPI ID. Tenants tap "I've paid" and you confirm by recording the payment. |
 | **Remind overdue** | One queue of everyone with pending dues, sorted by how late they are, with a WhatsApp button for each (pay link included) and a "reminded on" marker. |
 | **Leads and enquiry QR** | Print a QR poster per property. Scanning it opens a public enquiry form and the lead lands in your Leads list. Track status (new, contacted, visit, won, lost) and follow-up dates, add leads by hand, one-tap WhatsApp. |

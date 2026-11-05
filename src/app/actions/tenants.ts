@@ -1,5 +1,6 @@
 "use server";
 
+import { isLang } from "@/lib/i18n";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
@@ -43,6 +44,7 @@ function profile(fd: FormData) {
     emergencyName: optStr(fd, "emergencyName"),
     emergencyPhone: optStr(fd, "emergencyPhone"),
     notes: optStr(fd, "notes"),
+    language: isLang(str(fd, "language")) ? str(fd, "language") : null,
   };
 }
 

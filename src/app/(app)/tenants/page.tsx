@@ -4,14 +4,16 @@ import { requireOwner } from "@/lib/auth";
 import { fmtDate, rupees } from "@/lib/format";
 import { syncRentCharges, tenantBalances } from "@/lib/ledger";
 import { Badge, EmptyState, PageHeader, TenantStatusBadge } from "@/components/ui";
+import { getT } from "@/lib/i18n/server";
+import type { MsgKey } from "@/lib/i18n";
 
 export const metadata = { title: "Tenants" };
 
-const TABS = [
-  { key: "current", label: "Current", statuses: ["ACTIVE", "NOTICE"] },
-  { key: "dues", label: "With dues", statuses: ["ACTIVE", "NOTICE", "MOVED_OUT"] },
-  { key: "notice", label: "On notice", statuses: ["NOTICE"] },
-  { key: "past", label: "Moved out", statuses: ["MOVED_OUT"] },
+const TABS: { key: string; label: MsgKey; statuses: string[] }[] = [
+  { key: "current", label: "tabCurrent", statuses: ["ACTIVE", "NOTICE"] },
+  { key: "dues", label: "tabDues", statuses: ["ACTIVE", "NOTICE", "MOVED_OUT"] },
+  { key: "notice", label: "tabNotice", statuses: ["NOTICE"] },
+  { key: "past", label: "tabPast", statuses: ["MOVED_OUT"] },
 ];
 
 export default async function TenantsPage({
@@ -21,6 +23,7 @@ export default async function TenantsPage({
 }) {
   const { tab = "current", q = "" } = await searchParams;
   const owner = await requireOwner();
+  const { t, lang } = await getT();
   const active = TABS.find((t) => t.key === tab) ?? TABS[0];
   await syncRentCharges(owner.id);
   const [tenants, balances] = await Promise.all([
@@ -45,42 +48,42 @@ export default async function TenantsPage({
   return (
     <>
       <PageHeader
-        title="Tenants"
-        subtitle="Everyone staying with you, their bed and what they owe."
+        title={t("tenantsTitle")}
+        subtitle={t("tenantsSub")}
         actions={
           <Link href="/tenants/new" className="btn-primary">
-            Add tenant
+            {t("addTenant")}
           </Link>
         }
       />
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex gap-1 overflow-x-auto rounded-xl bg-white p-1 ring-1 ring-line">
-          {TABS.map((t) => (
+          {TABS.map((tab) => (
             <Link
-              key={t.key}
-              href={`/tenants?tab=${t.key}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
+              key={tab.key}
+              href={`/tenants?tab=${tab.key}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
               className={`rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap ${
-                t.key === active.key ? "bg-brand-600 text-white" : "text-muted hover:text-ink"
+                tab.key === active.key ? "bg-brand-600 text-white" : "text-muted hover:text-ink"
               }`}
             >
-              {t.label}
+              {t(tab.label)}
             </Link>
           ))}
         </div>
         <form className="sm:w-64">
           <input type="hidden" name="tab" value={active.key} />
-          <input className="input" name="q" defaultValue={q} placeholder="Search name or phone" />
+          <input className="input" name="q" defaultValue={q} placeholder={t("searchTenants")} />
         </form>
       </div>
 
       {rows.length === 0 ? (
         <EmptyState
-          title={q ? "No tenants match your search" : "No tenants here"}
-          body={active.key === "current" ? "Add a tenant to a vacant bed to start tracking rent." : undefined}
+          title={q ? t("noMatch") : t("noTenantsHere")}
+          body={active.key === "current" ? t("noTenantsBody") : undefined}
           action={
             active.key === "current" && !q ? (
               <Link href="/tenants/new" className="btn-primary">
-                Add tenant
+                {t("addTenant")}
               </Link>
             ) : undefined
           }
@@ -90,41 +93,41 @@ export default async function TenantsPage({
           <table className="table">
             <thead>
               <tr>
-                <th>Tenant</th>
-                <th>Bed</th>
-                <th>Rent</th>
-                <th>Since</th>
-                <th className="text-right">Balance</th>
+                <th>{t("colTenant")}</th>
+                <th>{t("colBed")}</th>
+                <th>{t("colRent")}</th>
+                <th>{t("colSince")}</th>
+                <th className="text-right">{t("colBalance")}</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((t) => {
-                const b = balances.get(t.id);
+              {rows.map((tn) => {
+                const b = balances.get(tn.id);
                 return (
-                  <tr key={t.id} className="hover:bg-canvas/60">
+                  <tr key={tn.id} className="hover:bg-canvas/60">
                     <td>
-                      <Link href={`/tenants/${t.id}`} className="font-medium text-brand-900 hover:underline">
-                        {t.name}
+                      <Link href={`/tenants/${tn.id}`} className="font-medium text-brand-900 hover:underline">
+                        {tn.name}
                       </Link>
                       <div className="flex items-center gap-2 text-xs text-muted">
-                        {t.phone} <TenantStatusBadge status={t.status} />
+                        {tn.phone} <TenantStatusBadge status={tn.status} />
                       </div>
                     </td>
                     <td className="text-sm">
-                      <div>{t.property.name}</div>
+                      <div>{tn.property.name}</div>
                       <div className="text-xs text-muted">
-                        {t.bed ? `Room ${t.bed.room.number} · Bed ${t.bed.label}` : "—"}
+                        {tn.bed ? t("roomBed", { r: tn.bed.room.number, b: tn.bed.label }) : "—"}
                       </div>
                     </td>
-                    <td>{rupees(t.monthlyRent)}</td>
-                    <td className="text-sm text-muted">{fmtDate(t.moveInDate)}</td>
+                    <td>{rupees(tn.monthlyRent)}</td>
+                    <td className="text-sm text-muted">{fmtDate(tn.moveInDate, lang)}</td>
                     <td className="text-right">
                       {b && b.outstanding > 0 ? (
-                        <Badge tone="red">{rupees(b.outstanding)} due</Badge>
+                        <Badge tone="red">{t("dueAmt", { amt: rupees(b.outstanding) })}</Badge>
                       ) : b && b.advance > 0 ? (
-                        <Badge tone="green">{rupees(b.advance)} advance</Badge>
+                        <Badge tone="green">{t("advanceAmt", { amt: rupees(b.advance) })}</Badge>
                       ) : (
-                        <Badge tone="green">Settled</Badge>
+                        <Badge tone="green">{t("settled")}</Badge>
                       )}
                     </td>
                   </tr>

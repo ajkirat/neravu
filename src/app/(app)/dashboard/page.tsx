@@ -7,12 +7,18 @@ import { fmtDate, fmtPeriod, reminderLink, rupees } from "@/lib/format";
 import { syncRentCharges, tenantBalances } from "@/lib/ledger";
 import { payTokens } from "@/lib/paylink";
 import { appOrigin } from "@/lib/url";
+import { getT } from "@/lib/i18n/server";
+import { asLang } from "@/lib/i18n";
+import { QuickCollect } from "@/components/quick-collect";
+import { Icon } from "@/components/nav";
+import { NAV } from "@/lib/nav-items";
 import { Badge, Card, EmptyState, PageHeader, Stat } from "@/components/ui";
 
 export const metadata = { title: "Dashboard" };
 
 export default async function DashboardPage() {
   const owner = await requireOwner();
+  const { t, lang } = await getT();
   const asOf = today();
   const month = periodKey(asOf);
   const range = monthRange(month)!;
@@ -73,12 +79,12 @@ export default async function DashboardPage() {
   if (properties.length === 0) {
     return (
       <>
-        <PageHeader title={`Welcome, ${owner.name.split(" ")[0]}`} subtitle="Let's set up your first PG." />
+        <PageHeader title={t("welcome", { name: owner.name.split(" ")[0] })} subtitle={t("setupFirst")} />
         <div className="grid gap-4 md:grid-cols-3">
           {[
-            ["1", "Add your property", "Name and address of your PG.", "/properties"],
-            ["2", "Add rooms and beds", "Pick the sharing type and rent per bed.", "/properties"],
-            ["3", "Onboard tenants", "Assign beds; rent starts billing automatically.", "/tenants/new"],
+            ["1", t("step1Title"), t("step1Body"), "/properties"],
+            ["2", t("step2Title"), t("step2Body"), "/properties"],
+            ["3", t("step3Title"), t("step3Body"), "/tenants/new"],
           ].map(([n, title, body, href]) => (
             <Link key={n} href={href} className="card block p-5 hover:border-brand-200">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-marigold-100 text-sm font-bold text-marigold-700">
@@ -96,43 +102,53 @@ export default async function DashboardPage() {
   return (
     <>
       <PageHeader
-        title={`Hello, ${owner.name.split(" ")[0]}`}
-        subtitle={`Here is how your PGs look on ${fmtDate(asOf)}.`}
-        actions={
-          <>
-            <Link href="/payments" className="btn-secondary">
-              Record payment
-            </Link>
-            <Link href="/tenants/new" className="btn-primary">
-              Add tenant
-            </Link>
-          </>
-        }
+        title={t("greeting", { name: owner.name.split(" ")[0] })}
+        subtitle={t("howLook", { date: fmtDate(asOf, lang) })}
       />
 
+      <div className="mb-6 grid grid-cols-3 gap-3 sm:grid-cols-6">
+        {[
+          { href: "/payments", label: t("qaCollect"), icon: NAV[3].icon, tone: "bg-brand-600 text-white" },
+          { href: "/tenants/new", label: t("qaAddTenant"), icon: NAV[2].icon, tone: "bg-white" },
+          { href: "/expenses", label: t("qaExpense"), icon: NAV[4].icon, tone: "bg-white" },
+          { href: "/reminders", label: t("qaRemind"), icon: "M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0", tone: "bg-marigold-100" },
+          { href: "/leads", label: t("qaLeads"), icon: NAV[5].icon, tone: "bg-white" },
+          { href: "/complaints", label: t("qaComplaints"), icon: NAV[6].icon, tone: "bg-white" },
+        ].map((q) => (
+          <Link
+            key={q.href}
+            href={q.href}
+            className={`card flex flex-col items-center gap-2 px-2 py-4 text-center text-sm font-semibold hover:shadow-sm ${q.tone}`}
+          >
+            <Icon d={q.icon} className="h-8 w-8" />
+            <span className="leading-tight">{q.label}</span>
+          </Link>
+        ))}
+      </div>
+
       <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Occupancy" value={`${occupancy}%`} hint={`${occupied} of ${totalBeds} beds filled`} tone="brand" />
+        <Stat label={t("occupancy")} value={`${occupancy}%`} hint={t("bedsFilled", { occ: occupied, beds: totalBeds })} tone="brand" />
         <Stat
-          label="Pending dues"
+          label={t("pendingDues")}
           value={rupees(totalDues)}
-          hint={`${dues.length} tenant${dues.length === 1 ? "" : "s"}`}
+          hint={dues.length === 1 ? t("tenantOne") : t("tenantsN", { n: dues.length })}
           tone={totalDues ? "warn" : "good"}
         />
-        <Stat label={`Collected in ${fmtPeriod(month).split(" ")[0]}`} value={rupees(collected)} />
-        <Stat label="Expenses this month" value={rupees(spent)} hint={`Net ${rupees(collected - spent)}`} />
+        <Stat label={t("collectedIn", { month: fmtPeriod(month, lang).split(" ")[0] })} value={rupees(collected)} />
+        <Stat label={t("expensesMonth")} value={rupees(spent)} hint={t("netAmt", { amt: rupees(collected - spent) })} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <Card
           className="lg:col-span-2"
-          title="Dues to collect"
+          title={t("duesToCollect")}
           action={
             <span className="flex items-center gap-3">
               <Link href="/reminders" className="text-xs font-medium text-brand-600 hover:underline">
-                Remind all
+                {t("remindAll")}
               </Link>
               <Link href="/tenants?tab=dues" className="text-xs font-medium text-brand-600 hover:underline">
-                View all
+                {t("viewAll")}
               </Link>
             </span>
           }
@@ -140,29 +156,29 @@ export default async function DashboardPage() {
         >
           {dues.length === 0 ? (
             <div className="p-5">
-              <EmptyState title="All caught up" body="No one owes you anything right now." />
+              <EmptyState title={t("noDues")} />
             </div>
           ) : (
             <ul className="divide-y divide-line">
-              {dues.slice(0, 10).map(({ t, b }) => (
-                <li key={t.id} className="flex flex-wrap items-center gap-3 px-5 py-3">
+              {dues.slice(0, 10).map(({ t: tn, b }) => (
+                <li key={tn.id} className="flex flex-wrap items-center gap-3 px-5 py-3">
                   <div className="min-w-0 flex-1">
-                    <Link href={`/tenants/${t.id}`} className="font-medium text-brand-900 hover:underline">
-                      {t.name}
+                    <Link href={`/tenants/${tn.id}`} className="font-medium text-brand-900 hover:underline">
+                      {tn.name}
                     </Link>
                     <p className="truncate text-xs text-muted">
-                      {t.status === "MOVED_OUT" ? `${t.property.name} · moved out` : bedText(t)}
+                      {tn.status === "MOVED_OUT" ? `${tn.property.name} · ${t("movedOutShort")}` : bedText(tn)}
                     </p>
-                    {t.payClaimedAt && (
+                    {tn.payClaimedAt && (
                       <p className="mt-1">
-                        <Badge tone="amber">Says paid · confirm</Badge>
+                        <Badge tone="amber">{t("saysPaid")}</Badge>
                       </p>
                     )}
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-red-700">{rupees(b.outstanding)}</p>
                     <p className="text-xs text-muted">
-                      {b.overdueDays === 0 ? "Due today" : `${b.overdueDays} days overdue`}
+                      {b.overdueDays === 0 ? t("dueToday") : t("daysOverdue", { n: b.overdueDays })}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -171,19 +187,23 @@ export default async function DashboardPage() {
                       target="_blank"
                       rel="noreferrer"
                       href={reminderLink({
-                        phone: t.phone,
-                        tenantName: t.name,
+                        phone: tn.phone,
+                        tenantName: tn.name,
                         amount: b.outstanding,
-                        propertyName: owner.businessName ?? t.property.name,
+                        propertyName: owner.businessName ?? tn.property.name,
                         since: b.oldestUnpaid,
-                        payUrl: tokens.get(t.id) ? `${origin}/pay/${tokens.get(t.id)}` : undefined,
+                        lang: asLang(tn.language ?? lang),
+                        payUrl: tokens.get(tn.id) ? `${origin}/pay/${tokens.get(tn.id)}` : undefined,
                       })}
                     >
-                      Remind
+                      {t("remind")}
                     </a>
-                    <Link href={`/tenants/${t.id}`} className="btn-secondary btn-sm">
-                      Collect
+                    <Link href={`/tenants/${tn.id}`} className="btn-secondary btn-sm">
+                      {t("collect")}
                     </Link>
+                  </div>
+                  <div className="w-full">
+                    <QuickCollect tenantId={tn.id} name={tn.name} amount={rupees(b.outstanding)} />
                   </div>
                 </li>
               ))}
@@ -192,18 +212,18 @@ export default async function DashboardPage() {
         </Card>
 
         <div className="space-y-6">
-          <Card title="Rent due this week" padded={false}>
+          <Card title={t("rentDueWeek")} padded={false}>
             {upcoming.length === 0 ? (
-              <p className="px-5 py-4 text-sm text-muted">No rent falls due in the next 7 days.</p>
+              <p className="px-5 py-4 text-sm text-muted">{t("noRentWeek")}</p>
             ) : (
               <ul className="divide-y divide-line">
-                {upcoming.map(({ t, due }) => (
-                  <li key={t.id} className="flex items-center justify-between gap-2 px-5 py-2.5 text-sm">
-                    <Link href={`/tenants/${t.id}`} className="truncate hover:underline">
-                      {t.name}
+                {upcoming.map(({ t: tn, due }) => (
+                  <li key={tn.id} className="flex items-center justify-between gap-2 px-5 py-2.5 text-sm">
+                    <Link href={`/tenants/${tn.id}`} className="truncate hover:underline">
+                      {tn.name}
                     </Link>
                     <span className="shrink-0 text-xs text-muted">
-                      {rupees(t.monthlyRent)} · {diffDays(due, asOf) === 0 ? "today" : fmtDate(due)}
+                      {rupees(tn.monthlyRent)} · {diffDays(due, asOf) === 0 ? t("todayLower") : fmtDate(due, lang)}
                     </span>
                   </li>
                 ))}
@@ -211,24 +231,24 @@ export default async function DashboardPage() {
             )}
           </Card>
 
-          <Card title="Upcoming move-outs" padded={false}>
+          <Card title={t("upcomingMoveOuts")} padded={false}>
             {leaving.length === 0 ? (
-              <p className="px-5 py-4 text-sm text-muted">Nobody is on notice.</p>
+              <p className="px-5 py-4 text-sm text-muted">{t("nobodyNotice")}</p>
             ) : (
               <ul className="divide-y divide-line">
-                {leaving.map((t) => (
-                  <li key={t.id} className="flex items-center justify-between gap-2 px-5 py-2.5 text-sm">
-                    <Link href={`/tenants/${t.id}`} className="truncate hover:underline">
-                      {t.name}
+                {leaving.map((tn) => (
+                  <li key={tn.id} className="flex items-center justify-between gap-2 px-5 py-2.5 text-sm">
+                    <Link href={`/tenants/${tn.id}`} className="truncate hover:underline">
+                      {tn.name}
                     </Link>
-                    <Badge tone="amber">{fmtDate(t.moveOutDate)}</Badge>
+                    <Badge tone="amber">{fmtDate(tn.moveOutDate, lang)}</Badge>
                   </li>
                 ))}
               </ul>
             )}
           </Card>
 
-          <Card title="Occupancy by property">
+          <Card title={t("occByProperty")}>
             <div className="space-y-3">
               {properties.map((p) => {
                 const beds = p.rooms.reduce((s, r) => s + r.beds.length, 0);

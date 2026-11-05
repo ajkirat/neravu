@@ -6,6 +6,9 @@ import { requireOwner } from "@/lib/auth";
 import { parseDateInput, today } from "@/lib/dates";
 import { int, optStr, str } from "@/lib/forms";
 import { PAYMENT_METHODS, rupees } from "@/lib/format";
+import { summarizeLedger } from "@/lib/billing";
+import { syncRentCharges } from "@/lib/ledger";
+import { getT } from "@/lib/i18n/server";
 import type { FormState } from "@/components/action-form";
 
 export async function recordPayment(_: FormState, fd: FormData): Promise<FormState> {
@@ -63,4 +66,28 @@ export async function recordRefund(tenantId: string, _: FormState, fd: FormData)
   });
   revalidatePath("/", "layout");
   return { ok: `Recorded refund of ${rupees(amount)}.`, at: Date.now() };
+}
+
+/** One tap: record the tenant's whole pending amount as received today (cash or UPI). */
+export async function collectFull(tenantId: string, method: string): Promise<{ error?: string; ok?: string }> {
+  const owner = await requireOwner();
+  const { t, lang } = await getT();
+  if (method !== "CASH" && method !== "UPI") return { error: "Invalid method." };
+  const tenant = await db.tenant.findFirst({
+    where: { id: tenantId, ownerId: owner.id },
+    include: { charges: { select: { amount: true, dueDate: true } }, payments: { select: { amount: true } } },
+  });
+  if (!tenant) return { error: "Tenant not found." };
+  await syncRentCharges(owner.id, tenantId);
+  const fresh = await db.tenant.findUnique({
+    where: { id: tenantId },
+    select: { charges: { select: { amount: true, dueDate: true } }, payments: { select: { amount: true } } },
+  });
+  const s = summarizeLedger(fresh?.charges ?? [], fresh?.payments ?? [], today());
+  if (s.outstanding <= 0) return { error: "Nothing is pending." };
+  await db.payment.create({ data: { tenantId, amount: s.outstanding, paidOn: today(), method } });
+  await db.tenant.update({ where: { id: tenantId }, data: { payClaimedAt: null } });
+  revalidatePath("/", "layout");
+  void lang;
+  return { ok: t("paidRecorded", { amt: rupees(s.outstanding), name: tenant.name }) };
 }

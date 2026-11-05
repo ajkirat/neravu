@@ -7,6 +7,7 @@ import { parseDateInput } from "@/lib/dates";
 import { optStr, str } from "@/lib/forms";
 import { LEAD_STATUSES, cleanEnquiry } from "@/lib/leads";
 import { tooMany } from "@/lib/throttle";
+import { getT } from "@/lib/i18n/server";
 import type { FormState } from "@/components/action-form";
 
 export async function createLead(_: FormState, fd: FormData): Promise<FormState> {
@@ -53,8 +54,9 @@ export async function deleteLead(id: string): Promise<void> {
 
 /** Public: submitted from the QR-code enquiry page. No login. */
 export async function submitEnquiry(propertyId: string, _: FormState, fd: FormData): Promise<FormState> {
+  const { t } = await getT();
   // Honeypot: real people never fill the hidden "website" field.
-  if (str(fd, "website")) return { ok: "Thank you! We will contact you shortly.", at: Date.now() };
+  if (str(fd, "website")) return { ok: t("enquireThanks"), at: Date.now() };
   if (await tooMany("enquiry", 8, 15 * 60 * 1000)) return { error: "Too many enquiries. Please try again later." };
   const c = cleanEnquiry({ name: str(fd, "name"), phone: str(fd, "phone"), note: str(fd, "note") });
   if ("error" in c) return { error: c.error };
@@ -74,5 +76,5 @@ export async function submitEnquiry(propertyId: string, _: FormState, fd: FormDa
     },
   });
   revalidatePath("/", "layout");
-  return { ok: "Thank you! The owner will contact you shortly.", at: Date.now() };
+  return { ok: t("enquireThanks"), at: Date.now() };
 }

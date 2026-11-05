@@ -1,0 +1,53 @@
+import type { Part } from "./types";
+
+export const payments = {
+  paymentsTitle: { en: "Payments", kn: "ಪಾವತಿಗಳು", te: "చెల్లింపులు" },
+  paymentsSub: { en: "Every rupee received, with receipts.", kn: "ಬಂದ ಪ್ರತಿ ರೂಪಾಯಿ, ರಸೀದಿಗಳೊಂದಿಗೆ.", te: "వచ్చిన ప్రతి రూపాయి, రసీదులతో." },
+  netReceived: { en: "Net received", kn: "ಒಟ್ಟು ಬಂದದ್ದು", te: "మొత్తం వచ్చినది" },
+  noPayments: { en: "No payments this month", kn: "ಈ ತಿಂಗಳು ಪಾವತಿಗಳಿಲ್ಲ", te: "ఈ నెల చెల్లింపులు లేవు" },
+  noPaymentsBody: { en: "Payments you record will show up here.", kn: "ನೀವು ದಾಖಲಿಸುವ ಪಾವತಿಗಳು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತವೆ.", te: "మీరు నమోదు చేసే చెల్లింపులు ఇక్కడ కనిపిస్తాయి." },
+  colMethod: { en: "Method", kn: "ವಿಧಾನ", te: "పద్ధతి" },
+  colAmount: { en: "Amount", kn: "ಮೊತ್ತ", te: "మొత్తం" },
+  addTenantsFirst: { en: "Add tenants first to record their payments.", kn: "ಪಾವತಿ ದಾಖಲಿಸಲು ಮೊದಲು ಬಾಡಿಗೆದಾರರನ್ನು ಸೇರಿಸಿ.", te: "చెల్లింపులు నమోదు చేయడానికి ముందు అద్దెదారులను జోడించండి." },
+  remindOverdue: { en: "Remind overdue", kn: "ಬಾಕಿ ನೆನಪಿಸಿ", te: "బకాయిలు గుర్తు చేయండి" },
+  recordPaymentBtn: { en: "Record payment", kn: "ಪಾವತಿ ದಾಖಲಿಸಿ", te: "చెల్లింపు నమోదు చేయండి" },
+  tenant: { en: "Tenant", kn: "ಬಾಡಿಗೆದಾರ", te: "అద్దెదారు" },
+  chooseTenant: { en: "Choose a tenant", kn: "ಬಾಡಿಗೆದಾರರನ್ನು ಆರಿಸಿ", te: "అద్దెదారుని ఎంచుకోండి" },
+  paidOn: { en: "Paid on", kn: "ಪಾವತಿಸಿದ ದಿನ", te: "చెల్లించిన తేదీ" },
+  method: { en: "Method", kn: "ವಿಧಾನ", te: "పద్ధతి" },
+  reference: { en: "Reference", kn: "ಉಲ್ಲೇಖ", te: "రెఫరెన్స్" },
+  referencePh: { en: "UTR / txn id", kn: "UTR / ವ್ಯವಹಾರ ಸಂಖ್ಯೆ", te: "UTR / లావాదేవీ నంబర్" },
+  // receipt
+  rentReceipt: { en: "Rent receipt", kn: "ಬಾಡಿಗೆ ರಸೀದಿ", te: "అద్దె రసీదు" },
+  refundVoucher: { en: "Refund voucher", kn: "ಮರುಪಾವತಿ ಚೀಟಿ", te: "రీఫండ్ వోచర్" },
+  receiptNo: { en: "No. {n}", kn: "ಸಂ. {n}", te: "నం. {n}" },
+  receivedFrom: { en: "Received from", kn: "ಇವರಿಂದ ಪಡೆದದ್ದು", te: "వీరి నుండి అందింది" },
+  paidTo: { en: "Paid to", kn: "ಇವರಿಗೆ ಪಾವತಿ", te: "వీరికి చెల్లించారు" },
+  stay: { en: "Stay", kn: "ವಾಸ", te: "నివాసం" },
+  mode: { en: "Mode", kn: "ವಿಧಾನ", te: "పద్ధతి" },
+  issuedBy: { en: "Issued by {name}. This is a computer-generated receipt.", kn: "{name} ನೀಡಿದ್ದು. ಇದು ಕಂಪ್ಯೂಟರ್ ರಸೀದಿ.", te: "{name} జారీ చేశారు. ఇది కంప్యూటర్ రసీదు." },
+  shareReceipt: { en: "Send on WhatsApp", kn: "ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಕಳುಹಿಸಿ", te: "వాట్సాప్‌లో పంపండి" },
+  receiptMsg: {
+    en: "Hi {name}, we received {amt} on {date} ({mode}). Receipt no. {no}. Thank you! – {pg}",
+    kn: "ನಮಸ್ಕಾರ {name}, {date} ರಂದು {amt} ({mode}) ಬಂದಿದೆ. ರಸೀದಿ ಸಂ. {no}. ಧನ್ಯವಾದಗಳು! – {pg}",
+    te: "నమస్కారం {name}, {date} న {amt} ({mode}) అందింది. రసీదు నం. {no}. ధన్యవాదాలు! – {pg}",
+  },
+  // reminders page
+  remindTitle: { en: "Remind overdue", kn: "ಬಾಕಿ ನೆನಪಿಸಿ", te: "బకాయిలు గుర్తు చేయండి" },
+  remindSub: { en: "{n} tenants owe {amt}", kn: "{n} ಬಾಡಿಗೆದಾರರಿಂದ {amt} ಬಾಕಿ", te: "{n} అద్దెదారుల నుండి {amt} బకాయి" },
+  addUpiTip: { en: "Add your UPI ID in Settings to include a pay link in every reminder.", kn: "ಪ್ರತಿ ನೆನಪೋಲೆಯಲ್ಲಿ ಪಾವತಿ ಲಿಂಕ್ ಸೇರಿಸಲು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ UPI ID ಸೇರಿಸಿ.", te: "ప్రతి రిమైండర్‌లో చెల్లింపు లింక్ ఉండటానికి సెట్టింగులలో UPI ID జోడించండి." },
+  nobodyOwes: { en: "Nobody owes you anything 🎉", kn: "ಯಾರಿಗೂ ಬಾಕಿ ಇಲ್ಲ 🎉", te: "ఎవరికీ బకాయి లేదు 🎉" },
+  nobodyOwesBody: { en: "Tenants with pending dues will show up here.", kn: "ಬಾಕಿ ಇರುವವರು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತಾರೆ.", te: "బకాయి ఉన్నవారు ఇక్కడ కనిపిస్తారు." },
+  daysOverdueRow: { en: "{n} days overdue", kn: "{n} ದಿನ ತಡ", te: "{n} రోజులు ఆలస్యం" },
+  remindedOn: { en: "Reminded {date}", kn: "{date} ರಂದು ನೆನಪಿಸಲಾಗಿದೆ", te: "{date} న గుర్తు చేశారు" },
+  remindAgain: { en: "Remind again", kn: "ಮತ್ತೆ ನೆನಪಿಸಿ", te: "మళ్లీ గుర్తు చేయండి" },
+  // reminder WhatsApp text
+  rmHello: {
+    en: "Hi {name}, this is a gentle reminder from {pg}. Your pending amount is {amt}{since}. Please pay at the earliest and share the payment reference.",
+    kn: "ನಮಸ್ಕಾರ {name}, {pg} ಕಡೆಯಿಂದ ಸೌಜನ್ಯದ ನೆನಪೋಲೆ. ನಿಮ್ಮ ಬಾಕಿ ಮೊತ್ತ {amt}{since}. ದಯವಿಟ್ಟು ಆದಷ್ಟು ಬೇಗ ಪಾವತಿಸಿ ಮತ್ತು ಪಾವತಿ ಉಲ್ಲೇಖ ಹಂಚಿಕೊಳ್ಳಿ.",
+    te: "నమస్కారం {name}, {pg} నుండి మర్యాదపూర్వక రిమైండర్. మీ బకాయి మొత్తం {amt}{since}. దయచేసి వీలైనంత త్వరగా చెల్లించి, చెల్లింపు రెఫరెన్స్ షేర్ చేయండి.",
+  },
+  rmSince: { en: " (pending since {date})", kn: " ({date} ರಿಂದ ಬಾಕಿ)", te: " ({date} నుండి బకాయి)" },
+  rmPayOnline: { en: " You can pay online here: {url}", kn: " ಇಲ್ಲಿ ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ಪಾವತಿಸಿ: {url}", te: " ఇక్కడ ఆన్‌లైన్‌లో చెల్లించండి: {url}" },
+  rmThanks: { en: " Thank you!", kn: " ಧನ್ಯವಾದಗಳು!", te: " ధన్యవాదాలు!" },
+} satisfies Part;

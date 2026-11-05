@@ -4,11 +4,13 @@ import { requireOwner } from "@/lib/auth";
 import { ActionForm } from "@/components/action-form";
 import { Card, EmptyState, Field, PageHeader } from "@/components/ui";
 import { createProperty } from "@/app/actions/properties";
+import { getT } from "@/lib/i18n/server";
 
 export const metadata = { title: "Properties" };
 
 export default async function PropertiesPage() {
   const owner = await requireOwner();
+  const { t } = await getT();
   const properties = await db.property.findMany({
     where: { ownerId: owner.id },
     orderBy: { createdAt: "asc" },
@@ -20,13 +22,13 @@ export default async function PropertiesPage() {
 
   return (
     <>
-      <PageHeader title="Properties" subtitle="Your PGs, their rooms and beds." />
+      <PageHeader title={t("propsTitle")} subtitle={t("propsSub")} />
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           {properties.length === 0 && (
             <EmptyState
-              title="No properties yet"
-              body="Add your first PG on the right, then set up its rooms and beds."
+              title={t("noPropsTitle")}
+              body={t("noPropsBody")}
             />
           )}
           {properties.map((p) => {
@@ -43,30 +45,30 @@ export default async function PropertiesPage() {
                   <div>
                     <h2 className="font-semibold text-brand-900">{p.name}</h2>
                     <p className="text-sm text-muted">
-                      {[p.address, p.city].filter(Boolean).join(", ") || "No address added"}
+                      {[p.address, p.city].filter(Boolean).join(", ") || t("noAddress")}
                     </p>
                   </div>
-                  <span className="text-sm font-semibold text-brand-600">{pct}% full</span>
+                  <span className="text-sm font-semibold text-brand-600">{t("pctFull", { pct })}</span>
                 </div>
                 <div className="mt-4 h-2 overflow-hidden rounded-full bg-canvas">
                   <div className="h-full rounded-full bg-brand-500" style={{ width: `${pct}%` }} />
                 </div>
                 <p className="mt-2 text-xs text-muted">
-                  {p.rooms.length} rooms · {beds} beds · {occupied} occupied · {beds - occupied} vacant
+                  {t("propStats", { rooms: p.rooms.length, beds, occ: occupied, vac: beds - occupied })}
                 </p>
               </Link>
             );
           })}
         </div>
-        <Card title="Add a property">
-          <ActionForm action={createProperty} submitLabel="Add property">
-            <Field label="Property name">
+        <Card title={t("addProperty")}>
+          <ActionForm action={createProperty} submitLabel={t("addPropertyBtn")}>
+            <Field label={t("propertyName")}>
               <input className="input" name="name" placeholder="e.g. Sunrise Men's PG" required />
             </Field>
-            <Field label="Address">
+            <Field label={t("address")}>
               <input className="input" name="address" placeholder="Street, area" />
             </Field>
-            <Field label="City">
+            <Field label={t("city")}>
               <input className="input" name="city" placeholder="Bengaluru" />
             </Field>
           </ActionForm>
