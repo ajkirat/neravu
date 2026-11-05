@@ -5,6 +5,8 @@ import { BottomNav, SideNav } from "@/components/nav";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { TextSizeToggle } from "@/components/text-size-toggle";
 import { requireOwner } from "@/lib/auth";
+import { emailEnabled } from "@/lib/email";
+import { VerifyBanner } from "@/components/verify-banner";
 import { getT } from "@/lib/i18n/server";
 import { logout } from "@/app/actions/auth";
 
@@ -50,6 +52,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="no-print mb-4 hidden justify-end lg:flex">
           <TextSizeToggle large={large} />
         </div>
+        {emailEnabled() && !owner.emailVerifiedAt && <VerifyBanner email={owner.email} />}
         {children}
       </main>
       <BottomNav />
