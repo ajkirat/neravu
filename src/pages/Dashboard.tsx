@@ -27,6 +27,7 @@ export default function Dashboard() {
         <Stat label="Expenses" value={inr(spent)} hint="this month" />
         <Stat label="Net profit" value={inr(collected - spent)} tone={collected - spent >= 0 ? "text-emerald-600" : "text-red-600"} hint="collected − expenses" />
         <Stat label="KYC pending" value={String(active.filter(t => t.kyc === "pending").length)} />
+        <Stat label="Leads to follow up" value={String(db.leads.filter(l => l.status === "new" || (l.followUp && l.followUp <= new Date().toISOString().slice(0, 10) && l.status !== "won" && l.status !== "lost")).length)} />
         <Stat label="Open complaints" value={String(db.complaints.filter(c => c.status !== "resolved").length)} />
       </div>
 

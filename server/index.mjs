@@ -27,7 +27,7 @@ db.exec(`
   );
 `);
 
-const COLLECTIONS = ["properties", "rooms", "tenants", "invoices", "expenses", "complaints", "settings"];
+const COLLECTIONS = ["properties", "rooms", "tenants", "invoices", "expenses", "complaints", "leads", "settings"];
 const SESSION_DAYS = 30;
 
 const hashPw = (pw, salt) => crypto.scryptSync(pw, salt, 64).toString("hex");
@@ -129,6 +129,35 @@ app.post("/api/mutate", auth, (req, res) => {
     db.exec("ROLLBACK");
     res.status(400).json({ error: "Bad request" });
   }
+});
+
+// ---- Public enquiry (QR) endpoints: no login, tightly validated ----
+const propertyLookup = id => {
+  const row = typeof id === "string" && db.prepare("SELECT owner_id, data FROM records WHERE collection='properties' AND id=?").get(id);
+  if (!row) return null;
+  const prop = JSON.parse(row.data);
+  const st = db.prepare("SELECT data FROM records WHERE owner_id=? AND collection='settings' AND id='main'").get(row.owner_id);
+  const settings = st ? JSON.parse(st.data) : {};
+  return { owner: row.owner_id, prop, pgName: settings.pgName || prop.name, phone: settings.ownerPhone || "" };
+};
+app.get("/api/public/property/:id", (req, res) => {
+  const f = propertyLookup(req.params.id);
+  if (!f) return res.status(404).json({ error: "This enquiry link is not valid" });
+  res.json({ name: f.prop.name, address: f.prop.address, city: f.prop.city, pgName: f.pgName, phone: f.phone });
+});
+app.post("/api/public/enquiry", throttle, (req, res) => {
+  const { propertyId, name, phone, note } = req.body ?? {};
+  const f = propertyLookup(propertyId);
+  if (!f) return res.status(404).json({ error: "This enquiry link is not valid" });
+  const str = (v, max) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+  const n = str(name, 80), ph = str(phone, 20), nt = str(note, 500);
+  if (!n || !/^[0-9+\- ]{7,20}$/.test(ph)) return res.status(400).json({ error: "Enter your name and a valid phone number" });
+  const count = db.prepare("SELECT COUNT(*) c FROM records WHERE owner_id=? AND collection='leads'").get(f.owner).c;
+  if (count >= 5000) return res.status(429).json({ error: "Please contact the owner directly" });
+  const id = crypto.randomUUID().slice(0, 8);
+  const lead = { id, name: n, phone: ph, propertyId, source: "qr", note: nt, status: "new", createdAt: new Date().toISOString().slice(0, 10) };
+  db.prepare("INSERT INTO records VALUES (?,?,?,?)").run(f.owner, "leads", id, JSON.stringify(lead));
+  res.json({ ok: true });
 });
 
 app.use("/api", (_req, res) => res.status(404).json({ error: "Not found" }));

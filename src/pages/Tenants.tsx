@@ -2,12 +2,15 @@ import { FormEvent, useState } from "react";
 import { actions, useDB } from "../store";
 import { Badge, Button, Card, Empty, Field, Input, Modal, PageHeader, Select, Table, Td } from "../components/ui";
 import { fmtDate, inr, today } from "../utils";
+import { AgreementModal, LedgerModal, SettlementModal } from "../components/TenantDocs";
+import type { Tenant } from "../types";
 
 export default function Tenants() {
   const db = useDB();
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState("active");
   const [adding, setAdding] = useState(false);
+  const [doc, setDoc] = useState<{ kind: "ledger" | "agreement" | "checkout"; t: Tenant } | null>(null);
   const [propId, setPropId] = useState(db.properties[0]?.id ?? "");
 
   const rows = db.tenants.filter(t =>
@@ -58,8 +61,9 @@ export default function Tenants() {
                   <Td className="space-x-2 whitespace-nowrap text-xs">
                     {t.status === "active" && <button className="text-amber-600" onClick={() => actions.updateTenant(t.id, { status: "notice" })}>Notice</button>}
                     {t.status === "notice" && <button className="text-slate-500" onClick={() => actions.updateTenant(t.id, { status: "active" })}>Cancel notice</button>}
-                    {t.status !== "vacated" && <button className="text-red-600"
-                      onClick={() => confirm(`Check out ${t.name}? Deposit to refund: ${inr(t.deposit)}`) && actions.checkout(t.id)}>Check out</button>}
+                    <button className="text-brand-600" onClick={() => setDoc({ kind: "ledger", t })}>Ledger</button>
+                    <button className="text-brand-600" onClick={() => setDoc({ kind: "agreement", t })}>Agreement</button>
+                    {t.status !== "vacated" && <button className="text-red-600" onClick={() => setDoc({ kind: "checkout", t })}>Check out</button>}
                     {t.status === "vacated" && <span className="text-slate-400">left {t.vacatedDate && fmtDate(t.vacatedDate)}</span>}
                   </Td>
                 </tr>
@@ -69,6 +73,9 @@ export default function Tenants() {
         )}
       </Card>
 
+      {doc?.kind === "ledger" && <LedgerModal tenant={doc.t} onClose={() => setDoc(null)} />}
+      {doc?.kind === "agreement" && <AgreementModal tenant={doc.t} onClose={() => setDoc(null)} />}
+      {doc?.kind === "checkout" && <SettlementModal tenant={doc.t} onClose={() => setDoc(null)} />}
       {adding && (
         <Modal title="Add tenant" onClose={() => setAdding(false)}>
           <form onSubmit={submit} className="grid grid-cols-2 gap-3">

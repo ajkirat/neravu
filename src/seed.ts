@@ -40,6 +40,10 @@ export function seed(): DB {
       { id: "e2", propertyId: "p2", category: "Food / Kitchen", amount: 18000, date: d(m, 2), note: "Groceries" },
       { id: "e3", propertyId: "p1", category: "Maintenance", amount: 2500, date: d(p, 20), note: "Plumbing" },
     ],
+    leads: [
+      { id: "l1", name: "Ankit Sharma", phone: "9876500001", propertyId: "p1", source: "qr", note: "Looking for a single room from next month", status: "new", createdAt: d(m, 3) },
+      { id: "l2", name: "Neha Gupta", phone: "9876500002", propertyId: "p2", source: "manual", note: "Visited, wants to confirm with parents", status: "visit", followUp: d(m, 28), createdAt: d(p, 25) },
+    ],
     complaints: [
       { id: "c1", tenantId: "t4", propertyId: "p2", title: "Wi-Fi not working", category: "Internet", description: "No connectivity since morning", status: "open", createdAt: d(m, 1) },
     ],

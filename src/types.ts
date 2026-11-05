@@ -5,11 +5,12 @@ export interface Room { id: ID; propertyId: ID; name: string; floor: number; cap
 
 export type TenantStatus = "active" | "notice" | "vacated";
 export type KycStatus = "pending" | "verified";
+export interface Settlement { date: string; deposit: number; dues: number; damages: number; other: number; note: string; refund: number }
 export interface Tenant {
   id: ID; name: string; phone: string; email: string;
   propertyId: ID; roomId: ID; rent: number; deposit: number;
   joinDate: string; vacatedDate?: string; status: TenantStatus;
-  kyc: KycStatus; idType: string; idNumber: string; emergencyContact: string;
+  settlement?: Settlement; kyc: KycStatus; idType: string; idNumber: string; emergencyContact: string;
 }
 
 export type PayMode = "UPI" | "Cash" | "Bank Transfer" | "Card";
@@ -22,9 +23,12 @@ export interface Expense { id: ID; propertyId: ID; category: string; amount: num
 export type ComplaintStatus = "open" | "in_progress" | "resolved";
 export interface Complaint { id: ID; tenantId: ID; propertyId: ID; title: string; category: string; description: string; status: ComplaintStatus; createdAt: string }
 
+export type LeadStatus = "new" | "contacted" | "visit" | "won" | "lost";
+export interface Lead { id: ID; name: string; phone: string; propertyId?: ID; source: "qr" | "manual"; note: string; status: LeadStatus; followUp?: string; createdAt: string }
+
 export interface Settings { pgName: string; ownerName: string; ownerPhone: string; dueDay: number; reminderTemplate: string }
 
 export interface DB {
   properties: Property[]; rooms: Room[]; tenants: Tenant[]; invoices: Invoice[];
-  expenses: Expense[]; complaints: Complaint[]; settings: Settings;
+  expenses: Expense[]; complaints: Complaint[]; leads: Lead[]; settings: Settings;
 }

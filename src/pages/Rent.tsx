@@ -3,6 +3,7 @@ import { actions, useDB } from "../store";
 import { Badge, Button, Card, Empty, Field, Input, Modal, PageHeader, Select, Stat, Table, Td } from "../components/ui";
 import { dueAmount, fmtDate, inr, invoiceState, monthKey, monthLabel, paidAmount, shiftMonth, today, whatsappLink } from "../utils";
 import type { PayMode } from "../types";
+import { Receipt } from "../components/Receipt";
 
 const tone = { paid: "green", partial: "amber", overdue: "red", pending: "slate" } as const;
 
@@ -11,6 +12,7 @@ export default function Rent() {
   const [month, setMonth] = useState(monthKey());
   const [paying, setPaying] = useState<string | null>(null);
   const [msg, setMsg] = useState("");
+  const [rcpt, setRcpt] = useState<{ id: string; idx: number } | null>(null);
 
   const invoices = db.invoices.filter(i => i.month === month);
   const total = invoices.reduce((s, i) => s + i.amount, 0);
@@ -62,6 +64,7 @@ export default function Rent() {
                   <Td>{inr(paidAmount(i))}</Td><Td>{inr(dueAmount(i))}</Td><Td>{fmtDate(i.dueDate)}</Td>
                   <Td><Badge tone={tone[s]}>{s}</Badge></Td>
                   <Td className="space-x-2 whitespace-nowrap text-xs">
+                    {i.payments.map((_, k) => <button key={k} className="text-slate-600 underline" onClick={() => setRcpt({ id: i.id, idx: k })}>Receipt{i.payments.length > 1 ? ` ${k + 1}` : ""}</button>)}
                     {s !== "paid" && <button className="text-brand-600" onClick={() => setPaying(i.id)}>Record payment</button>}
                     {s !== "paid" && <button className="text-emerald-600" onClick={() => reminder(i.id)}>WhatsApp reminder</button>}
                   </Td>
@@ -72,6 +75,7 @@ export default function Rent() {
         )}
       </Card>
 
+      {rcpt && <Receipt invoiceId={rcpt.id} index={rcpt.idx} onClose={() => setRcpt(null)} />}
       {inv && (
         <Modal title={`Payment – ${tenant(inv.tenantId).name}`} onClose={() => setPaying(null)}>
           <form onSubmit={submit} className="space-y-3">

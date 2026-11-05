@@ -2,10 +2,12 @@ import { FormEvent, useState } from "react";
 import { actions, useDB } from "../store";
 import { Badge, Button, Card, Empty, Field, Input, Modal, PageHeader } from "../components/ui";
 import { inr } from "../utils";
+import { QrModal } from "../components/QrModal";
 
 export default function Properties() {
   const db = useDB();
   const [modal, setModal] = useState<"property" | string | null>(null);
+  const [qr, setQr] = useState<string | null>(null);
 
   const addProperty = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -33,6 +35,7 @@ export default function Properties() {
               <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
                 <div><h2 className="font-semibold">{p.name}</h2><p className="text-sm text-slate-500">{p.address}, {p.city}</p></div>
                 <div className="flex gap-2">
+                  <Button variant="ghost" onClick={() => setQr(p.id)}>Enquiry QR</Button>
                   <Button variant="ghost" onClick={() => setModal(p.id)}>+ Add room</Button>
                   <Button variant="danger" onClick={() => confirm(`Delete ${p.name} and its rooms?`) && actions.deleteProperty(p.id)}>Delete</Button>
                 </div>
@@ -69,6 +72,7 @@ export default function Properties() {
         })}
       </div>
 
+      {qr && <QrModal property={db.properties.find(p => p.id === qr)!} pgName={db.settings.pgName} onClose={() => setQr(null)} />}
       {modal === "property" && (
         <Modal title="Add property" onClose={() => setModal(null)}>
           <form onSubmit={addProperty} className="space-y-3">

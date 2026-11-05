@@ -1,8 +1,10 @@
-import { NavLink, Navigate, Route, Routes } from "react-router-dom";
+import { NavLink, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { api, User } from "./api";
-import { clearData, loadData, useDB, useReady } from "./store";
+import { clearData, loadData, refresh, useDB, useReady } from "./store";
 import Login from "./pages/Login";
+import Enquire from "./pages/Enquire";
+import Leads from "./pages/Leads";
 import Dashboard from "./pages/Dashboard";
 import Properties from "./pages/Properties";
 import Tenants from "./pages/Tenants";
@@ -13,12 +15,18 @@ import Reports from "./pages/Reports";
 import SettingsPage from "./pages/Settings";
 
 const nav = [
-  ["/", "Dashboard", "▦"], ["/properties", "Properties & Rooms", "⌂"], ["/tenants", "Tenants", "☺"],
+  ["/", "Dashboard", "▦"], ["/properties", "Properties & Rooms", "⌂"], ["/tenants", "Tenants", "☺"], ["/leads", "Leads", "☎"],
   ["/rent", "Rent & Payments", "₹"], ["/expenses", "Expenses", "✎"], ["/complaints", "Complaints", "⚑"],
   ["/reports", "Reports", "▤"], ["/settings", "Settings", "⚙"],
 ] as const;
 
 export default function App() {
+  const loc = useLocation();
+  if (loc.pathname.startsWith("/enquire/")) return <Routes><Route path="/enquire/:id" element={<Enquire />} /></Routes>;
+  return <AuthedApp />;
+}
+
+function AuthedApp() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const ready = useReady();
 
@@ -26,6 +34,12 @@ export default function App() {
     api<{ user: User }>("/api/auth/me").then(r => setUser(r.user)).catch(() => setUser(null));
   }, []);
   useEffect(() => { if (user) loadData().catch(() => setUser(null)); }, [user]);
+  useEffect(() => {
+    if (!user) return;
+    const h = () => document.visibilityState === "visible" && refresh();
+    document.addEventListener("visibilitychange", h);
+    return () => document.removeEventListener("visibilitychange", h);
+  }, [user]);
 
   const logout = async () => { await api("/api/auth/logout", {}).catch(() => {}); clearData(); setUser(null); };
 
@@ -59,6 +73,7 @@ function Shell({ userName, onLogout }: { userName: string; onLogout: () => void 
           <Route path="/" element={<Dashboard />} />
           <Route path="/properties" element={<Properties />} />
           <Route path="/tenants" element={<Tenants />} />
+          <Route path="/leads" element={<Leads />} />
           <Route path="/rent" element={<Rent />} />
           <Route path="/expenses" element={<Expenses />} />
           <Route path="/complaints" element={<Complaints />} />
