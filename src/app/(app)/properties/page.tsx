@@ -2,7 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth";
 import { ActionForm } from "@/components/action-form";
-import { Card, EmptyState, Field, PageHeader } from "@/components/ui";
+import { FoldCard, Card, EmptyState, Field, PageHeader } from "@/components/ui";
 import { createProperty } from "@/app/actions/properties";
 import { getT } from "@/lib/i18n/server";
 
@@ -23,8 +23,21 @@ export default async function PropertiesPage() {
   return (
     <>
       <PageHeader title={t("propsTitle")} subtitle={t("propsSub")} />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+      <div className="space-y-4">
+        <FoldCard title={"+ " + t("addProperty")} open={properties.length === 0}>
+          <ActionForm action={createProperty} submitLabel={t("addPropertyBtn")} cols>
+            <Field label={t("propertyName")}>
+              <input className="input" name="name" placeholder="e.g. Sunrise Men's PG" required />
+            </Field>
+            <Field label={t("address")}>
+              <input className="input" name="address" placeholder="Street, area" />
+            </Field>
+            <Field label={t("city")}>
+              <input className="input" name="city" placeholder="Bengaluru" />
+            </Field>
+          </ActionForm>
+        </FoldCard>
+        <div className="space-y-4">
           {properties.length === 0 && (
             <EmptyState
               title={t("noPropsTitle")}
@@ -60,19 +73,6 @@ export default async function PropertiesPage() {
             );
           })}
         </div>
-        <Card title={t("addProperty")}>
-          <ActionForm action={createProperty} submitLabel={t("addPropertyBtn")}>
-            <Field label={t("propertyName")}>
-              <input className="input" name="name" placeholder="e.g. Sunrise Men's PG" required />
-            </Field>
-            <Field label={t("address")}>
-              <input className="input" name="address" placeholder="Street, area" />
-            </Field>
-            <Field label={t("city")}>
-              <input className="input" name="city" placeholder="Bengaluru" />
-            </Field>
-          </ActionForm>
-        </Card>
       </div>
     </>
   );

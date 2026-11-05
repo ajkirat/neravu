@@ -5,7 +5,7 @@ import { getT } from "@/lib/i18n/server";
 import { addStaff } from "@/app/actions/staff";
 import { ActionForm } from "@/components/action-form";
 import { StaffControls } from "@/components/staff-controls";
-import { Badge, Card, EmptyState, Field, PageHeader } from "@/components/ui";
+import { FoldCard, Badge, Card, EmptyState, Field, PageHeader } from "@/components/ui";
 
 export const metadata = { title: "Caretakers" };
 
@@ -17,8 +17,21 @@ export default async function StaffPage() {
     <>
       <PageHeader title={t("staffTitle")} subtitle={t("staffSub")} />
       <p className="mb-6 max-w-3xl rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-700">{t("staffCan")}</p>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-3 lg:col-span-2">
+      <div className="space-y-4">
+        <FoldCard title={"+ " + t("staffAddTitle")} open={people.length === 0}>
+          <ActionForm action={addStaff} submitLabel={t("staffAddBtn")} cols resetOnSuccess>
+            <Field label={t("staffName")}>
+              <input className="input" name="name" required maxLength={80} />
+            </Field>
+            <Field label={t("staffPhone")}>
+              <input className="input" name="phone" type="tel" required inputMode="numeric" />
+            </Field>
+            <Field label={t("staffPassword")} hint={t("staffPasswordHint")}>
+              <input className="input" name="password" type="text" required minLength={6} autoComplete="off" />
+            </Field>
+          </ActionForm>
+        </FoldCard>
+        <div className="space-y-3">
           {people.length === 0 ? (
             <EmptyState title={t("staffNone")} />
           ) : (
@@ -39,19 +52,6 @@ export default async function StaffPage() {
             ))
           )}
         </div>
-        <Card title={t("staffAddTitle")}>
-          <ActionForm action={addStaff} submitLabel={t("staffAddBtn")} resetOnSuccess>
-            <Field label={t("staffName")}>
-              <input className="input" name="name" required maxLength={80} />
-            </Field>
-            <Field label={t("staffPhone")}>
-              <input className="input" name="phone" type="tel" required inputMode="numeric" />
-            </Field>
-            <Field label={t("staffPassword")} hint={t("staffPasswordHint")}>
-              <input className="input" name="password" type="text" required minLength={6} autoComplete="off" />
-            </Field>
-          </ActionForm>
-        </Card>
       </div>
     </>
   );

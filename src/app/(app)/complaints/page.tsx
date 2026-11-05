@@ -7,7 +7,7 @@ import { createComplaint } from "@/app/actions/complaints";
 import { ActionForm } from "@/components/action-form";
 import { ComplaintControls } from "@/components/complaint-controls";
 import { VoiceInput } from "@/components/voice-input";
-import { Badge, Card, EmptyState, Field, PageHeader } from "@/components/ui";
+import { FoldCard, Badge, Card, EmptyState, Field, PageHeader } from "@/components/ui";
 
 export const metadata = { title: "Complaints" };
 
@@ -32,8 +32,28 @@ export default async function ComplaintsPage() {
   return (
     <>
       <PageHeader title={t("complaintsTitle")} subtitle={t("complaintsSub")} />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-3 lg:col-span-2">
+      <div className="space-y-4">
+        <FoldCard title={"+ " + t("logComplaint")} open={sorted.length === 0}>
+          <ActionForm action={createComplaint} submitLabel={t("save")} cols resetOnSuccess>
+            <Field label={t("complaintTitleLabel")}>
+              <VoiceInput name="title" required maxLength={200} />
+            </Field>
+            <Field label={t("complaintDetails")}>
+              <VoiceInput name="details" maxLength={1000} />
+            </Field>
+            <Field label={t("whichTenant")}>
+              <select name="tenantId" className="input" defaultValue="">
+                <option value="">{t("anyone")}</option>
+                {tenants.map((tn) => (
+                  <option key={tn.id} value={tn.id}>
+                    {tn.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </ActionForm>
+        </FoldCard>
+        <div className="space-y-3">
           {sorted.length === 0 ? (
             <EmptyState title={t("noComplaints")} />
           ) : (
@@ -58,26 +78,6 @@ export default async function ComplaintsPage() {
             ))
           )}
         </div>
-        <Card title={t("logComplaint")}>
-          <ActionForm action={createComplaint} submitLabel={t("save")} resetOnSuccess>
-            <Field label={t("complaintTitleLabel")}>
-              <VoiceInput name="title" required maxLength={200} />
-            </Field>
-            <Field label={t("complaintDetails")}>
-              <VoiceInput name="details" maxLength={1000} />
-            </Field>
-            <Field label={t("whichTenant")}>
-              <select name="tenantId" className="input" defaultValue="">
-                <option value="">{t("anyone")}</option>
-                {tenants.map((tn) => (
-                  <option key={tn.id} value={tn.id}>
-                    {tn.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </ActionForm>
-        </Card>
       </div>
     </>
   );

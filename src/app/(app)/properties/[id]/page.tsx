@@ -79,8 +79,39 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         <Stat label={t("pendingDues")} value={rupees(dues)} tone={dues ? "warn" : "default"} />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+      <div className="space-y-4">
+        <div className="space-y-3">
+          <FoldCard title={t("bulkOpen")} open={rooms.length === 0}>
+            <BulkRoomsForm propertyId={property.id} existing={rooms.map((r) => r.number)} />
+          </FoldCard>
+          <FoldCard title={t("addRoom")}>
+            <ActionForm action={createRoom.bind(null, property.id)} submitLabel={t("addRoomBtn")} resetOnSuccess>
+              <RoomFields t={t} />
+            </ActionForm>
+          </FoldCard>
+          <FoldCard title={t("propDetails")}>
+            <ActionForm action={updateProperty.bind(null, property.id)} submitLabel={t("save")}>
+              <Field label={t("name")}>
+                <input className="input" name="name" defaultValue={property.name} required />
+              </Field>
+              <Field label={t("address")}>
+                <input className="input" name="address" defaultValue={property.address ?? ""} />
+              </Field>
+              <Field label={t("city")}>
+                <input className="input" name="city" defaultValue={property.city ?? ""} />
+              </Field>
+            </ActionForm>
+            <div className="mt-4 border-t border-line pt-4">
+              <ActionForm
+                action={deleteProperty.bind(null, property.id)}
+                submitLabel={t("deleteProperty")}
+                submitClassName="btn-danger btn-sm"
+                confirm={t("deletePropertyConfirm")}
+              />
+            </div>
+          </FoldCard>
+        </div>
+        <div className="space-y-4">
           {rooms.length === 0 && (
             <EmptyState
               title={t("noRooms")}
@@ -156,37 +187,6 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           ))}
         </div>
 
-        <div className="space-y-6">
-          <FoldCard title={t("bulkOpen")} open={rooms.length === 0}>
-            <BulkRoomsForm propertyId={property.id} existing={rooms.map((r) => r.number)} />
-          </FoldCard>
-          <FoldCard title={t("addRoom")}>
-            <ActionForm action={createRoom.bind(null, property.id)} submitLabel={t("addRoomBtn")} resetOnSuccess>
-              <RoomFields t={t} />
-            </ActionForm>
-          </FoldCard>
-          <FoldCard title={t("propDetails")}>
-            <ActionForm action={updateProperty.bind(null, property.id)} submitLabel={t("save")}>
-              <Field label={t("name")}>
-                <input className="input" name="name" defaultValue={property.name} required />
-              </Field>
-              <Field label={t("address")}>
-                <input className="input" name="address" defaultValue={property.address ?? ""} />
-              </Field>
-              <Field label={t("city")}>
-                <input className="input" name="city" defaultValue={property.city ?? ""} />
-              </Field>
-            </ActionForm>
-            <div className="mt-4 border-t border-line pt-4">
-              <ActionForm
-                action={deleteProperty.bind(null, property.id)}
-                submitLabel={t("deleteProperty")}
-                submitClassName="btn-danger btn-sm"
-                confirm={t("deletePropertyConfirm")}
-              />
-            </div>
-          </FoldCard>
-        </div>
       </div>
     </>
   );
