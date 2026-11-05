@@ -15,7 +15,7 @@ export interface Tenant {
 
 export type PayMode = "UPI" | "Cash" | "Bank Transfer" | "Card";
 export interface Payment { date: string; amount: number; mode: PayMode }
-export interface Invoice { id: ID; tenantId: ID; month: string; amount: number; dueDate: string; payments: Payment[] }
+export interface Invoice { id: ID; tenantId: ID; month: string; amount: number; dueDate: string; payments: Payment[]; claimedAt?: string; remindedAt?: string }
 
 export const EXPENSE_CATEGORIES = ["Electricity", "Water", "Maintenance", "Food / Kitchen", "Salaries", "Internet", "Rent / Lease", "Other"] as const;
 export interface Expense { id: ID; propertyId: ID; category: string; amount: number; date: string; note: string }
@@ -26,7 +26,7 @@ export interface Complaint { id: ID; tenantId: ID; propertyId: ID; title: string
 export type LeadStatus = "new" | "contacted" | "visit" | "won" | "lost";
 export interface Lead { id: ID; name: string; phone: string; propertyId?: ID; source: "qr" | "manual"; note: string; status: LeadStatus; followUp?: string; createdAt: string }
 
-export interface Settings { pgName: string; ownerName: string; ownerPhone: string; dueDay: number; reminderTemplate: string }
+export interface Settings { pgName: string; ownerName: string; ownerPhone: string; upiId: string; dueDay: number; reminderTemplate: string }
 
 export interface DB {
   properties: Property[]; rooms: Room[]; tenants: Tenant[]; invoices: Invoice[];

@@ -12,6 +12,7 @@ export default function Rent() {
   const [month, setMonth] = useState(monthKey());
   const [paying, setPaying] = useState<string | null>(null);
   const [msg, setMsg] = useState("");
+  const [queue, setQueue] = useState(false);
   const [rcpt, setRcpt] = useState<{ id: string; idx: number } | null>(null);
 
   const invoices = db.invoices.filter(i => i.month === month);
@@ -30,12 +31,18 @@ export default function Rent() {
     actions.recordPayment(paying!, { date: f.get("date") as string, amount: +f.get("amount")!, mode: f.get("mode") as PayMode });
     setPaying(null);
   };
+  const remindText = (i: typeof db.invoices[number]) => {
+    const base = db.settings.reminderTemplate.replace("{name}", tenant(i.tenantId).name)
+      .replace("{amount}", inr(dueAmount(i))).replace("{month}", monthLabel(i.month)).replace("{pg}", db.settings.pgName);
+    return db.settings.upiId ? `${base}\nPay online: ${location.origin}/pay/${i.id}` : base;
+  };
   const reminder = (invId: string) => {
     const i = db.invoices.find(x => x.id === invId)!;
-    const text = db.settings.reminderTemplate.replace("{name}", tenant(i.tenantId).name)
-      .replace("{amount}", inr(dueAmount(i))).replace("{month}", monthLabel(i.month)).replace("{pg}", db.settings.pgName);
-    window.open(whatsappLink(tenant(i.tenantId), text), "_blank");
+    window.open(whatsappLink(tenant(i.tenantId), remindText(i)), "_blank");
+    actions.markReminded([invId]);
   };
+  const overdue = db.invoices.filter(i => invoiceState(i) === "overdue" && tenant(i.tenantId)?.status !== "vacated")
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 
   return (
     <>
@@ -52,6 +59,7 @@ export default function Rent() {
       <Card>
         <div className="flex items-center gap-3 p-4">
           <Button onClick={generate}>Generate invoices</Button>
+          <Button variant="ghost" onClick={() => setQueue(true)}>Remind overdue ({overdue.length})</Button>
           {msg && <span className="text-sm text-slate-500">{msg}</span>}
         </div>
         {invoices.length === 0 ? <Empty text="No invoices for this month yet." /> : (
@@ -62,7 +70,9 @@ export default function Rent() {
                 <tr key={i.id}>
                   <Td className="font-medium">{tenant(i.tenantId)?.name}</Td><Td>{inr(i.amount)}</Td>
                   <Td>{inr(paidAmount(i))}</Td><Td>{inr(dueAmount(i))}</Td><Td>{fmtDate(i.dueDate)}</Td>
-                  <Td><Badge tone={tone[s]}>{s}</Badge></Td>
+                  <Td><Badge tone={tone[s]}>{s}</Badge>
+                    {i.claimedAt && s !== "paid" && <div className="mt-1"><Badge tone="blue">Tenant says paid – confirm</Badge></div>}
+                    {i.remindedAt && s !== "paid" && <div className="mt-1 text-xs text-slate-400">Reminded {fmtDate(i.remindedAt)}</div>}</Td>
                   <Td className="space-x-2 whitespace-nowrap text-xs">
                     {i.payments.map((_, k) => <button key={k} className="text-slate-600 underline" onClick={() => setRcpt({ id: i.id, idx: k })}>Receipt{i.payments.length > 1 ? ` ${k + 1}` : ""}</button>)}
                     {s !== "paid" && <button className="text-brand-600" onClick={() => setPaying(i.id)}>Record payment</button>}
@@ -75,6 +85,23 @@ export default function Rent() {
         )}
       </Card>
 
+      {queue && (
+        <Modal title="Remind overdue tenants" onClose={() => setQueue(false)}>
+          {!db.settings.upiId && <p className="mb-3 rounded-lg bg-amber-50 p-2 text-xs text-amber-700">Add your UPI ID in Settings to include a pay link in each reminder.</p>}
+          {overdue.length === 0 ? <p className="py-4 text-center text-sm text-slate-500">No overdue rent 🎉</p> : (
+            <ul className="divide-y divide-slate-100 text-sm">
+              {overdue.map(i => (
+                <li key={i.id} className="flex items-center justify-between gap-2 py-2">
+                  <div><p className="font-medium">{tenant(i.tenantId).name}</p>
+                    <p className="text-xs text-slate-500">{monthLabel(i.month)} · {inr(dueAmount(i))}{i.remindedAt ? ` · reminded ${fmtDate(i.remindedAt)}` : ""}</p></div>
+                  <Button variant={i.remindedAt === today() ? "ghost" : "primary"} onClick={() => reminder(i.id)}>
+                    {i.remindedAt === today() ? "Sent ✓" : "WhatsApp"}</Button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Modal>
+      )}
       {rcpt && <Receipt invoiceId={rcpt.id} index={rcpt.idx} onClose={() => setRcpt(null)} />}
       {inv && (
         <Modal title={`Payment – ${tenant(inv.tenantId).name}`} onClose={() => setPaying(null)}>

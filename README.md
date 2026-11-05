@@ -7,6 +7,8 @@ PG (paying guest) management web app for PG owners, modelled on RentOk's owner f
 - **Properties & Rooms** – multiple PGs, rooms, bed-level occupancy
 - **Tenants** – ID/KYC details, notice, per-tenant ledger (passbook), printable rent agreement, check-out with deposit settlement (dues + damages deducted, refund calculated)
 - **Rent & Payments** – monthly invoice generation, partial payments, payment modes, printable/WhatsApp-shareable receipts, WhatsApp reminders
+- **Online rent via UPI** – set your UPI ID once; reminders then carry a pay link to a public page with a UPI deep link and QR code. Tenants tap “I’ve paid” and you confirm by recording the payment. (Money goes straight to your UPI ID; there is no payment gateway, so payments aren’t auto-verified.)
+- **Bulk reminders** – one queue of all overdue tenants with WhatsApp links, tracking who was reminded and when
 - **Leads** – enquiry pipeline (new → contacted → visit → won/lost) with follow-up dates; each property gets a printable QR code that opens a public enquiry form and drops leads straight into your list
 - **Expenses** – categorised expense tracking
 - **Complaints** – log and track tenant issues

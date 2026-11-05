@@ -4,6 +4,7 @@ import { api, User } from "./api";
 import { clearData, loadData, refresh, useDB, useReady } from "./store";
 import Login from "./pages/Login";
 import Enquire from "./pages/Enquire";
+import Pay from "./pages/Pay";
 import Leads from "./pages/Leads";
 import Dashboard from "./pages/Dashboard";
 import Properties from "./pages/Properties";
@@ -23,6 +24,7 @@ const nav = [
 export default function App() {
   const loc = useLocation();
   if (loc.pathname.startsWith("/enquire/")) return <Routes><Route path="/enquire/:id" element={<Enquire />} /></Routes>;
+  if (loc.pathname.startsWith("/pay/")) return <Routes><Route path="/pay/:id" element={<Pay />} /></Routes>;
   return <AuthedApp />;
 }
 

@@ -52,12 +52,14 @@ const setSession = (res, userId) => res.setHeader("Set-Cookie",
 
 // Naive in-memory throttle for auth endpoints (per IP).
 const hits = new Map();
-const throttle = (req, res, next) => {
-  const k = req.ip, now = Date.now();
+const makeThrottle = (max, tag) => (req, res, next) => {
+  const k = tag + req.ip, now = Date.now();
   const arr = (hits.get(k) || []).filter(t => now - t < 15 * 60e3);
-  if (arr.length >= 20) return res.status(429).json({ error: "Too many attempts. Try again later." });
+  if (arr.length >= max) return res.status(429).json({ error: "Too many attempts. Try again later." });
   arr.push(now); hits.set(k, arr); next();
 };
+const throttle = makeThrottle(20, "a");
+const pubThrottle = makeThrottle(120, "p");
 
 const auth = (req, res, next) => {
   const uid = readToken(cookieOf(req).nv_session);
@@ -157,6 +159,34 @@ app.post("/api/public/enquiry", throttle, (req, res) => {
   const id = crypto.randomUUID().slice(0, 8);
   const lead = { id, name: n, phone: ph, propertyId, source: "qr", note: nt, status: "new", createdAt: new Date().toISOString().slice(0, 10) };
   db.prepare("INSERT INTO records VALUES (?,?,?,?)").run(f.owner, "leads", id, JSON.stringify(lead));
+  res.json({ ok: true });
+});
+
+// Public pay page: a tenant opens /pay/:invoiceId from a reminder and pays the owner's UPI ID directly.
+const invoiceLookup = id => {
+  const row = typeof id === "string" && /^[\w-]{2,40}$/.test(id) &&
+    db.prepare("SELECT owner_id, data FROM records WHERE collection='invoices' AND id=?").get(id);
+  if (!row) return null;
+  const inv = JSON.parse(row.data);
+  const get = (c, i) => { const r = db.prepare("SELECT data FROM records WHERE owner_id=? AND collection=? AND id=?").get(row.owner_id, c, i); return r ? JSON.parse(r.data) : null; };
+  const settings = get("settings", "main") || {}, tenant = get("tenants", inv.tenantId);
+  const balance = inv.amount - (inv.payments || []).reduce((s, p) => s + p.amount, 0);
+  return { owner: row.owner_id, inv, settings, tenant, balance };
+};
+app.get("/api/public/pay/:id", pubThrottle, (req, res) => {
+  const f = invoiceLookup(req.params.id);
+  if (!f || !f.tenant) return res.status(404).json({ error: "This payment link is not valid" });
+  res.json({
+    pgName: f.settings.pgName || "Your PG", tenantName: String(f.tenant.name).split(" ")[0], month: f.inv.month,
+    balance: Math.max(f.balance, 0), dueDate: f.inv.dueDate, upiId: f.settings.upiId || "", claimed: !!f.inv.claimedAt,
+  });
+});
+app.post("/api/public/pay/:id/claim", pubThrottle, (req, res) => {
+  const f = invoiceLookup(req.params.id);
+  if (!f || !f.tenant) return res.status(404).json({ error: "This payment link is not valid" });
+  if (f.balance <= 0) return res.json({ ok: true });
+  const inv = { ...f.inv, claimedAt: new Date().toISOString().slice(0, 10) };
+  db.prepare("UPDATE records SET data=? WHERE owner_id=? AND collection='invoices' AND id=?").run(JSON.stringify(inv), f.owner, inv.id);
   res.json({ ok: true });
 });
 

@@ -22,7 +22,7 @@ export function seed(): DB {
     { id: `ic${i}`, tenantId: t.id, month: m, amount: t.rent, dueDate: d(m, 5), payments: i < 3 ? [{ date: d(m, 2), amount: t.rent, mode: "UPI" as const }] : [] },
   ]);
   return {
-    settings: { pgName: "Sunrise PG", ownerName: "Owner", ownerPhone: "", dueDay: 5,
+    settings: { pgName: "Sunrise PG", ownerName: "Owner", ownerPhone: "", upiId: "", dueDay: 5,
       reminderTemplate: "Hi {name}, your rent of {amount} for {month} is due. Please pay at the earliest. – {pg}" },
     properties: [
       { id: "p1", name: "Sunrise PG – Boys", address: "12, 4th Cross, Koramangala", city: "Bengaluru" },

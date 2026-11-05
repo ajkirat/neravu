@@ -8,7 +8,7 @@ export default function SettingsPage() {
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget), g = (k: string) => f.get(k) as string;
-    actions.saveSettings({ pgName: g("pgName"), ownerName: g("ownerName"), ownerPhone: g("ownerPhone"),
+    actions.saveSettings({ pgName: g("pgName"), ownerName: g("ownerName"), ownerPhone: g("ownerPhone"), upiId: g("upiId").trim(),
       dueDay: +g("dueDay"), reminderTemplate: g("reminderTemplate") });
     setSaved(true);
   };
@@ -16,10 +16,11 @@ export default function SettingsPage() {
     <>
       <PageHeader title="Settings" />
       <Card className="max-w-xl p-5">
-        <form onSubmit={submit} onChange={() => setSaved(false)} className="space-y-3">
+        <form key={JSON.stringify(settings)} onSubmit={submit} onChange={() => setSaved(false)} className="space-y-3">
           <Field label="PG / business name"><Input name="pgName" defaultValue={settings.pgName} required /></Field>
           <Field label="Owner name"><Input name="ownerName" defaultValue={settings.ownerName} /></Field>
           <Field label="Owner phone"><Input name="ownerPhone" defaultValue={settings.ownerPhone} /></Field>
+          <Field label="UPI ID for rent (e.g. name@bank)"><Input name="upiId" defaultValue={settings.upiId ?? ""} pattern="[\w.\-]{2,}@[\w.\-]{2,}" title="Format: name@bank" /></Field>
           <Field label="Rent due day of month"><Input name="dueDay" type="number" min={1} max={28} defaultValue={settings.dueDay} required /></Field>
           <Field label="Reminder message ({name} {amount} {month} {pg})">
             <textarea name="reminderTemplate" rows={3} defaultValue={settings.reminderTemplate}

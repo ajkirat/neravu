@@ -8,7 +8,7 @@ type Coll = Exclude<keyof DB, "settings">;
 type Op = { t: "put"; c: string; id: string; data: unknown } | { t: "del"; c: string; id: string } | { t: "clear" };
 
 export const defaultSettings = (ownerName = ""): Settings => ({
-  pgName: "My PG", ownerName, ownerPhone: "", dueDay: 5,
+  pgName: "My PG", ownerName, ownerPhone: "", upiId: "", dueDay: 5,
   reminderTemplate: "Hi {name}, your rent of {amount} for {month} is due. Please pay at the earliest. – {pg}",
 });
 const empty = (): DB => ({ properties: [], rooms: [], tenants: [], invoices: [], expenses: [], complaints: [], leads: [], settings: defaultSettings() });
@@ -88,8 +88,14 @@ export const actions = {
   },
   recordPayment(invoiceId: string, p: Payment) {
     const inv = db.invoices.find(i => i.id === invoiceId)!;
-    const o = { ...inv, payments: [...inv.payments, p] };
+    const o = { ...inv, payments: [...inv.payments, p], claimedAt: undefined };
     commit({ ...db, invoices: db.invoices.map(i => (i.id === invoiceId ? o : i)) }, [put("invoices", o)]);
+  },
+
+  markReminded(ids: string[]) {
+    const set = new Set(ids), d = today();
+    const changed = db.invoices.filter(i => set.has(i.id)).map(i => ({ ...i, remindedAt: d }));
+    commit({ ...db, invoices: db.invoices.map(i => changed.find(c => c.id === i.id) ?? i) }, changed.map(i => put("invoices", i)));
   },
 
   addExpense(e: Omit<Expense, "id">) {
