@@ -27,7 +27,7 @@ but the product, design and branding are Neravu's own.
 ## Tech stack
 
 - **[Next.js 16](https://nextjs.org/)** (App Router, React Server Components, Server Actions) with **React 19** and **TypeScript**
-- **[Prisma 7](https://www.prisma.io/)** ORM with **SQLite** (via the `better-sqlite3` driver adapter) for zero-setup local development
+- **[Prisma 7](https://www.prisma.io/)** ORM with **PostgreSQL** (via the `@prisma/adapter-pg` driver adapter), so it runs the same locally and on Vercel
 - **[Tailwind CSS 4](https://tailwindcss.com/)** for styling (brand tokens in `src/app/globals.css`)
 - **Auth:** email and password (bcrypt hashes) with a signed, HTTP-only JWT session cookie (`jose`)
 - **Validation:** `zod` and small form helpers
@@ -66,14 +66,15 @@ computed in `APP_TIMEZONE` (default `Asia/Kolkata`).
 
 ## Getting started
 
-Requirements: **Node.js 20.19+** (22 LTS recommended) and npm.
+Requirements: **Node.js 20.19+** (22 LTS recommended), npm, and a **PostgreSQL** database
+(a free [Neon](https://neon.tech) database works well, or a local Postgres).
 
 ```bash
 git clone https://github.com/ajkirat/neravu.git
 cd neravu
-cp .env.example .env          # then set AUTH_SECRET to a long random string
+cp .env.example .env          # set DATABASE_URL and a long random AUTH_SECRET
 npm install                   # also generates the Prisma client
-npx prisma migrate deploy     # creates dev.db
+npx prisma migrate deploy     # creates the tables
 npm run db:seed               # optional: demo data
 npm run dev
 ```
@@ -85,7 +86,8 @@ or create your own owner account.
 
 | Variable | Description |
 | --- | --- |
-| `DATABASE_URL` | SQLite file, e.g. `file:./dev.db` |
+| `DATABASE_URL` | PostgreSQL connection string, e.g. `postgresql://user:pass@host:5432/neravu` |
+| `DATABASE_URL_UNPOOLED` | Optional. Direct (non-pooled) connection used only for migrations. Vercel + Neon sets it automatically. |
 | `AUTH_SECRET` | Secret used to sign session cookies. Required in production. Generate with `openssl rand -base64 32`. |
 | `APP_TIMEZONE` | Optional. Timezone used for "today" when billing rent. Defaults to `Asia/Kolkata`. |
 
@@ -95,18 +97,24 @@ or create your own owner account.
 | --- | --- |
 | `npm run dev` | Start the dev server |
 | `npm run build` / `npm start` | Production build and server |
+| `npm run vercel-build` | What Vercel runs: apply migrations, then build |
 | `npm test` | Run unit tests |
 | `npm run lint` | Type-check the project |
-| `npx prisma migrate dev` | Create and apply a migration after changing `schema.prisma` |
+| `npm run db:migrate` | Create and apply a migration after changing `schema.prisma` |
 | `npm run db:seed` | Load demo data (replaces the demo owner only) |
 | `npm run db:reset` | Wipe the database and reseed |
 
-### Moving to PostgreSQL
+## Deploy on Vercel
 
-SQLite keeps local setup to zero. For a hosted deployment, switch `provider` in
-`prisma/schema.prisma` to `postgresql`, swap the adapter in `src/lib/db.ts` for
-`@prisma/adapter-pg`, point `DATABASE_URL` at your database and run `npx prisma migrate dev` to
-create a fresh migration.
+1. In Vercel choose **Add New → Project** and import this repository (framework: Next.js is detected).
+2. Before the first deploy, open the project's **Storage** tab, create a **Neon** Postgres database and connect it to the project.
+   It adds `DATABASE_URL` (and `DATABASE_URL_UNPOOLED`) for you.
+3. Under **Settings → Environment Variables** add `AUTH_SECRET` (output of `openssl rand -base64 32`).
+4. Deploy. The build runs `prisma migrate deploy` (via `vercel-build`), so tables are created automatically.
+5. Optional: load the demo owner into the new database with
+   `DATABASE_URL="<your connection string>" npm run db:seed` from your machine.
+
+New migrations are applied automatically on each deploy.
 
 ## Roadmap
 
