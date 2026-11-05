@@ -1,5 +1,8 @@
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
-import { useDB } from "./store";
+import { useEffect, useState } from "react";
+import { api, User } from "./api";
+import { clearData, loadData, useDB, useReady } from "./store";
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Properties from "./pages/Properties";
 import Tenants from "./pages/Tenants";
@@ -16,6 +19,22 @@ const nav = [
 ] as const;
 
 export default function App() {
+  const [user, setUser] = useState<User | null | undefined>(undefined);
+  const ready = useReady();
+
+  useEffect(() => {
+    api<{ user: User }>("/api/auth/me").then(r => setUser(r.user)).catch(() => setUser(null));
+  }, []);
+  useEffect(() => { if (user) loadData().catch(() => setUser(null)); }, [user]);
+
+  const logout = async () => { await api("/api/auth/logout", {}).catch(() => {}); clearData(); setUser(null); };
+
+  if (user === undefined || (user && !ready)) return <div className="p-8 text-sm text-slate-500">Loading…</div>;
+  if (!user) return <Login onAuth={setUser} />;
+  return <Shell userName={user.name} onLogout={logout} />;
+}
+
+function Shell({ userName, onLogout }: { userName: string; onLogout: () => void }) {
   const { settings } = useDB();
   return (
     <div className="min-h-screen md:flex">
@@ -30,6 +49,10 @@ export default function App() {
             </NavLink>
           ))}
         </nav>
+        <div className="hidden border-t border-slate-200 p-4 text-sm md:absolute md:bottom-0 md:block md:w-60">
+          <p className="truncate text-slate-600">{userName}</p>
+          <button onClick={onLogout} className="text-brand-600">Sign out</button>
+        </div>
       </aside>
       <main className="min-w-0 flex-1 p-4 md:p-8">
         <Routes>

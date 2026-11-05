@@ -28,9 +28,12 @@ export default function SettingsPage() {
         </form>
       </Card>
       <Card className="mt-6 max-w-xl p-5">
-        <h2 className="font-semibold">Demo data</h2>
-        <p className="mb-3 text-sm text-slate-500">Data is stored in this browser only. Reset to the sample dataset anytime.</p>
-        <Button variant="danger" onClick={() => confirm("Replace all data with demo data?") && actions.resetDemo()}>Reset to demo data</Button>
+        <h2 className="font-semibold">Data</h2>
+        <p className="mb-3 text-sm text-slate-500">Your data is saved to your account. Load sample data to explore, or wipe everything to start fresh.</p>
+        <div className="flex gap-2">
+          <Button variant="ghost" onClick={() => confirm("Replace all data with sample data?") && actions.loadDemo()}>Load sample data</Button>
+          <Button variant="danger" onClick={() => confirm("Delete ALL your data? This cannot be undone.") && actions.clearAll()}>Delete all data</Button>
+        </div>
       </Card>
     </>
   );
