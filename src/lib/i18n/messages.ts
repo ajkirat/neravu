@@ -1,3 +1,4 @@
+import { actmsgs } from "./parts/actmsgs";
 import { auth } from "./parts/auth";
 import { autorem } from "./parts/autorem";
 import { bulk } from "./parts/bulk";
@@ -32,6 +33,7 @@ export const messages = {
   ...paymodes,
   ...autorem,
   ...bulk,
+  ...actmsgs,
 };
 
 export type MsgKey = keyof typeof messages;
