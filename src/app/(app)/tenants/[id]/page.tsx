@@ -15,6 +15,9 @@ import {
   rupees,
 } from "@/lib/format";
 import { syncRentCharges } from "@/lib/ledger";
+import { payTokens } from "@/lib/paylink";
+import { appOrigin } from "@/lib/url";
+import { CopyButton } from "@/components/copy-button";
 import { ActionForm } from "@/components/action-form";
 import { BedPicker } from "@/components/bed-picker";
 import { PaymentForm } from "@/components/payment-form";
@@ -44,6 +47,8 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
     },
   });
   if (!t) notFound();
+  const tokens = owner.upiId ? await payTokens(owner.id, [t.id]) : new Map<string, string>();
+  const payUrl = tokens.get(t.id) ? `${await appOrigin()}/pay/${tokens.get(t.id)}` : undefined;
   const asOf = today();
   const s = summarizeLedger(t.charges, t.payments, asOf);
   const beds = t.status === "MOVED_OUT" ? [] : await vacantBeds(owner.id);
@@ -100,22 +105,28 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
           </span>
         }
         actions={
-          s.outstanding > 0 ? (
-            <a
-              className="btn-accent"
-              target="_blank"
-              rel="noreferrer"
-              href={reminderLink({
-                phone: t.phone,
-                tenantName: t.name,
-                amount: s.outstanding,
-                propertyName: t.property.name,
-                since: s.oldestUnpaid,
-              })}
-            >
-              Send WhatsApp reminder
-            </a>
-          ) : undefined
+          <>
+            <Link href={`/tenants/${t.id}/agreement`} className="btn-secondary">
+              Rent agreement
+            </Link>
+            {s.outstanding > 0 && (
+              <a
+                className="btn-accent"
+                target="_blank"
+                rel="noreferrer"
+                href={reminderLink({
+                  phone: t.phone,
+                  tenantName: t.name,
+                  amount: s.outstanding,
+                  propertyName: owner.businessName ?? t.property.name,
+                  since: s.oldestUnpaid,
+                  payUrl,
+                })}
+              >
+                Send WhatsApp reminder
+              </a>
+            )}
+          </>
         }
       />
 
@@ -142,6 +153,34 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
           hint={t.status === "NOTICE" && willBill ? `Next rent ${fmtDate(next)}` : `Joined ${fmtDate(t.moveInDate)}`}
         />
       </div>
+
+      {t.payClaimedAt && s.outstanding > 0 && (
+        <p className="mb-4 rounded-lg bg-marigold-100 px-4 py-3 text-sm text-marigold-700">
+          <b>{t.name.split(" ")[0]} says they paid</b> on {fmtDate(t.payClaimedAt)}. Check your UPI app, then record
+          the payment below to confirm.
+        </p>
+      )}
+      {t.status !== "MOVED_OUT" && (
+        <div className="card mb-6 flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+          {payUrl ? (
+            <>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-brand-900">Online pay link</p>
+                <p className="truncate text-xs text-muted">{payUrl}</p>
+              </div>
+              <CopyButton text={payUrl} />
+            </>
+          ) : (
+            <p className="text-sm text-muted">
+              Want tenants to pay by UPI from a link? Add your UPI ID in{" "}
+              <Link href="/settings" className="font-medium text-brand-600 underline">
+                Settings
+              </Link>
+              .
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">

@@ -15,10 +15,15 @@ model Owner {
   email        String     @unique
   phone        String?
   passwordHash String
+  // Shown on tenant messages and pay pages; optional
+  businessName String?
+  // UPI ID (e.g. name@bank) rent is paid to; enables tenant pay links
+  upiId        String?
   createdAt    DateTime   @default(now())
   properties   Property[]
   tenants      Tenant[]
   expenses     Expense[]
+  leads        Lead[]
 }
 
 model Property {
@@ -32,6 +37,7 @@ model Property {
   rooms     Room[]
   tenants   Tenant[]
   expenses  Expense[]
+  leads     Lead[]
 
   @@index([ownerId])
 }
@@ -88,6 +94,11 @@ model Tenant {
   // ACTIVE | NOTICE | MOVED_OUT
   status         String    @default("ACTIVE")
   notes          String?
+  // Unguessable token for the public /pay/<token> page
+  payToken       String?   @unique
+  // Set when the tenant taps "I've paid"; cleared when the owner records a payment
+  payClaimedAt   DateTime?
+  lastRemindedAt DateTime?
   createdAt      DateTime  @default(now())
   charges        Charge[]
   payments       Payment[]
@@ -142,4 +153,23 @@ model Expense {
   createdAt  DateTime  @default(now())
 
   @@index([ownerId, spentOn])
+}
+
+model Lead {
+  id         String    @id @default(cuid())
+  ownerId    String
+  owner      Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  name       String
+  phone      String
+  note       String?
+  // QR | MANUAL
+  source     String    @default("MANUAL")
+  // NEW | CONTACTED | VISIT | WON | LOST
+  status     String    @default("NEW")
+  followUpOn DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([ownerId, status])
 }

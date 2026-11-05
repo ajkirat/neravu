@@ -57,9 +57,14 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         title={property.name}
         subtitle={[property.address, property.city].filter(Boolean).join(", ") || undefined}
         actions={
-          <Link href={`/tenants/new?property=${property.id}`} className="btn-primary">
-            Add tenant
-          </Link>
+          <>
+            <Link href={`/properties/${property.id}/qr`} className="btn-secondary">
+              Enquiry QR code
+            </Link>
+            <Link href={`/tenants/new?property=${property.id}`} className="btn-primary">
+              Add tenant
+            </Link>
+          </>
         }
       />
 

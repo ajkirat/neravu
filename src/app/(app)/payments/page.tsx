@@ -39,7 +39,14 @@ export default async function PaymentsPage({
       <PageHeader
         title="Payments"
         subtitle="Every rupee received, with receipts."
-        actions={<MonthPicker base="/payments" month={month} />}
+        actions={
+          <>
+            <Link href="/reminders" className="btn-secondary">
+              Remind overdue
+            </Link>
+            <MonthPicker base="/payments" month={month} />
+          </>
+        }
       />
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
