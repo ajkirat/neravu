@@ -16,18 +16,29 @@ PG (paying guest) management web app for PG owners, modelled on RentOk's owner f
 - **Settings** – PG details, due day, reminder template
 
 ## Stack
-React 18 + TypeScript + Vite + Tailwind CSS v4 on the front end; Express + SQLite (`node:sqlite`, Node 22+) on the back end.
+React 18 + TypeScript + Vite + Tailwind CSS v4 on the front end; Express on the back end with a storage adapter:
+**Postgres** when `DATABASE_URL`/`POSTGRES_URL` is set (hosted), otherwise a local **SQLite** file (`node:sqlite`, Node 22+).
 
 - Owner accounts: email + password (scrypt-hashed), signed HttpOnly cookie sessions, throttled auth endpoints.
-- Every owner's data is isolated by account and stored in `data/neravu.db`.
+- Every owner's data is isolated by account.
 
-## Run
+## Run locally
 ```bash
 npm install
-npm run dev        # API on :3001 + Vite dev server
+npm run dev        # API on :3001 + Vite dev server, data in ./data (SQLite)
 ```
 
-Production: `npm run build && NODE_ENV=production npm start` (serves the API and the built app on `PORT`, default 3001).
+## Deploy on Vercel
+Vercel has no persistent disk, so it needs a hosted Postgres.
 
-Environment: `PORT`, `DATA_DIR` (default `./data`), `SESSION_SECRET` (default: generated and stored in `DATA_DIR/.secret`).
-Back up `DATA_DIR`. Serve over HTTPS in production (the session cookie is `Secure` when `NODE_ENV=production`).
+1. Import this repo in Vercel (framework: Vite — `vercel.json` already sets build, output and rewrites).
+2. In the project's **Storage** tab, add a **Neon Postgres** database (Marketplace). It injects `DATABASE_URL` / `POSTGRES_URL` automatically.
+3. Add an environment variable `SESSION_SECRET` (any long random string, e.g. `openssl rand -hex 32`). The app refuses to start without it.
+4. Deploy. Tables are created automatically on the first request.
+
+`/api/*` is served by `api/index.mjs` (Express as one serverless function); everything else is the static SPA.
+
+Notes: the login/enquiry rate limits are in-memory per function instance, so they only slow bursts. Tenant pay links and enquiry QR codes use the deployed URL, so print QR posters *after* your final domain is set.
+
+## Self-host
+`npm run build && NODE_ENV=production npm start` serves API + app on `PORT` (default 3001). Environment: `PORT`, `DATA_DIR` (default `./data`), `SESSION_SECRET` (default: generated into `DATA_DIR/.secret`), or `DATABASE_URL` for Postgres.
