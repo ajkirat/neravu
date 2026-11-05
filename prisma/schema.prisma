@@ -22,6 +22,14 @@ model Owner {
   // en | kn | te: the language the app opens in
   language     String    @default("en")
   emailVerifiedAt  DateTime?
+  // How tenants pay: NONE (collect yourself) | UPI (direct to your UPI ID) | RAZORPAY (your own Razorpay account)
+  paymentMode  String    @default("UPI")
+  razorpayKeyId  String?
+  // AES-256-GCM encrypted; never shown again after saving
+  razorpayKeySecretEnc  String?
+  razorpayWebhookSecretEnc  String?
+  // True once the keys were saved and passed a live check
+  razorpayEnabled  Boolean  @default(false)
   // Sessions issued before this moment are rejected (set on password reset)
   passwordChangedAt DateTime?
   authTokens   AuthToken[]
@@ -141,6 +149,8 @@ model Payment {
   tenantId  String
   tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   amount    Int
+  // Id from the payment provider (e.g. Razorpay pay_xxx); unique so a webhook replay cannot double-count
+  externalId String?  @unique
   paidOn    DateTime
   // CASH | UPI | BANK | CARD | OTHER
   method    String

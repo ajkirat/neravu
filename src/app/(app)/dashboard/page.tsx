@@ -6,6 +6,7 @@ import { addDays, diffDays, monthRange, periodKey, today } from "@/lib/dates";
 import { fmtDate, fmtPeriod, reminderLink, rupees } from "@/lib/format";
 import { syncRentCharges, tenantBalances } from "@/lib/ledger";
 import { payTokens } from "@/lib/paylink";
+import { payLinksOn } from "@/lib/pay-mode";
 import { appOrigin } from "@/lib/url";
 import { getT } from "@/lib/i18n/server";
 import { asLang } from "@/lib/i18n";
@@ -59,7 +60,7 @@ export default async function DashboardPage() {
   const dues = allTenants
     .map((t) => ({ t, b: balances.get(t.id)! }))
     .sort((a, b) => b.b.overdueDays - a.b.overdueDays || b.b.outstanding - a.b.outstanding);
-  const tokens = owner.upiId ? await payTokens(owner.id, dues.map((d) => d.t.id)) : new Map<string, string>();
+  const tokens = payLinksOn(owner) ? await payTokens(owner.id, dues.map((d) => d.t.id)) : new Map<string, string>();
   const origin = await appOrigin();
   const totalDues = dues.reduce((s, d) => s + d.b.outstanding, 0);
 
