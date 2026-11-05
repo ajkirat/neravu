@@ -69,6 +69,9 @@ export const currentOwner = cache(async () => {
       paymentMode: true,
       razorpayKeyId: true,
       razorpayEnabled: true,
+      autoReminders: true,
+      remindBefore: true,
+      remindOverdueEvery: true,
     },
   });
   if (!owner) return null;

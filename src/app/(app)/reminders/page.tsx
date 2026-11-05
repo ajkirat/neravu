@@ -38,6 +38,11 @@ export default async function RemindersPage() {
         title={tr("remindTitle")}
         subtitle={rows.length ? tr("remindSub", { n: rows.length, amt: rupees(total) }) : undefined}
         back={{ href: "/payments", label: tr("paymentsTitle") }}
+        actions={
+          <Link href="/auto-reminders" className="btn-secondary">
+            {tr("autoLink")}
+          </Link>
+        }
       />
       {!payLinksOn(owner) && rows.length > 0 && (
         <p className="mb-4 rounded-lg bg-marigold-100 px-3 py-2 text-sm text-marigold-700">
