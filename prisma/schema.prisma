@@ -38,6 +38,7 @@ model Owner {
   remindOverdueEvery  Int  @default(3)
   reminderLogs  ReminderLog[]
   electricityBills  ElectricityBill[]
+  staff  Staff[]
   // Sessions issued before this moment are rejected (set on password reset)
   passwordChangedAt DateTime?
   authTokens   AuthToken[]
@@ -164,6 +165,10 @@ model Payment {
   amount    Int
   // Id from the payment provider (e.g. Razorpay pay_xxx); unique so a webhook replay cannot double-count
   externalId String?  @unique
+  // Which caretaker recorded it (kept as a name too, so it survives the caretaker being removed)
+  recordedByStaffId String?
+  recordedBy Staff? @relation(fields: [recordedByStaffId], references: [id], onDelete: SetNull)
+  recordedByName String?
   paidOn    DateTime
   // CASH | UPI | BANK | CARD | OTHER
   method    String
@@ -301,4 +306,24 @@ model ElectricityBill {
 
   @@unique([roomId, period])
   @@index([ownerId, period])
+}
+
+// A caretaker or manager: signs in with a phone number and a password the owner sets, and can only
+// do the day-to-day jobs (collect rent, log complaints, follow up leads), never see profit or settings.
+model Staff {
+  id                String    @id @default(cuid())
+  ownerId           String
+  owner             Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name              String
+  // Last 10 digits of the mobile number; unique so a number signs in to exactly one PG
+  phone             String    @unique
+  passwordHash      String
+  // Switching this off signs them out immediately
+  active            Boolean   @default(true)
+  passwordChangedAt DateTime?
+  lastLoginAt       DateTime?
+  createdAt         DateTime  @default(now())
+  payments          Payment[]
+
+  @@index([ownerId])
 }

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { requireOwner } from "@/lib/auth";
+import { requireActor, requireOwner } from "@/lib/auth";
 import { parseDateInput } from "@/lib/dates";
 import { optStr, str } from "@/lib/forms";
 import { LEAD_STATUSES, cleanEnquiry } from "@/lib/leads";
@@ -12,7 +12,7 @@ import type { FormState } from "@/components/action-form";
 
 export async function createLead(_: FormState, fd: FormData): Promise<FormState> {
   const { t: tr } = await getT();
-  const owner = await requireOwner();
+  const { owner } = await requireActor();
   const c = cleanEnquiry({ name: str(fd, "name"), phone: str(fd, "phone"), note: str(fd, "note") });
   if ("error" in c) return { error: c.error };
   const propertyId = optStr(fd, "propertyId");
@@ -35,14 +35,14 @@ export async function createLead(_: FormState, fd: FormData): Promise<FormState>
 }
 
 export async function setLeadStatus(id: string, status: string): Promise<void> {
-  const owner = await requireOwner();
+  const { owner } = await requireActor();
   if (!LEAD_STATUSES.includes(status as never)) return;
   await db.lead.updateMany({ where: { id, ownerId: owner.id }, data: { status } });
   revalidatePath("/", "layout");
 }
 
 export async function setLeadFollowUp(id: string, date: string): Promise<void> {
-  const owner = await requireOwner();
+  const { owner } = await requireActor();
   await db.lead.updateMany({ where: { id, ownerId: owner.id }, data: { followUpOn: parseDateInput(date) } });
   revalidatePath("/", "layout");
 }

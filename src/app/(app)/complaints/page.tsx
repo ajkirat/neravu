@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { requireOwner } from "@/lib/auth";
+import { requireActor } from "@/lib/auth";
 import { fmtDate } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import type { MsgKey } from "@/lib/i18n";
@@ -12,7 +12,7 @@ import { Badge, Card, EmptyState, Field, PageHeader } from "@/components/ui";
 export const metadata = { title: "Complaints" };
 
 export default async function ComplaintsPage() {
-  const owner = await requireOwner();
+  const { owner, role } = await requireActor();
   const { t, lang } = await getT();
   const [complaints, tenants] = await Promise.all([
     db.complaint.findMany({
@@ -52,7 +52,7 @@ export default async function ComplaintsPage() {
                     </p>
                     {c.details && <p className="mt-1 text-sm">{c.details}</p>}
                   </div>
-                  <ComplaintControls id={c.id} status={c.status} />
+                  <ComplaintControls id={c.id} status={c.status} canDelete={role === "OWNER"} />
                 </div>
               </Card>
             ))

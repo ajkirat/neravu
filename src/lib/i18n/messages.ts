@@ -14,6 +14,7 @@ import { paymodes } from "./parts/paymodes";
 import { properties } from "./parts/properties";
 import { publicPages } from "./parts/public";
 import { settings } from "./parts/settings";
+import { staff } from "./parts/staff";
 import { tenantforms } from "./parts/tenantforms";
 import { tenants } from "./parts/tenants";
 
@@ -36,6 +37,7 @@ export const messages = {
   ...bulk,
   ...actmsgs,
   ...elec,
+  ...staff,
 };
 
 export type MsgKey = keyof typeof messages;

@@ -29,6 +29,7 @@ export const NAV: NavItem[] = [
   { href: "/leads", key: "navLeads", icon: I.phone },
   { href: "/complaints", key: "navComplaints", icon: I.flag },
   { href: "/reports", key: "navReports", icon: I.chart },
+  { href: "/staff", key: "navStaff", icon: I.people },
 ];
 
 /** The four things owners do daily, plus More, on the phone bottom bar. */
@@ -48,3 +49,11 @@ export const MORE: NavItem[] = [
   { href: "/settings", key: "navSettings", icon: I.sliders },
   { href: "/help", key: "navHelp", icon: I.help },
 ];
+
+export const navIcon = (href: string): string => MORE.find((n) => n.href === href)?.icon ?? I.grid;
+const pick = (hrefs: string[]) => hrefs.map((h) => MORE.find((n) => n.href === h)!).filter(Boolean);
+
+/** What a caretaker sees in the sidebar, on the phone bottom bar, and on the More screen. */
+export const STAFF_NAV: NavItem[] = pick(["/dashboard", "/tenants", "/payments", "/complaints", "/leads"]);
+export const STAFF_BOTTOM: NavItem[] = [...pick(["/dashboard", "/tenants", "/payments", "/leads"]), { href: "/more", key: "navMore", icon: I.grid }];
+export const STAFF_MORE: NavItem[] = pick(["/dashboard", "/tenants", "/payments", "/complaints", "/leads", "/reminders", "/help"]);

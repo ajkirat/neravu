@@ -31,6 +31,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           {t("forgotLink")}
         </Link>
       </p>
+      <p className="mt-3 text-sm">
+        <Link href="/staff-login" className="font-medium text-brand-600 hover:underline">
+          {t("staffLoginLink")}
+        </Link>
+      </p>
       <p className="mt-6 text-sm text-muted">
         {t("newHere")}{" "}
         <Link href="/signup" className="font-medium text-brand-600 hover:underline">

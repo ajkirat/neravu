@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { requireOwner } from "@/lib/auth";
+import { requireActor } from "@/lib/auth";
 import { monthRange, periodKey, today } from "@/lib/dates";
 import { fmtDate, methodText, rupees } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
@@ -16,7 +16,7 @@ export default async function PaymentsPage({
   searchParams: Promise<{ month?: string }>;
 }) {
   const sp = await searchParams;
-  const owner = await requireOwner();
+  const { owner } = await requireActor();
   const { t, lang } = await getT();
   const month = sp.month && monthRange(sp.month) ? sp.month : periodKey(today());
   const range = monthRange(month)!;
@@ -91,6 +91,7 @@ export default async function PaymentsPage({
                       <td className="text-sm">
                         {methodText(t, p.method)}
                         {p.reference && <div className="text-xs text-muted">{p.reference}</div>}
+                        {p.recordedByName && <div className="text-xs text-muted">{t("recordedByName", { name: p.recordedByName })}</div>}
                       </td>
                       <td className={`text-right font-semibold ${p.amount < 0 ? "text-red-700" : ""}`}>
                         {rupees(p.amount)}

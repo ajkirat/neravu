@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { requireOwner } from "@/lib/auth";
+import { requireActor } from "@/lib/auth";
 import { fmtDate, reminderLink, rupees } from "@/lib/format";
 import { syncRentCharges, tenantBalances } from "@/lib/ledger";
 import { payTokens } from "@/lib/paylink";
@@ -14,7 +14,7 @@ import { Badge, Card, EmptyState, PageHeader } from "@/components/ui";
 export const metadata = { title: "Remind overdue" };
 
 export default async function RemindersPage() {
-  const owner = await requireOwner();
+  const { owner, role } = await requireActor();
   const { t: tr, lang } = await getT();
   await syncRentCharges(owner.id);
   const balances = await tenantBalances(owner.id);
@@ -39,9 +39,11 @@ export default async function RemindersPage() {
         subtitle={rows.length ? tr("remindSub", { n: rows.length, amt: rupees(total) }) : undefined}
         back={{ href: "/payments", label: tr("paymentsTitle") }}
         actions={
-          <Link href="/auto-reminders" className="btn-secondary">
-            {tr("autoLink")}
-          </Link>
+          role === "OWNER" ? (
+            <Link href="/auto-reminders" className="btn-secondary">
+              {tr("autoLink")}
+            </Link>
+          ) : undefined
         }
       />
       {!payLinksOn(owner) && rows.length > 0 && (

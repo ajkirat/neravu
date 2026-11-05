@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BOTTOM, NAV } from "@/lib/nav-items";
+import type { NavItem } from "@/lib/nav-items";
 import { useT } from "@/lib/i18n/client";
 
 export function Icon({ d, className = "h-5 w-5" }: { d: string; className?: string }) {
@@ -18,12 +18,12 @@ function useActive() {
   return (href: string) => path === href || path.startsWith(href + "/");
 }
 
-export function SideNav() {
+export function SideNav({ items }: { items: NavItem[] }) {
   const isActive = useActive();
   const t = useT();
   return (
     <nav className="space-y-1">
-      {NAV.map((n) => (
+      {items.map((n) => (
         <Link
           key={n.href}
           href={n.href}
@@ -39,12 +39,12 @@ export function SideNav() {
   );
 }
 
-export function BottomNav() {
+export function BottomNav({ items }: { items: NavItem[] }) {
   const isActive = useActive();
   const t = useT();
   return (
-    <nav className="no-print fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t border-line bg-white lg:hidden">
-      {BOTTOM.map((n) => (
+    <nav className="no-print fixed inset-x-0 bottom-0 z-20 grid border-t border-line bg-white lg:hidden" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
+      {items.map((n) => (
         <Link
           key={n.href}
           href={n.href}

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { requireOwner } from "@/lib/auth";
+import { requireActor, requireOwner } from "@/lib/auth";
 import { optStr, str } from "@/lib/forms";
 import { getT } from "@/lib/i18n/server";
 import type { FormState } from "@/components/action-form";
@@ -10,7 +10,7 @@ import type { FormState } from "@/components/action-form";
 const STATUSES = ["OPEN", "IN_PROGRESS", "RESOLVED"];
 
 export async function createComplaint(_: FormState, fd: FormData): Promise<FormState> {
-  const owner = await requireOwner();
+  const { owner } = await requireActor();
   const { t } = await getT();
   const title = str(fd, "title").slice(0, 200);
   if (!title) return { error: t("complaintTitleLabel") };
@@ -29,7 +29,7 @@ export async function createComplaint(_: FormState, fd: FormData): Promise<FormS
 }
 
 export async function setComplaintStatus(id: string, status: string): Promise<void> {
-  const owner = await requireOwner();
+  const { owner } = await requireActor();
   if (!STATUSES.includes(status)) return;
   await db.complaint.updateMany({ where: { id, ownerId: owner.id }, data: { status } });
   revalidatePath("/", "layout");

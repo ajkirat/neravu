@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { requireOwner } from "@/lib/auth";
+import { requireActor } from "@/lib/auth";
 import { fmtDate, methodText, rupees, whatsappNumber } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import { asLang, makeT } from "@/lib/i18n";
@@ -11,7 +11,7 @@ export const metadata = { title: "Receipt" };
 
 export default async function ReceiptPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const owner = await requireOwner();
+  const { owner } = await requireActor();
   const { t, lang } = await getT();
   const p = await db.payment.findFirst({
     where: { id: Number(id) || -1, tenant: { ownerId: owner.id } },

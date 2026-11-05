@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { requireOwner } from "@/lib/auth";
+import { requireActor, requireOwner } from "@/lib/auth";
 import { parseDateInput, today } from "@/lib/dates";
 import { int, optStr, str } from "@/lib/forms";
 import { PAYMENT_METHODS, rupees } from "@/lib/format";
@@ -13,7 +13,7 @@ import type { FormState } from "@/components/action-form";
 
 export async function recordPayment(_: FormState, fd: FormData): Promise<FormState> {
   const { t: tr } = await getT();
-  const owner = await requireOwner();
+  const { owner, staff } = await requireActor();
   const tenantId = str(fd, "tenantId");
   const tenant = await db.tenant.findFirst({ where: { id: tenantId, ownerId: owner.id } });
   if (!tenant) return { error: tr("errChooseTenant") };
@@ -31,6 +31,8 @@ export async function recordPayment(_: FormState, fd: FormData): Promise<FormSta
       method,
       reference: optStr(fd, "reference"),
       note: optStr(fd, "note"),
+      recordedByStaffId: staff?.id ?? null,
+      recordedByName: staff?.name ?? null,
     },
   });
   // A recorded payment resolves any "I've paid" claim from the tenant.
@@ -74,7 +76,7 @@ export async function recordRefund(tenantId: string, _: FormState, fd: FormData)
 /** One tap: record the tenant's whole pending amount as received today (cash or UPI). */
 export async function collectFull(tenantId: string, method: string): Promise<{ error?: string; ok?: string }> {
   const { t: tr } = await getT();
-  const owner = await requireOwner();
+  const { owner, staff } = await requireActor();
   const { t, lang } = await getT();
   if (method !== "CASH" && method !== "UPI") return { error: tr("errInvalidMethod") };
   const tenant = await db.tenant.findFirst({
@@ -89,7 +91,9 @@ export async function collectFull(tenantId: string, method: string): Promise<{ e
   });
   const s = summarizeLedger(fresh?.charges ?? [], fresh?.payments ?? [], today());
   if (s.outstanding <= 0) return { error: tr("errNothingPending") };
-  await db.payment.create({ data: { tenantId, amount: s.outstanding, paidOn: today(), method } });
+  await db.payment.create({
+    data: { tenantId, amount: s.outstanding, paidOn: today(), method, recordedByStaffId: staff?.id ?? null, recordedByName: staff?.name ?? null },
+  });
   await db.tenant.update({ where: { id: tenantId }, data: { payClaimedAt: null } });
   revalidatePath("/", "layout");
   void lang;

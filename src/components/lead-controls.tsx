@@ -6,7 +6,7 @@ import { LEAD_STATUSES } from "@/lib/leads";
 import { useT } from "@/lib/i18n/client";
 import type { MsgKey } from "@/lib/i18n";
 
-export function LeadControls({ id, status, followUp }: { id: string; status: string; followUp: string }) {
+export function LeadControls({ id, status, followUp, canDelete = true }: { id: string; status: string; followUp: string; canDelete?: boolean }) {
   const t = useT();
   const [pending, start] = useTransition();
   return (
@@ -32,6 +32,7 @@ export function LeadControls({ id, status, followUp }: { id: string; status: str
           </option>
         ))}
       </select>
+      {canDelete && (
       <button
         type="button"
         className="btn-danger btn-sm"
@@ -40,6 +41,7 @@ export function LeadControls({ id, status, followUp }: { id: string; status: str
       >
         {t("delete")}
       </button>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { requireOwner } from "@/lib/auth";
+import { requireActor } from "@/lib/auth";
 import { nextDueDate } from "@/lib/billing";
 import { addDays, diffDays, monthRange, periodKey, today } from "@/lib/dates";
 import { fmtDate, fmtPeriod, reminderLink, rupees } from "@/lib/format";
@@ -12,13 +12,15 @@ import { getT } from "@/lib/i18n/server";
 import { asLang } from "@/lib/i18n";
 import { QuickCollect } from "@/components/quick-collect";
 import { Icon } from "@/components/nav";
-import { NAV } from "@/lib/nav-items";
+import { navIcon } from "@/lib/nav-items";
 import { Badge, Card, EmptyState, PageHeader, Stat } from "@/components/ui";
 
 export const metadata = { title: "Dashboard" };
 
-export default async function DashboardPage() {
-  const owner = await requireOwner();
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ denied?: string }> }) {
+  const sp = await searchParams;
+  const { owner, role, staff } = await requireActor();
+  const isOwner = role === "OWNER";
   const { t, lang } = await getT();
   const asOf = today();
   const month = periodKey(asOf);
@@ -102,19 +104,28 @@ export default async function DashboardPage() {
 
   return (
     <>
+      {sp.denied && (
+        <p role="alert" className="mb-4 rounded-lg bg-marigold-100 px-4 py-2.5 text-sm text-marigold-700">
+          {t("deniedBanner")}
+        </p>
+      )}
       <PageHeader
-        title={t("greeting", { name: owner.name.split(" ")[0] })}
+        title={t("greeting", { name: (isOwner ? owner.name : (staff?.name ?? owner.name)).split(" ")[0] })}
         subtitle={t("howLook", { date: fmtDate(asOf, lang) })}
       />
 
       <div className="mb-6 grid grid-cols-3 gap-3 sm:grid-cols-6">
         {[
-          { href: "/payments", label: t("qaCollect"), icon: NAV[3].icon, tone: "bg-brand-600 text-white" },
-          { href: "/tenants/new", label: t("qaAddTenant"), icon: NAV[2].icon, tone: "bg-white" },
-          { href: "/expenses", label: t("qaExpense"), icon: NAV[4].icon, tone: "bg-white" },
+          { href: "/payments", label: t("qaCollect"), icon: navIcon("/payments"), tone: "bg-brand-600 text-white" },
+          ...(isOwner
+            ? [
+                { href: "/tenants/new", label: t("qaAddTenant"), icon: navIcon("/tenants"), tone: "bg-white" },
+                { href: "/expenses", label: t("qaExpense"), icon: navIcon("/expenses"), tone: "bg-white" },
+              ]
+            : []),
           { href: "/reminders", label: t("qaRemind"), icon: "M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0", tone: "bg-marigold-100" },
-          { href: "/leads", label: t("qaLeads"), icon: NAV[5].icon, tone: "bg-white" },
-          { href: "/complaints", label: t("qaComplaints"), icon: NAV[6].icon, tone: "bg-white" },
+          { href: "/leads", label: t("qaLeads"), icon: navIcon("/leads"), tone: "bg-white" },
+          { href: "/complaints", label: t("qaComplaints"), icon: navIcon("/complaints"), tone: "bg-white" },
         ].map((q) => (
           <Link
             key={q.href}
@@ -135,8 +146,8 @@ export default async function DashboardPage() {
           hint={dues.length === 1 ? t("tenantOne") : t("tenantsN", { n: dues.length })}
           tone={totalDues ? "warn" : "good"}
         />
-        <Stat label={t("collectedIn", { month: fmtPeriod(month, lang).split(" ")[0] })} value={rupees(collected)} />
-        <Stat label={t("expensesMonth")} value={rupees(spent)} hint={t("netAmt", { amt: rupees(collected - spent) })} />
+        {isOwner && <Stat label={t("collectedIn", { month: fmtPeriod(month, lang).split(" ")[0] })} value={rupees(collected)} />}
+        {isOwner && <Stat label={t("expensesMonth")} value={rupees(spent)} hint={t("netAmt", { amt: rupees(collected - spent) })} />}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
