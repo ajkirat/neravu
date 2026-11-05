@@ -79,6 +79,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const bedText = (t: (typeof tenants)[number]) =>
     `${t.property.name}${t.bed ? ` · ${t.bed.room.number}${t.bed.label}` : ""}`;
 
+  const joining = isOwner ? await db.joinRequest.count({ where: { ownerId: owner.id, status: "PENDING" } }) : 0;
+
   if (properties.length === 0) {
     return (
       <>
@@ -108,6 +110,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <p role="alert" className="mb-4 rounded-lg bg-marigold-100 px-4 py-2.5 text-sm text-marigold-700">
           {t("deniedBanner")}
         </p>
+      )}
+      {joining > 0 && (
+        <Link
+          href="/tenants/joining"
+          className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-marigold-100 px-4 py-3 text-base font-semibold text-marigold-700 hover:bg-marigold-400/30"
+        >
+          <span>{t("joiningBanner", { n: joining })}</span>
+          <span aria-hidden>→</span>
+        </Link>
       )}
       <PageHeader
         title={t("greeting", { name: (isOwner ? owner.name : (staff?.name ?? owner.name)).split(" ")[0] })}

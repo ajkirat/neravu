@@ -7,6 +7,7 @@ import { dashboard } from "./parts/dashboard";
 import { elec } from "./parts/elec";
 import { expenses } from "./parts/expenses";
 import { exportmsgs } from "./parts/exportmsgs";
+import { join } from "./parts/join";
 import { leads } from "./parts/leads";
 import { misc } from "./parts/misc";
 import { nav } from "./parts/nav";
@@ -28,6 +29,7 @@ export const messages = {
   ...tenants,
   ...tenantforms,
   ...payments,
+  ...join,
   ...leads,
   ...settings,
   ...publicPages,

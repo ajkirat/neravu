@@ -99,6 +99,17 @@ export async function createTenant(_: FormState, fd: FormData): Promise<FormStat
     },
   });
 
+  // Came from a Join request or a lead: close it so it leaves the waiting lists.
+  const joinId = str(fd, "joinId");
+  if (joinId) {
+    await db.joinRequest.updateMany({
+      where: { id: joinId, ownerId: owner.id, status: "PENDING" },
+      data: { status: "APPROVED", tenantId: tenant.id },
+    });
+  }
+  const leadId = str(fd, "leadId");
+  if (leadId) await db.lead.updateMany({ where: { id: leadId, ownerId: owner.id }, data: { status: "WON" } });
+
   const paidNow = int(fd, "paidNow") ?? 0;
   if (paidNow > 0) {
     await db.payment.create({

@@ -65,6 +65,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             <Link href={`/properties/${property.id}/qr`} className="btn-secondary">
               {t("enquiryQr")}
             </Link>
+            <Link href={`/properties/${property.id}/qr?for=join`} className="btn-secondary">
+              {t("joinQrBtn")}
+            </Link>
             <Link href={`/tenants/new?property=${property.id}`} className="btn-primary">
               {t("addTenant")}
             </Link>

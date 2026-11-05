@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireOwner } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { vacantBeds } from "@/lib/beds";
 import { toDateInput, today } from "@/lib/dates";
 import { ID_TYPES, PAYMENT_METHODS, methodText } from "@/lib/format";
@@ -15,13 +16,16 @@ export const metadata = { title: "Add tenant" };
 export default async function NewTenantPage({
   searchParams,
 }: {
-  searchParams: Promise<{ bed?: string; property?: string }>;
+  searchParams: Promise<{ bed?: string; property?: string; join?: string; lead?: string }>;
 }) {
-  const { bed, property } = await searchParams;
+  const { bed, property, join, lead } = await searchParams;
   const owner = await requireOwner();
   const { t, lang } = await getT();
   const beds = await vacantBeds(owner.id);
-  const defaultBed = bed ?? beds.find((b) => b.propertyId === property)?.id;
+  const jr = join ? await db.joinRequest.findFirst({ where: { id: join, ownerId: owner.id, status: "PENDING" } }) : null;
+  const ld = !jr && lead ? await db.lead.findFirst({ where: { id: lead, ownerId: owner.id } }) : null;
+  const pre = jr ?? (ld ? { name: ld.name, phone: ld.phone, propertyId: ld.propertyId } : null);
+  const defaultBed = bed ?? beds.find((b) => b.propertyId === (property ?? pre?.propertyId))?.id;
 
   return (
     <>
@@ -42,38 +46,43 @@ export default async function NewTenantPage({
         />
       ) : (
         <ActionForm action={createTenant} submitLabel={t("addTenant")} className="space-y-6">
+          {jr && <input type="hidden" name="joinId" value={jr.id} />}
+          {ld && <input type="hidden" name="leadId" value={ld.id} />}
+          {jr && (
+            <p className="rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-700">{t("joinPrefilled", { name: jr.name })}</p>
+          )}
           <Card title={t("tenantDetails")}>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label={t("fullName")}>
-                <input className="input" name="name" required />
+                <input className="input" name="name" defaultValue={pre?.name} required />
               </Field>
               <Field label={t("mobile")}>
-                <input className="input" name="phone" type="tel" placeholder="98xxxxxxxx" required />
+                <input className="input" name="phone" type="tel" defaultValue={pre?.phone} placeholder="98xxxxxxxx" required />
               </Field>
               <Field label={t("email")}>
-                <input className="input" name="email" type="email" />
+                <input className="input" name="email" type="email" defaultValue={jr?.email ?? ""} />
               </Field>
               <Field label={t("occupation")}>
-                <input className="input" name="occupation" />
+                <input className="input" name="occupation" defaultValue={jr?.occupation ?? ""} />
               </Field>
               <Field label={t("idProof")}>
-                <select className="input" name="idType" defaultValue="Aadhaar">
+                <select className="input" name="idType" defaultValue={jr?.idType ?? "Aadhaar"}>
                   {ID_TYPES.map((idt) => (
                     <option key={idt}>{idt}</option>
                   ))}
                 </select>
               </Field>
               <Field label={t("idNumber")}>
-                <input className="input" name="idNumber" />
+                <input className="input" name="idNumber" defaultValue={jr?.idNumber ?? ""} />
               </Field>
               <Field label={t("emergencyName")}>
-                <input className="input" name="emergencyName" />
+                <input className="input" name="emergencyName" defaultValue={jr?.emergencyName ?? ""} />
               </Field>
               <Field label={t("emergencyPhone")}>
-                <input className="input" name="emergencyPhone" type="tel" />
+                <input className="input" name="emergencyPhone" type="tel" defaultValue={jr?.emergencyPhone ?? ""} />
               </Field>
               <Field label={t("tenantLanguage")} hint={t("tenantLanguageHint")}>
-                <select className="input" name="language" defaultValue={lang}>
+                <select className="input" name="language" defaultValue={jr?.language ?? lang}>
                   {LANGS.map((l) => (
                     <option key={l.code} value={l.code}>
                       {l.label}

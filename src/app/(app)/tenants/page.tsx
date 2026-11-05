@@ -28,6 +28,7 @@ export default async function TenantsPage({
   const { t, lang } = await getT();
   const active = TABS.find((t) => t.key === tab) ?? TABS[0];
   await syncRentCharges(owner.id);
+  const joining = isOwner ? await db.joinRequest.count({ where: { ownerId: owner.id, status: "PENDING" } }) : 0;
   const [tenants, balances] = await Promise.all([
     db.tenant.findMany({
       where: {
@@ -60,6 +61,15 @@ export default async function TenantsPage({
           ) : undefined
         }
       />
+      {joining > 0 && (
+        <Link
+          href="/tenants/joining"
+          className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-marigold-100 px-4 py-3 text-base font-semibold text-marigold-700 hover:bg-marigold-400/30"
+        >
+          <span>{t("joiningBanner", { n: joining })}</span>
+          <span aria-hidden>→</span>
+        </Link>
+      )}
       <div className="mb-3 flex flex-col gap-2 sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex gap-1 overflow-x-auto rounded-xl bg-white p-1 ring-1 ring-line">
           {TABS.map((tab) => (

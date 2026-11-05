@@ -7,6 +7,7 @@ import { followUpDue, isOpenLead } from "@/lib/leads";
 import type { MsgKey } from "@/lib/i18n";
 import { createLead } from "@/app/actions/leads";
 import { getT } from "@/lib/i18n/server";
+import { appOrigin } from "@/lib/url";
 import { VoiceInput } from "@/components/voice-input";
 import { ActionForm } from "@/components/action-form";
 import { LeadControls } from "@/components/lead-controls";
@@ -17,6 +18,7 @@ export const metadata = { title: "Leads" };
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<{ show?: string }> }) {
   const sp = await searchParams;
   const { owner, role } = await requireActor();
+  const origin = await appOrigin();
   const { t, lang } = await getT();
   const showAll = sp.show === "all";
   const [all, properties] = await Promise.all([
@@ -65,7 +67,9 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                       <Badge tone={l.status === "WON" ? "green" : l.status === "LOST" ? "gray" : "amber"}>
                         {t(`lead_${l.status}` as MsgKey)}
                       </Badge>{" "}
-                      {l.source === "QR" && <Badge tone="green">{t("qrBadge")}</Badge>}
+                      {l.source === "QR" && <Badge tone="green">{t("qrBadge")}</Badge>}{" "}
+                      {l.want === "CALLBACK" && <Badge tone="red">{t("wantCallbackBadge")}</Badge>}
+                      {l.want === "INFO" && <Badge>{t("wantInfoBadge")}</Badge>}
                     </p>
                     <p className="text-sm text-muted">
                       <a href={`tel:${l.phone}`} className="hover:underline">
@@ -78,16 +82,41 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                       <p className="mt-1 text-xs font-medium text-red-700">{t("followUpDueOn", { date: fmtDate(l.followUpOn, lang) })}</p>
                     )}
                   </div>
-                  <a
-                    className="btn-accent btn-sm"
-                    target="_blank"
-                    rel="noreferrer"
-                    href={`https://wa.me/${whatsappNumber(l.phone)}?text=${encodeURIComponent(
-                      t("leadMsg", { name: l.name.split(" ")[0], pg: owner.businessName ?? l.property?.name ?? "PG" }),
-                    )}`}
-                  >
-                    {t("whatsapp")}
-                  </a>
+                  <div className="flex flex-wrap gap-2">
+                    <a className="btn-secondary btn-sm" href={`tel:${l.phone}`}>
+                      {t("call")}
+                    </a>
+                    <a
+                      className="btn-accent btn-sm"
+                      target="_blank"
+                      rel="noreferrer"
+                      href={`https://wa.me/${whatsappNumber(l.phone)}?text=${encodeURIComponent(
+                        t("leadMsg", { name: l.name.split(" ")[0], pg: owner.businessName ?? l.property?.name ?? "PG" }),
+                      )}`}
+                    >
+                      {t("whatsapp")}
+                    </a>
+                    {properties.length > 0 && (
+                      <a
+                        className="btn-secondary btn-sm"
+                        target="_blank"
+                        rel="noreferrer"
+                        href={`https://wa.me/${whatsappNumber(l.phone)}?text=${encodeURIComponent(
+                          t("joinWaMsg", {
+                            pg: owner.businessName ?? l.property?.name ?? properties[0].name,
+                            url: `${origin}/join/${l.propertyId ?? properties[0].id}`,
+                          }),
+                        )}`}
+                      >
+                        {t("leadSendJoin")}
+                      </a>
+                    )}
+                    {role === "OWNER" && isOpenLead(l.status) && (
+                      <Link href={`/tenants/new?lead=${l.id}`} className="btn-primary btn-sm">
+                        {t("leadMoveIn")}
+                      </Link>
+                    )}
+                  </div>
                 </div>
                 <div className="mt-3 border-t border-line pt-3">
                   <LeadControls id={l.id} status={l.status} followUp={l.followUpOn ? toDateInput(l.followUpOn) : ""} canDelete={role === "OWNER"} />

@@ -75,6 +75,7 @@ export async function submitEnquiry(propertyId: string, _: FormState, fd: FormDa
       phone: c.value.phone,
       note: c.value.note || null,
       source: "QR",
+      want: str(fd, "want") === "INFO" ? "INFO" : "CALLBACK",
     },
   });
   revalidatePath("/", "layout");

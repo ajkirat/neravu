@@ -8,13 +8,20 @@ import { getT } from "@/lib/i18n/server";
 
 export const metadata = { title: "Enquiry QR code" };
 
-export default async function PropertyQrPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PropertyQrPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ for?: string }>;
+}) {
   const { id } = await params;
+  const isJoin = (await searchParams).for === "join";
   const owner = await requireOwner();
   const { t } = await getT();
   const property = await db.property.findFirst({ where: { id, ownerId: owner.id } });
   if (!property) notFound();
-  const link = `${await appOrigin()}/enquire/${property.id}`;
+  const link = `${await appOrigin()}/${isJoin ? "join" : "enquire"}/${property.id}`;
   const qr = await qrDataUrl(link, 640);
   return (
     <div className="mx-auto max-w-lg">
@@ -24,15 +31,26 @@ export default async function PropertyQrPage({ params }: { params: Promise<{ id:
         </a>
         <PrintButton />
       </div>
+      {isJoin && <p className="no-print mb-4 rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-700">{t("joinQrHelp")}</p>}
       <div className="card p-8 text-center">
         <p className="text-2xl font-bold text-brand-900">{owner.businessName ?? property.name}</p>
         {owner.businessName && owner.businessName !== property.name && <p className="text-muted">{property.name}</p>}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={qr} alt="Enquiry QR code" className="mx-auto my-6 h-72 w-72" />
-        <p className="text-xl font-semibold text-brand-900">{t("qrScan")}</p>
-        <p className="mt-1 text-sm text-muted">{t("qrSub")}</p>
+        <img src={qr} alt={isJoin ? "Join QR code" : "Enquiry QR code"} className="mx-auto my-6 h-72 w-72" />
+        <p className="text-xl font-semibold text-brand-900">{isJoin ? t("joinQrScan") : t("qrScan")}</p>
+        <p className="mt-1 text-sm text-muted">{isJoin ? t("joinQrSub") : t("qrSub")}</p>
         {owner.phone && <p className="mt-3 font-medium">{t("qrCall", { phone: owner.phone })}</p>}
         <p className="mt-4 text-xs break-all text-muted">{link}</p>
+        {isJoin && (
+          <a
+            className="btn-accent no-print mt-4"
+            target="_blank"
+            rel="noreferrer"
+            href={`https://wa.me/?text=${encodeURIComponent(t("joinWaMsg", { pg: owner.businessName ?? property.name, url: link }))}`}
+          >
+            {t("joinSendWa")}
+          </a>
+        )}
       </div>
     </div>
   );
