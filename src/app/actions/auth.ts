@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { cookies } from "next/headers";
 import { getT } from "@/lib/i18n/server";
+import { tooMany } from "@/lib/throttle";
+import { sendVerificationEmail } from "./account";
 import { LANG_COOKIE, asLang } from "@/lib/i18n";
 import { db } from "@/lib/db";
 import { endSession, startSession } from "@/lib/auth";
@@ -29,11 +31,13 @@ export async function signup(_: FormState, fd: FormData): Promise<FormState> {
   const owner = await db.owner.create({
     data: { name, email, phone: phone || null, passwordHash: await bcrypt.hash(password, 10), language: lang },
   });
+  await sendVerificationEmail({ id: owner.id, name: owner.name, email: owner.email, language: lang });
   await startSession(owner.id);
   redirect("/dashboard");
 }
 
 export async function login(_: FormState, fd: FormData): Promise<FormState> {
+  if (await tooMany("login", 10, 15 * 60 * 1000)) return { error: (await getT()).t("errTooManyLogin") };
   const email = String(fd.get("email") ?? "").trim().toLowerCase();
   const password = String(fd.get("password") ?? "");
   const owner = await db.owner.findUnique({ where: { email } });

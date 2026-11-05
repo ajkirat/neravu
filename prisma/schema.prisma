@@ -21,6 +21,10 @@ model Owner {
   upiId        String?
   // en | kn | te: the language the app opens in
   language     String    @default("en")
+  emailVerifiedAt  DateTime?
+  // Sessions issued before this moment are rejected (set on password reset)
+  passwordChangedAt DateTime?
+  authTokens   AuthToken[]
   createdAt    DateTime   @default(now())
   properties   Property[]
   tenants      Tenant[]
@@ -196,4 +200,19 @@ model Complaint {
   createdAt  DateTime  @default(now())
 
   @@index([ownerId, status])
+}
+
+// One-time links emailed to owners: password reset and email verification. Only a hash is stored.
+model AuthToken {
+  id        String    @id @default(cuid())
+  ownerId   String
+  owner     Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  // RESET | VERIFY
+  kind      String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([ownerId, kind])
 }
