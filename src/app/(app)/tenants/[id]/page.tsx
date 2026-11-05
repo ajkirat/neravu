@@ -17,6 +17,7 @@ import {
 } from "@/lib/format";
 import { syncRentCharges } from "@/lib/ledger";
 import { payTokens } from "@/lib/paylink";
+import { payLinksOn } from "@/lib/pay-mode";
 import { appOrigin } from "@/lib/url";
 import { getT } from "@/lib/i18n/server";
 import { TenantStatusBadge } from "@/components/tenant-status";
@@ -52,7 +53,7 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
     },
   });
   if (!t) notFound();
-  const tokens = owner.upiId ? await payTokens(owner.id, [t.id]) : new Map<string, string>();
+  const tokens = payLinksOn(owner) ? await payTokens(owner.id, [t.id]) : new Map<string, string>();
   const payUrl = tokens.get(t.id) ? `${await appOrigin()}/pay/${tokens.get(t.id)}` : undefined;
   const asOf = today();
   const s = summarizeLedger(t.charges, t.payments, asOf);

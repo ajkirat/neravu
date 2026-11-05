@@ -6,6 +6,7 @@ import { leads } from "./parts/leads";
 import { misc } from "./parts/misc";
 import { nav } from "./parts/nav";
 import { payments } from "./parts/payments";
+import { paymodes } from "./parts/paymodes";
 import { properties } from "./parts/properties";
 import { publicPages } from "./parts/public";
 import { settings } from "./parts/settings";
@@ -26,6 +27,7 @@ export const messages = {
   ...publicPages,
   ...misc,
   ...expenses,
+  ...paymodes,
 };
 
 export type MsgKey = keyof typeof messages;

@@ -66,6 +66,9 @@ export const currentOwner = cache(async () => {
       language: true,
       emailVerifiedAt: true,
       passwordChangedAt: true,
+      paymentMode: true,
+      razorpayKeyId: true,
+      razorpayEnabled: true,
     },
   });
   if (!owner) return null;

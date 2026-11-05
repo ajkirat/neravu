@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState, startTransition } from "react";
 import { createExpense } from "@/app/actions/expenses";
 import { VoiceInput } from "@/components/voice-input";
 import { Field } from "@/components/ui";
@@ -91,7 +91,15 @@ export function ExpenseForm({
   const setRow = (i: number, patch: Partial<Row>) => setRows((rs) => rs.map((r, k) => (k === i ? { ...r, ...patch } : r)));
 
   return (
-    <form action={dispatch} className="space-y-4" key={key}>
+    <form
+      key={key}
+      className="space-y-4"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        startTransition(() => dispatch(fd));
+      }}
+    >
       <div className="rounded-xl border border-dashed border-brand-200 bg-brand-50/50 p-3">
         <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
         <button type="button" className="btn-primary w-full" disabled={!scanEnabled || scan.busy} onClick={() => fileRef.current?.click()}>

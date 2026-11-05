@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth";
 import { optStr, str } from "@/lib/forms";
-import { isValidUpiId } from "@/lib/upi";
 import { getT } from "@/lib/i18n/server";
 import type { FormState } from "@/components/action-form";
 
@@ -13,11 +12,9 @@ export async function saveSettings(_: FormState, fd: FormData): Promise<FormStat
   const { t } = await getT();
   const name = str(fd, "name");
   if (!name) return { error: t("errName") };
-  const upiId = optStr(fd, "upiId");
-  if (upiId && !isValidUpiId(upiId)) return { error: t("upiInvalid") };
   await db.owner.update({
     where: { id: owner.id },
-    data: { name, phone: optStr(fd, "phone"), businessName: optStr(fd, "businessName"), upiId },
+    data: { name, phone: optStr(fd, "phone"), businessName: optStr(fd, "businessName") },
   });
   revalidatePath("/", "layout");
   return { ok: t("settingsSaved"), at: Date.now() };

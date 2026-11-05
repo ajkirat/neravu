@@ -9,6 +9,7 @@ import { upiLink } from "@/lib/upi";
 import { claimPayment } from "@/app/actions/paylink";
 import { ActionForm } from "@/components/action-form";
 import { Card } from "@/components/ui";
+import { PayOnlineButton } from "@/components/pay-online-button";
 import { cookies } from "next/headers";
 import { LANG_COOKIE, asLang, isLang, makeT } from "@/lib/i18n";
 import { I18nProvider } from "@/lib/i18n/client";
@@ -26,7 +27,7 @@ export default async function PayPage({ params }: { params: Promise<{ token: str
       name: true,
       payClaimedAt: true,
       language: true,
-      owner: { select: { upiId: true, businessName: true, name: true, language: true } },
+      owner: { select: { upiId: true, businessName: true, name: true, language: true, paymentMode: true, razorpayEnabled: true } },
       property: { select: { name: true } },
     },
   });
@@ -43,7 +44,10 @@ export default async function PayPage({ params }: { params: Promise<{ token: str
   const t = makeT(lang);
   const payee = tenant.owner.businessName ?? tenant.property.name;
   const first = tenant.name.split(" ")[0];
-  const upiId = tenant.owner.upiId;
+  const o = tenant.owner;
+  const rzp = o.paymentMode === "RAZORPAY" && o.razorpayEnabled;
+  // Direct UPI is offered in UPI mode, and as a fallback in Razorpay mode when the owner also gave a UPI ID.
+  const upiId = o.paymentMode === "NONE" ? null : o.upiId;
 
   if (s.outstanding <= 0) {
     return (
@@ -53,7 +57,7 @@ export default async function PayPage({ params }: { params: Promise<{ token: str
       </Card>
     );
   }
-  if (!upiId) {
+  if (!upiId && !rzp) {
     return (
       <Card>
         <p className="text-lg font-semibold text-brand-900">{t("payYouOwe", { name: first, amt: rupees(s.outstanding) })}</p>
@@ -61,8 +65,8 @@ export default async function PayPage({ params }: { params: Promise<{ token: str
       </Card>
     );
   }
-  const link = upiLink({ upiId, name: payee, amount: s.outstanding, note: `Rent ${first}` });
-  const qr = await qrDataUrl(link, 320);
+  const link = upiId ? upiLink({ upiId, name: payee, amount: s.outstanding, note: `Rent ${first}` }) : "";
+  const qr = link ? await qrDataUrl(link, 320) : "";
 
   return (
     <I18nProvider lang={lang}>
@@ -75,12 +79,23 @@ export default async function PayPage({ params }: { params: Promise<{ token: str
           {t("paySince", { date: fmtDate(s.oldestUnpaid, lang) })}
         </p>
       )}
-      <a href={link} className="btn-primary mt-4 w-full justify-center">
-        {t("payWithUpi")}
-      </a>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={qr} alt="UPI QR code" className="mx-auto mt-4 h-48 w-48" />
-      <p className="mt-1 text-xs text-muted">{t("payScan")} · {upiId}</p>
+      {rzp && (
+        <div className="mt-4">
+          <PayOnlineButton token={token} amount={rupees(s.outstanding)} />
+        </div>
+      )}
+      {upiId && (
+        <>
+          {rzp && <p className="mt-5 text-xs font-medium text-muted">{t("payOrUpi")}</p>}
+          <a href={link} className={`${rzp ? "btn-secondary" : "btn-primary"} mt-3 w-full justify-center`}>
+            {t("payWithUpi")}
+          </a>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={qr} alt="UPI QR code" className="mx-auto mt-4 h-48 w-48" />
+          <p className="mt-1 text-xs text-muted">{t("payScan")} · {upiId}</p>
+        </>
+      )}
+      {upiId && (
       <div className="mt-5 border-t border-line pt-4">
         {tenant.payClaimedAt ? (
           <p className="text-sm text-brand-700">
@@ -90,6 +105,7 @@ export default async function PayPage({ params }: { params: Promise<{ token: str
           <ActionForm action={claimPayment.bind(null, token)} submitLabel={t("payIPaid")} submitClassName="btn-secondary w-full justify-center" className="space-y-2" />
         )}
       </div>
+      )}
     </Card>
     </I18nProvider>
   );
