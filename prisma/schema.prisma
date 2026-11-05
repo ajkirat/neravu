@@ -37,6 +37,7 @@ model Owner {
   // Repeat overdue reminders every N days (0 = never)
   remindOverdueEvery  Int  @default(3)
   reminderLogs  ReminderLog[]
+  electricityBills  ElectricityBill[]
   // Sessions issued before this moment are rejected (set on password reset)
   passwordChangedAt DateTime?
   authTokens   AuthToken[]
@@ -77,6 +78,7 @@ model Room {
   rent       Int
   createdAt  DateTime @default(now())
   beds       Bed[]
+  electricityBills ElectricityBill[]
 
   @@unique([propertyId, number])
 }
@@ -145,6 +147,9 @@ model Charge {
   description String
   amount      Int
   dueDate     DateTime
+  // Set when the charge came from splitting an electricity bill
+  billId      String?
+  bill        ElectricityBill? @relation(fields: [billId], references: [id], onDelete: SetNull)
   createdAt   DateTime @default(now())
 
   @@unique([tenantId, type, period])
@@ -272,4 +277,28 @@ model ReminderLog {
 
   @@index([ownerId, sentAt])
   @@index([tenantId, kind, sentAt])
+}
+
+// The electricity bill for one room for one month, optionally from meter readings, and whether it was split into tenants' dues.
+model ElectricityBill {
+  id          String   @id @default(cuid())
+  ownerId     String
+  owner       Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  // "2026-10"
+  period      String
+  prevReading Float?
+  currReading Float?
+  // Rupees per unit
+  rate        Float?
+  // Total bill in whole rupees
+  amount      Int
+  // When it was added to tenants' dues
+  appliedAt   DateTime?
+  charges     Charge[]
+  createdAt   DateTime @default(now())
+
+  @@unique([roomId, period])
+  @@index([ownerId, period])
 }

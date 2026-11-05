@@ -4,6 +4,7 @@ import { autorem } from "./parts/autorem";
 import { bulk } from "./parts/bulk";
 import { common } from "./parts/common";
 import { dashboard } from "./parts/dashboard";
+import { elec } from "./parts/elec";
 import { expenses } from "./parts/expenses";
 import { leads } from "./parts/leads";
 import { misc } from "./parts/misc";
@@ -34,6 +35,7 @@ export const messages = {
   ...autorem,
   ...bulk,
   ...actmsgs,
+  ...elec,
 };
 
 export type MsgKey = keyof typeof messages;

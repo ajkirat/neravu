@@ -22,6 +22,7 @@ import { appOrigin } from "@/lib/url";
 import { getT } from "@/lib/i18n/server";
 import { TenantStatusBadge } from "@/components/tenant-status";
 import { LANGS, asLang } from "@/lib/i18n";
+import { parseElectricityDescription } from "@/lib/electricity";
 import { CopyButton } from "@/components/copy-button";
 import { ActionForm } from "@/components/action-form";
 import { BedPicker } from "@/components/bed-picker";
@@ -70,7 +71,7 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
       kind: "charge" as const,
       date: c.dueDate,
       id: c.id,
-      label: c.type === "RENT" && c.period ? tr("rentForMonth", { month: fmtPeriod(c.period, lang) }) : c.type === "DEPOSIT" && c.description === "Security deposit" ? tr("charge_DEPOSIT") : c.description,
+      label: parseElectricityDescription(c.description) ? tr("elecChargeLabel", { month: fmtPeriod(parseElectricityDescription(c.description)!.period, lang), room: parseElectricityDescription(c.description)!.room, days: parseElectricityDescription(c.description)!.days, total: parseElectricityDescription(c.description)!.total }) : c.type === "RENT" && c.period ? tr("rentForMonth", { month: fmtPeriod(c.period, lang) }) : c.type === "DEPOSIT" && c.description === "Security deposit" ? tr("charge_DEPOSIT") : c.description,
       type: c.type,
       amount: c.amount,
       future: c.dueDate > asOf,
