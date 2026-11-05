@@ -1,1 +1,122 @@
-# neravu
+# Neravu
+
+Neravu is a PG (paying guest) and hostel management web app for **owners**. It keeps properties,
+rooms, beds, tenants, rent, dues and expenses in one place, so month-end is a glance rather than a
+hunt through notebooks and chats.
+
+> Owner-side only for now. There is no tenant-facing app yet.
+
+## What owners can do
+
+| Area | Features |
+| --- | --- |
+| **Properties, rooms, beds** | Add multiple PGs; add rooms with a sharing type (1 to 8 beds) and per-bed rent; beds are created automatically. Bed map shows occupied, on-notice and vacant beds, with dues per bed. Resize, edit or delete rooms safely (occupied beds are protected). |
+| **Tenant onboarding** | Assign a tenant to a vacant bed with contact details, ID proof (KYC) number, emergency contact, occupation, rent, rent due day and security deposit. Optionally record the amount collected at move-in. |
+| **Automatic rent billing** | Rent is raised automatically each month: the first month on the move-in date, then on the tenant's due day (1 to 28). No cron job; dues are brought up to date whenever the owner opens the app. |
+| **Payments and receipts** | Record UPI, cash, bank, card or other payments with a reference number. Payments are applied to the oldest dues first. Printable receipt for every payment. |
+| **Dues tracking** | Per-tenant statement with a running balance, pending amount, "pending since" date and days overdue. Extra charges (electricity, maintenance, other) and rent waivers. |
+| **Reminders** | One-tap WhatsApp reminder (click-to-chat link with a pre-filled, polite message including the amount and since-when). |
+| **Notice and move-out** | Record notice with an expected move-out date, withdraw notice, move out (frees the bed and stops billing), shift a tenant to another bed, and record a deposit refund. |
+| **Expenses** | Log expenses by category (groceries, salaries, electricity, etc.) per property or as general overhead, with a monthly category breakdown. |
+| **Dashboard** | Occupancy, pending dues, this month's collections and expenses, a "dues to collect" list with remind/collect actions, rent due this week, upcoming move-outs and occupancy by property. |
+| **Reports** | Monthly billed vs collected vs expenses vs net, by property; a six-month collections and expenses trend; dues export to CSV. |
+
+The feature set is benchmarked against the owner side of popular Indian PG apps (such as RentOk),
+but the product, design and branding are Neravu's own.
+
+## Tech stack
+
+- **[Next.js 16](https://nextjs.org/)** (App Router, React Server Components, Server Actions) with **React 19** and **TypeScript**
+- **[Prisma 7](https://www.prisma.io/)** ORM with **SQLite** (via the `better-sqlite3` driver adapter) for zero-setup local development
+- **[Tailwind CSS 4](https://tailwindcss.com/)** for styling (brand tokens in `src/app/globals.css`)
+- **Auth:** email and password (bcrypt hashes) with a signed, HTTP-only JWT session cookie (`jose`)
+- **Validation:** `zod` and small form helpers
+- **Tests:** `vitest` for the billing and ledger logic
+
+### Project layout
+
+```
+prisma/
+  schema.prisma        Data model (Owner, Property, Room, Bed, Tenant, Charge, Payment, Expense)
+  migrations/          SQL migrations
+  seed.ts              Demo data
+src/
+  app/
+    (auth)/            Login and signup
+    (app)/             Signed-in owner area: dashboard, properties, tenants, payments, expenses, reports
+    actions/           Server actions (all scoped to the signed-in owner)
+  components/          UI building blocks
+  lib/
+    billing.ts         Pure rent-period and ledger logic (unit tested)
+    ledger.ts          Keeps rent charges current and computes tenant balances
+    auth.ts, db.ts     Session and database clients
+```
+
+### How dues work
+
+- Every amount a tenant owes is a **charge** (`RENT`, `DEPOSIT`, `ELECTRICITY`, `MAINTENANCE`, `OTHER`).
+- Every amount received is a **payment** (refunds are stored as negative payments).
+- Outstanding = charges that have fallen due minus payments. Payments are applied oldest first,
+  which gives the "pending since" date and days overdue.
+- Rent charges are created lazily for every month that has fallen due (`syncRentCharges`), and are
+  unique per tenant and month, so they are never duplicated. Waiving a month sets it to zero.
+
+All money is stored as whole rupees. Calendar dates are stored as UTC midnight and "today" is
+computed in `APP_TIMEZONE` (default `Asia/Kolkata`).
+
+## Getting started
+
+Requirements: **Node.js 20.19+** (22 LTS recommended) and npm.
+
+```bash
+git clone https://github.com/ajkirat/neravu.git
+cd neravu
+cp .env.example .env          # then set AUTH_SECRET to a long random string
+npm install                   # also generates the Prisma client
+npx prisma migrate deploy     # creates dev.db
+npm run db:seed               # optional: demo data
+npm run dev
+```
+
+Open http://localhost:3000. With demo data loaded, log in as **demo@neravu.app** / **demo1234**,
+or create your own owner account.
+
+### Environment variables
+
+| Variable | Description |
+| --- | --- |
+| `DATABASE_URL` | SQLite file, e.g. `file:./dev.db` |
+| `AUTH_SECRET` | Secret used to sign session cookies. Required in production. Generate with `openssl rand -base64 32`. |
+| `APP_TIMEZONE` | Optional. Timezone used for "today" when billing rent. Defaults to `Asia/Kolkata`. |
+
+### Scripts
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Start the dev server |
+| `npm run build` / `npm start` | Production build and server |
+| `npm test` | Run unit tests |
+| `npm run lint` | Type-check the project |
+| `npx prisma migrate dev` | Create and apply a migration after changing `schema.prisma` |
+| `npm run db:seed` | Load demo data (replaces the demo owner only) |
+| `npm run db:reset` | Wipe the database and reseed |
+
+### Moving to PostgreSQL
+
+SQLite keeps local setup to zero. For a hosted deployment, switch `provider` in
+`prisma/schema.prisma` to `postgresql`, swap the adapter in `src/lib/db.ts` for
+`@prisma/adapter-pg`, point `DATABASE_URL` at your database and run `npx prisma migrate dev` to
+create a fresh migration.
+
+## Roadmap
+
+Ideas for the next iterations:
+
+- Tenant app: self-service payments, receipts, complaints and notices
+- Online rent collection (UPI collect / payment links) with automatic reconciliation
+- Scheduled reminders over WhatsApp or SMS
+- KYC document uploads and digital rental agreements
+- Pro-rated first and last month rent, late fees
+- Electricity meter readings split per room
+- Staff accounts with roles, complaints and maintenance tickets
+- Food menu and attendance
