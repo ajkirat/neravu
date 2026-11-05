@@ -20,6 +20,7 @@ hunt through notebooks and chats.
 | **Expenses** | Log expenses by category (groceries, salaries, electricity, etc.) per property or as general overhead, with a monthly category breakdown. |
 | **Dashboard** | Occupancy, pending dues, this month's collections and expenses, a "dues to collect" list with remind/collect actions, rent due this week, upcoming move-outs and occupancy by property. |
 | **Reports** | Monthly billed vs collected vs expenses vs net, by property; a six-month collections and expenses trend; dues export to CSV. |
+| **Scan a bill** | Take a photo of a bill in Expenses. The shop, date, category and each item are filled in and the total adds up by itself. You check, fix anything, and save. Works with printed or handwritten bills in English, Kannada or Telugu. Items are kept with each expense. The photo is read, then thrown away: Neravu does not store it. |
 | **Account safety** | Forgot-password by email (1-hour one-time link), email verification, a reset signs out other sessions, and login attempts are rate limited. Links are stored hashed. |
 | **Kannada, Telugu and English** | Switch the whole app (menus, forms, messages) with one tap. WhatsApp reminders and the tenant pay page go out in each tenant's own language. Remembered on your account across devices. Translations should be reviewed by a native speaker. |
 | **Made for everyone** | Big picture buttons on the home screen, a "More" screen of large tiles, one-tap "Paid cash / Paid UPI" for dues, voice typing for notes (Chrome), a large-text switch, a plain-language Help page, and install-to-home-screen. |
@@ -98,6 +99,7 @@ or create your own owner account.
 | `DATABASE_URL_UNPOOLED` | Optional. Direct (non-pooled) connection used only for migrations. Vercel + Neon sets it automatically. |
 | `AUTH_SECRET` | Secret used to sign session cookies. Required in production. Generate with `openssl rand -base64 32`. |
 | `RESEND_API_KEY` / `EMAIL_FROM` | Optional. Turns on password-reset and email-verification emails via [Resend](https://resend.com) (free tier). `EMAIL_FROM` looks like `Neravu <noreply@yourdomain.com>` on a domain you verified in Resend. Without them the app works, and the forgot-password page says email is not set up. |
+| `ANTHROPIC_API_KEY` | Optional. Turns on **bill scanning** in Expenses (Claude reads the photo). Get a key at console.anthropic.com. Each scan has a small cost on your Anthropic account. Without it, the Scan button is disabled and manual entry works as before. `ANTHROPIC_MODEL` can override the default model. |
 | `APP_URL` | Optional. Public address used in links sent to tenants, e.g. `https://neravu.example.com`. Detected from the request when unset. |
 | `APP_TIMEZONE` | Optional. Timezone used for "today" when billing rent. Defaults to `Asia/Kolkata`. |
 
