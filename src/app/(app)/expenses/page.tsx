@@ -43,7 +43,7 @@ export default async function ExpensesPage({
         subtitle={t("expensesSub")}
         actions={<MonthPicker base="/expenses" month={month} />}
       />
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <div className="card p-4">
             <p className="text-xs text-muted uppercase">{t("spentThisMonth")}</p>
@@ -51,7 +51,7 @@ export default async function ExpensesPage({
             {cats.length > 0 && (
               <div className="mt-4 space-y-2">
                 {cats.map(([c, v]) => (
-                  <div key={c} className="grid grid-cols-[8rem_1fr_6rem] items-center gap-3 text-sm">
+                  <div key={c} className="grid grid-cols-[6rem_1fr_5rem] items-center gap-2 text-sm sm:grid-cols-[8rem_1fr_6rem] sm:gap-3">
                     <span className="truncate text-muted">{categoryText(t, c)}</span>
                     <span className="h-2 rounded-full bg-canvas">
                       <span
@@ -68,7 +68,52 @@ export default async function ExpensesPage({
           {expenses.length === 0 ? (
             <EmptyState title={t("noExpenses")} body={t("noExpensesBody")} />
           ) : (
-            <div className="card overflow-x-auto">
+            <>
+            <ul className="space-y-2 md:hidden">
+              {expenses.map((e) => (
+                <li key={e.id} className="card p-3.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold text-brand-900">
+                        {categoryText(t, e.category)} {e.source === "SCAN" && <Badge tone="green">{t("scannedBadge")}</Badge>}
+                      </p>
+                      <p className="text-sm text-muted">
+                        {fmtDate(e.spentOn, lang)} · {e.property?.name ?? t("allGeneral")}
+                      </p>
+                      {e.vendor && <p className="text-sm font-medium">{e.vendor}</p>}
+                      {e.note && <p className="text-sm text-muted">{e.note}</p>}
+                    </div>
+                    <p className="shrink-0 text-base font-bold">{rupees(e.amount)}</p>
+                  </div>
+                  {e.items.length > 0 && (
+                    <details className="mt-1">
+                      <summary className="cursor-pointer text-sm text-brand-600">{t("itemsN", { n: e.items.length })}</summary>
+                      <ul className="mt-1 space-y-0.5 text-sm text-muted">
+                        {e.items.map((i) => (
+                          <li key={i.id} className="flex justify-between gap-3">
+                            <span>
+                              {i.name}
+                              {i.quantity !== 1 ? ` × ${i.quantity}` : ""}
+                            </span>
+                            <span>{rupees(i.amount)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                  <div className="mt-1 text-right">
+                    <ActionForm
+                      action={deleteExpense.bind(null, e.id)}
+                      submitLabel={t("delete")}
+                      submitClassName="min-h-9 px-2 text-sm text-muted hover:text-red-700 hover:underline"
+                      className="inline"
+                      confirm={t("deleteExpenseConfirm")}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="card hidden overflow-x-auto md:block">
               <table className="table">
                 <thead>
                   <tr>
@@ -120,9 +165,10 @@ export default async function ExpensesPage({
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </div>
-        <Card title={t("addExpenseCard")}>
+        <Card title={t("addExpenseCard")} className="order-first lg:order-none">
           <ExpenseForm
             properties={properties.map((p) => ({ id: p.id, name: p.name }))}
             categories={EXPENSE_CATEGORIES.map((c) => ({ value: c, label: categoryText(t, c) }))}

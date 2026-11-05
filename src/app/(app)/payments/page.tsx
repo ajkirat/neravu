@@ -50,7 +50,7 @@ export default async function PaymentsPage({
           </>
         }
       />
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <div className="card flex flex-wrap items-center gap-x-8 gap-y-2 p-4">
             <div>
@@ -67,7 +67,29 @@ export default async function PaymentsPage({
           {payments.length === 0 ? (
             <EmptyState title={t("noPayments")} body={t("noPaymentsBody")} />
           ) : (
-            <div className="card overflow-x-auto">
+            <>
+            <ul className="space-y-2 md:hidden">
+              {payments.map((p) => (
+                <li key={p.id} className="card flex items-center justify-between gap-3 p-3.5">
+                  <div className="min-w-0">
+                    <Link href={`/tenants/${p.tenantId}`} className="block truncate text-base font-semibold text-brand-900">
+                      {p.tenant.name}
+                    </Link>
+                    <p className="text-sm text-muted">
+                      {fmtDate(p.paidOn, lang)} · {methodText(t, p.method)}
+                    </p>
+                    {p.reference && <p className="truncate text-xs text-muted">{p.reference}</p>}
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className={`text-base font-bold ${p.amount < 0 ? "text-red-700" : "text-brand-900"}`}>{rupees(p.amount)}</p>
+                    <Link href={`/payments/${p.id}/receipt`} className="text-sm text-brand-600 underline">
+                      {t("receipt")}
+                    </Link>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="card hidden overflow-x-auto md:block">
               <table className="table">
                 <thead>
                   <tr>
@@ -106,9 +128,10 @@ export default async function PaymentsPage({
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </div>
-        <Card title={t("recordPaymentCard")}>
+        <Card title={t("recordPaymentCard")} className="order-first lg:order-none">
           {tenants.length ? (
             <PaymentForm
               tenants={tenants.map((t) => ({

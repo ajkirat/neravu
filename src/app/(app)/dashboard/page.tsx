@@ -114,7 +114,19 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         subtitle={t("howLook", { date: fmtDate(asOf, lang) })}
       />
 
-      <div className="mb-6 grid grid-cols-3 gap-3 sm:grid-cols-6">
+      <div className="mb-4 grid grid-cols-2 gap-2 sm:mb-6 sm:gap-3 lg:grid-cols-4">
+        <Stat label={t("occupancy")} value={`${occupancy}%`} hint={t("bedsFilled", { occ: occupied, beds: totalBeds })} tone="brand" />
+        <Stat
+          label={t("pendingDues")}
+          value={rupees(totalDues)}
+          hint={dues.length === 1 ? t("tenantOne") : t("tenantsN", { n: dues.length })}
+          tone={totalDues ? "warn" : "good"}
+        />
+        {isOwner && <Stat label={t("collectedIn", { month: fmtPeriod(month, lang).split(" ")[0] })} value={rupees(collected)} />}
+        {isOwner && <Stat label={t("expensesMonth")} value={rupees(spent)} hint={t("netAmt", { amt: rupees(collected - spent) })} />}
+      </div>
+
+      <div className="mb-4 grid grid-cols-3 gap-2 sm:mb-6 sm:grid-cols-6 sm:gap-3">
         {[
           { href: "/payments", label: t("qaCollect"), icon: navIcon("/payments"), tone: "bg-brand-600 text-white" },
           ...(isOwner
@@ -130,27 +142,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           <Link
             key={q.href}
             href={q.href}
-            className={`card flex flex-col items-center gap-2 px-2 py-4 text-center text-sm font-semibold hover:shadow-sm ${q.tone}`}
+            className={`card flex flex-col items-center gap-1 px-1 py-3 text-center text-sm font-semibold hover:shadow-sm ${q.tone}`}
           >
-            <Icon d={q.icon} className="h-8 w-8" />
+            <Icon d={q.icon} className="h-7 w-7" />
             <span className="leading-tight">{q.label}</span>
           </Link>
         ))}
       </div>
 
-      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label={t("occupancy")} value={`${occupancy}%`} hint={t("bedsFilled", { occ: occupied, beds: totalBeds })} tone="brand" />
-        <Stat
-          label={t("pendingDues")}
-          value={rupees(totalDues)}
-          hint={dues.length === 1 ? t("tenantOne") : t("tenantsN", { n: dues.length })}
-          tone={totalDues ? "warn" : "good"}
-        />
-        {isOwner && <Stat label={t("collectedIn", { month: fmtPeriod(month, lang).split(" ")[0] })} value={rupees(collected)} />}
-        {isOwner && <Stat label={t("expensesMonth")} value={rupees(spent)} hint={t("netAmt", { amt: rupees(collected - spent) })} />}
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <Card
           className="lg:col-span-2"
           title={t("duesToCollect")}
@@ -173,9 +173,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           ) : (
             <ul className="divide-y divide-line">
               {dues.slice(0, 10).map(({ t: tn, b }) => (
-                <li key={tn.id} className="flex flex-wrap items-center gap-3 px-5 py-3">
-                  <div className="min-w-0 flex-1">
-                    <Link href={`/tenants/${tn.id}`} className="font-medium text-brand-900 hover:underline">
+                <li key={tn.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 sm:px-5">
+                  <div className="min-w-0 flex-1 basis-40">
+                    <Link href={`/tenants/${tn.id}`} className="text-base font-medium sm:text-sm text-brand-900 hover:underline">
                       {tn.name}
                     </Link>
                     <p className="truncate text-xs text-muted">
@@ -193,7 +193,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                       {b.overdueDays === 0 ? t("dueToday") : t("daysOverdue", { n: b.overdueDays })}
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex w-full gap-2 [&>*]:flex-1 sm:w-auto sm:[&>*]:flex-none">
                     <a
                       className="btn-accent btn-sm"
                       target="_blank"

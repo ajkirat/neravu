@@ -17,7 +17,7 @@ export default async function StaffPage() {
     <>
       <PageHeader title={t("staffTitle")} subtitle={t("staffSub")} />
       <p className="mb-6 max-w-3xl rounded-lg bg-brand-50 px-4 py-3 text-sm text-brand-700">{t("staffCan")}</p>
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-3 lg:col-span-2">
           {people.length === 0 ? (
             <EmptyState title={t("staffNone")} />

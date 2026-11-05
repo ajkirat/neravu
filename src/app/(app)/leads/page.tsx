@@ -48,7 +48,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
         <Stat label={t("followUpsDue")} value={dueCount} tone={dueCount ? "warn" : "default"} />
         <Stat label={t("won")} value={all.filter((l) => l.status === "WON").length} />
       </div>
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-3 lg:col-span-2">
           {leads.length === 0 ? (
             <EmptyState
