@@ -161,7 +161,14 @@ model Expense {
   amount     Int
   spentOn    DateTime
   note       String?
+  // Shop or supplier name, usually read from a bill photo
+  vendor     String?
+  // MANUAL | SCAN
+  source     String    @default("MANUAL")
+  // Grand total printed on the bill, kept to flag mismatches with the items
+  billTotal  Int?
   createdAt  DateTime  @default(now())
+  items      ExpenseItem[]
 
   @@index([ownerId, spentOn])
 }
@@ -215,4 +222,16 @@ model AuthToken {
   createdAt DateTime  @default(now())
 
   @@index([ownerId, kind])
+}
+
+// One line on a bill. Amount is the line total in whole rupees (quantity x rate).
+model ExpenseItem {
+  id        String  @id @default(cuid())
+  expenseId String
+  expense   Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  name      String
+  quantity  Float   @default(1)
+  amount    Int
+
+  @@index([expenseId])
 }
