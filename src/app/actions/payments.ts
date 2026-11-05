@@ -29,6 +29,8 @@ export async function recordPayment(_: FormState, fd: FormData): Promise<FormSta
       note: optStr(fd, "note"),
     },
   });
+  // A recorded payment resolves any "I've paid" claim from the tenant.
+  await db.tenant.update({ where: { id: tenantId }, data: { payClaimedAt: null } });
   revalidatePath("/", "layout");
   return { ok: `Recorded ${rupees(amount)} from ${tenant.name}.`, at: Date.now() };
 }

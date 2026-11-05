@@ -16,18 +16,28 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="mt-auto rounded-xl bg-brand-900/40 p-3">
           <p className="truncate text-sm font-medium text-white">{owner.name}</p>
           <p className="truncate text-xs text-brand-200">{owner.email}</p>
-          <form action={logout} className="mt-2">
-            <button className="text-xs font-medium text-marigold-400 hover:underline">Log out</button>
-          </form>
+          <div className="mt-2 flex items-center gap-3">
+            <Link href="/settings" className="text-xs font-medium text-brand-100 hover:underline">
+              Settings
+            </Link>
+            <form action={logout}>
+              <button className="text-xs font-medium text-marigold-400 hover:underline">Log out</button>
+            </form>
+          </div>
         </div>
       </aside>
       <header className="no-print sticky top-0 z-10 flex items-center justify-between border-b border-line bg-white/90 px-4 py-3 backdrop-blur lg:hidden">
         <Link href="/dashboard">
           <Logo />
         </Link>
-        <form action={logout}>
-          <button className="text-sm font-medium text-muted">Log out</button>
-        </form>
+        <div className="flex items-center gap-4">
+          <Link href="/settings" className="text-sm font-medium text-muted">
+            Settings
+          </Link>
+          <form action={logout}>
+            <button className="text-sm font-medium text-muted">Log out</button>
+          </form>
+        </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 pt-6 pb-24 sm:px-6 lg:px-8 lg:pt-10 lg:pb-12">
         {children}

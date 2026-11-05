@@ -5,6 +5,8 @@ import { nextDueDate } from "@/lib/billing";
 import { addDays, diffDays, monthRange, periodKey, today } from "@/lib/dates";
 import { fmtDate, fmtPeriod, reminderLink, rupees } from "@/lib/format";
 import { syncRentCharges, tenantBalances } from "@/lib/ledger";
+import { payTokens } from "@/lib/paylink";
+import { appOrigin } from "@/lib/url";
 import { Badge, Card, EmptyState, PageHeader, Stat } from "@/components/ui";
 
 export const metadata = { title: "Dashboard" };
@@ -51,6 +53,8 @@ export default async function DashboardPage() {
   const dues = allTenants
     .map((t) => ({ t, b: balances.get(t.id)! }))
     .sort((a, b) => b.b.overdueDays - a.b.overdueDays || b.b.outstanding - a.b.outstanding);
+  const tokens = owner.upiId ? await payTokens(owner.id, dues.map((d) => d.t.id)) : new Map<string, string>();
+  const origin = await appOrigin();
   const totalDues = dues.reduce((s, d) => s + d.b.outstanding, 0);
 
   const upcoming = tenants
@@ -123,9 +127,14 @@ export default async function DashboardPage() {
           className="lg:col-span-2"
           title="Dues to collect"
           action={
-            <Link href="/tenants?tab=dues" className="text-xs font-medium text-brand-600 hover:underline">
-              View all
-            </Link>
+            <span className="flex items-center gap-3">
+              <Link href="/reminders" className="text-xs font-medium text-brand-600 hover:underline">
+                Remind all
+              </Link>
+              <Link href="/tenants?tab=dues" className="text-xs font-medium text-brand-600 hover:underline">
+                View all
+              </Link>
+            </span>
           }
           padded={false}
         >
@@ -144,6 +153,11 @@ export default async function DashboardPage() {
                     <p className="truncate text-xs text-muted">
                       {t.status === "MOVED_OUT" ? `${t.property.name} · moved out` : bedText(t)}
                     </p>
+                    {t.payClaimedAt && (
+                      <p className="mt-1">
+                        <Badge tone="amber">Says paid · confirm</Badge>
+                      </p>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-red-700">{rupees(b.outstanding)}</p>
@@ -160,8 +174,9 @@ export default async function DashboardPage() {
                         phone: t.phone,
                         tenantName: t.name,
                         amount: b.outstanding,
-                        propertyName: t.property.name,
+                        propertyName: owner.businessName ?? t.property.name,
                         since: b.oldestUnpaid,
+                        payUrl: tokens.get(t.id) ? `${origin}/pay/${tokens.get(t.id)}` : undefined,
                       })}
                     >
                       Remind

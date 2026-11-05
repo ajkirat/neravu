@@ -20,6 +20,10 @@ hunt through notebooks and chats.
 | **Expenses** | Log expenses by category (groceries, salaries, electricity, etc.) per property or as general overhead, with a monthly category breakdown. |
 | **Dashboard** | Occupancy, pending dues, this month's collections and expenses, a "dues to collect" list with remind/collect actions, rent due this week, upcoming move-outs and occupancy by property. |
 | **Reports** | Monthly billed vs collected vs expenses vs net, by property; a six-month collections and expenses trend; dues export to CSV. |
+| **Online pay links (UPI)** | Add your UPI ID in Settings. Every tenant gets a private pay link (`/pay/...`) showing what they owe, a "Pay with UPI app" button and a QR code. Money goes straight to your UPI ID. Tenants tap "I've paid" and you confirm by recording the payment. |
+| **Remind overdue** | One queue of everyone with pending dues, sorted by how late they are, with a WhatsApp button for each (pay link included) and a "reminded on" marker. |
+| **Leads and enquiry QR** | Print a QR poster per property. Scanning it opens a public enquiry form and the lead lands in your Leads list. Track status (new, contacted, visit, won, lost) and follow-up dates, add leads by hand, one-tap WhatsApp. |
+| **Rent agreement** | A printable agreement for each tenant, filled in from their details (rent, deposit, due day, bed, ID). It is a standard template, not legal advice. |
 
 The feature set is benchmarked against the owner side of popular Indian PG apps (such as RentOk),
 but the product, design and branding are Neravu's own.
@@ -89,6 +93,7 @@ or create your own owner account.
 | `DATABASE_URL` | PostgreSQL connection string, e.g. `postgresql://user:pass@host:5432/neravu` |
 | `DATABASE_URL_UNPOOLED` | Optional. Direct (non-pooled) connection used only for migrations. Vercel + Neon sets it automatically. |
 | `AUTH_SECRET` | Secret used to sign session cookies. Required in production. Generate with `openssl rand -base64 32`. |
+| `APP_URL` | Optional. Public address used in links sent to tenants, e.g. `https://neravu.example.com`. Detected from the request when unset. |
 | `APP_TIMEZONE` | Optional. Timezone used for "today" when billing rent. Defaults to `Asia/Kolkata`. |
 
 ### Scripts

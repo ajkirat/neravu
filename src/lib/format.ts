@@ -79,12 +79,15 @@ export function reminderLink(opts: {
   amount: number;
   propertyName: string;
   since?: Date | null;
+  payUrl?: string;
 }): string {
   const first = opts.tenantName.split(" ")[0];
   const since = opts.since ? ` (pending since ${fmtDate(opts.since)})` : "";
   const text =
     `Hi ${first}, this is a gentle reminder from ${opts.propertyName}. ` +
     `Your pending amount is ${rupees(opts.amount)}${since}. ` +
-    `Please pay at the earliest and share the payment reference. Thank you!`;
+    `Please pay at the earliest and share the payment reference.` +
+    (opts.payUrl ? ` You can pay online here: ${opts.payUrl}` : "") +
+    ` Thank you!`;
   return `https://wa.me/${whatsappNumber(opts.phone)}?text=${encodeURIComponent(text)}`;
 }
