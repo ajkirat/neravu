@@ -11,6 +11,7 @@ const I = {
   rupee: "M7 5h10M7 9.5h10M7 5h2.5c3.5 0 5.5 1.7 5.5 4.5S13 14 9.5 14H7l7 6",
   flag: "M5 21V4m0 0h11l-2 4 2 4H5",
   chart: "M4 20V10M10 20V4M16 20v-7M22 20H2",
+  download: "M12 3v12m0 0l-4-4m4 4l4-4M5 21h14",
   bolt: "M13 2L4 14h7l-1 8 9-12h-7l1-8z",
   bell: "M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0",
   sliders: "M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M16 4v4M10 10v4M18 16v4",
@@ -46,6 +47,7 @@ export const MORE: NavItem[] = [
   ...NAV,
   { href: "/reminders", key: "navReminders", icon: I.bell },
   { href: "/auto-reminders", key: "navAuto", icon: I.bell },
+  { href: "/export", key: "navExport", icon: I.download },
   { href: "/settings", key: "navSettings", icon: I.sliders },
   { href: "/help", key: "navHelp", icon: I.help },
 ];
