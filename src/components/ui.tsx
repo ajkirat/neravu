@@ -13,14 +13,14 @@ export function PageHeader({
   back?: { href: string; label: string };
 }) {
   return (
-    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mb-4 flex flex-col gap-2 sm:mb-6 sm:flex-row sm:items-end sm:justify-between">
       <div>
         {back && (
           <Link href={back.href} className="mb-1 inline-block text-sm text-brand-600 hover:underline">
             ← {back.label}
           </Link>
         )}
-        <h1 className="text-2xl font-bold tracking-tight text-brand-900">{title}</h1>
+        <h1 className="text-xl font-bold tracking-tight text-brand-900 sm:text-2xl">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
@@ -44,12 +44,12 @@ export function Card({
   return (
     <section className={`card ${className}`}>
       {title && (
-        <header className="flex items-center justify-between gap-2 border-b border-line px-5 py-3.5">
-          <h2 className="text-sm font-semibold text-brand-900">{title}</h2>
+        <header className="flex items-center justify-between gap-2 border-b border-line px-4 py-3 sm:px-5 sm:py-3.5">
+          <h2 className="text-base font-semibold sm:text-sm text-brand-900">{title}</h2>
           {action}
         </header>
       )}
-      <div className={padded ? "p-5" : ""}>{children}</div>
+      <div className={padded ? "p-4 sm:p-5" : ""}>{children}</div>
     </section>
   );
 }
@@ -72,13 +72,13 @@ export function Stat({
     brand: "bg-brand-600 border-brand-600 text-white",
   } as const;
   return (
-    <div className={`card p-4 ${tones[tone]}`}>
-      <p className={`text-xs font-medium tracking-wide uppercase ${tone === "brand" ? "text-brand-100" : "text-muted"}`}>
+    <div className={`card p-3 sm:p-4 ${tones[tone]}`}>
+      <p className={`text-sm font-medium ${tone === "brand" ? "text-brand-100" : "text-muted"}`}>
         {label}
       </p>
-      <p className="mt-1.5 text-2xl font-bold tracking-tight">{value}</p>
+      <p className="mt-0.5 text-xl font-bold sm:mt-1.5 sm:text-2xl tracking-tight">{value}</p>
       {hint && (
-        <p className={`mt-1 text-xs ${tone === "brand" ? "text-brand-100" : "text-muted"}`}>{hint}</p>
+        <p className={`mt-0.5 text-xs ${tone === "brand" ? "text-brand-100" : "text-muted"}`}>{hint}</p>
       )}
     </div>
   );
@@ -142,5 +142,18 @@ export function Field({
       {children}
       {hint && <span className="mt-1 block text-xs text-muted">{hint}</span>}
     </label>
+  );
+}
+
+/** A card that starts closed — for rarely used forms, so the page stays short. */
+export function FoldCard({ title, children, open }: { title: ReactNode; children: ReactNode; open?: boolean }) {
+  return (
+    <details className="card group" open={open}>
+      <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 text-base font-semibold text-brand-900 sm:px-5 sm:text-sm [&::-webkit-details-marker]:hidden">
+        {title}
+        <span aria-hidden className="text-muted transition group-open:rotate-180">▾</span>
+      </summary>
+      <div className="border-t border-line p-4 sm:p-5">{children}</div>
+    </details>
   );
 }

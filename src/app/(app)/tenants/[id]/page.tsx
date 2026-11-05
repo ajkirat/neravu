@@ -27,7 +27,7 @@ import { CopyButton } from "@/components/copy-button";
 import { ActionForm } from "@/components/action-form";
 import { BedPicker } from "@/components/bed-picker";
 import { PaymentForm } from "@/components/payment-form";
-import { Badge, Card, Field, PageHeader, Stat } from "@/components/ui";
+import { FoldCard, Badge, Card, Field, PageHeader, Stat } from "@/components/ui";
 import {
   addCharge,
   cancelNotice,
@@ -141,7 +141,7 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
         }
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="mb-4 grid grid-cols-2 gap-2 sm:mb-6 sm:gap-3 md:grid-cols-4">
         {s.outstanding > 0 ? (
           <Stat
             label={tr("pendingDues")}
@@ -171,7 +171,7 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
         </p>
       )}
       {t.status !== "MOVED_OUT" && (
-        <div className="card mb-6 flex flex-wrap items-center justify-between gap-3 px-5 py-3">
+        <div className="card mb-4 flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:mb-6 sm:px-5">
           {payUrl ? (
             <>
               <div className="min-w-0">
@@ -191,13 +191,64 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
+        <div className="space-y-4 sm:space-y-6 lg:col-span-2">
           <Card title={tr("statement")} padded={false}>
             {statement.length === 0 ? (
               <p className="p-5 text-sm text-muted">{tr("noCharges")}</p>
             ) : (
-              <div className="overflow-x-auto">
+              <>
+              <ul className="divide-y divide-line md:hidden">
+                {[...statement].reverse().map((r) => (
+                  <li key={`m-${r.kind}-${r.id}`} className={`px-4 py-3 ${r.kind === "charge" && r.future ? "opacity-50" : ""}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-base font-medium">{r.label}</p>
+                        <p className="text-sm text-muted">
+                          {fmtDate(r.date, lang)}
+                          {r.kind === "charge" && r.future ? ` · ${tr("upcoming")}` : ""}
+                        </p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className={`text-base font-bold ${r.kind === "payment" ? "text-brand-700" : ""}`}>
+                          {r.kind === "payment" ? "+ " : ""}
+                          {rupees(r.amount)}
+                        </p>
+                        <p className={`text-xs ${r.balance > 0 ? "text-red-700" : "text-muted"}`}>
+                          {tr("colBalance")}: {rupees(r.balance)}
+                        </p>
+                      </div>
+                    </div>
+                    {r.kind === "payment" ? (
+                      <p className="mt-1 flex items-center justify-end gap-4">
+                        <Link href={`/payments/${r.id}/receipt`} className="text-sm text-brand-600 underline">
+                          {tr("receipt")}
+                        </Link>
+                        {isOwner && (
+                          <ActionForm
+                            action={deletePayment.bind(null, r.id)}
+                            submitLabel={tr("delete")}
+                            submitClassName="min-h-9 text-sm text-red-700 hover:underline"
+                            className="inline"
+                            confirm={tr("deletePaymentConfirm")}
+                          />
+                        )}
+                      </p>
+                    ) : isOwner && r.amount > 0 ? (
+                      <p className="mt-1 text-right">
+                        <ActionForm
+                          action={deleteCharge.bind(null, r.id)}
+                          submitLabel={r.type === "RENT" ? tr("waive") : tr("remove")}
+                          submitClassName="min-h-9 text-sm text-muted hover:text-red-700 hover:underline"
+                          className="inline"
+                          confirm={r.type === "RENT" ? tr("waiveConfirm") : tr("removeChargeConfirm")}
+                        />
+                      </p>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+              <div className="hidden overflow-x-auto md:block">
                 <table className="table">
                   <thead>
                     <tr>
@@ -264,11 +315,12 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
                   </tbody>
                 </table>
               </div>
+              </>
             )}
           </Card>
 
           {isOwner && (
-<Card title={tr("profileKyc")}>
+<FoldCard title={tr("profileKyc")}>
             <ActionForm action={updateTenant.bind(null, t.id)} submitLabel={tr("saveChanges")}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label={tr("fullName")}>
@@ -320,17 +372,17 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
                   </select>
                 </Field>
             </ActionForm>
-          </Card>
+          </FoldCard>
 )}
         </div>
 
-        <div className="space-y-6">
+        <div className="order-first space-y-4 sm:space-y-6 lg:order-none">
           <Card title={tr("recordPaymentCard")}>
             <PaymentForm tenantId={t.id} defaultAmount={s.outstanding} />
           </Card>
 
           {isOwner && (
-<Card title={tr("addCharge")}>
+<FoldCard title={tr("addCharge")}>
             <ActionForm action={addCharge.bind(null, t.id)} submitLabel={tr("addChargeBtn")} resetOnSuccess>
               <div className="grid grid-cols-2 gap-3">
                 <Field label={tr("type")}>
@@ -353,11 +405,11 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
                 <input className="input" type="date" name="dueDate" defaultValue={toDateInput(asOf)} />
               </Field>
             </ActionForm>
-          </Card>
+          </FoldCard>
 )}
 
           {isOwner && t.status !== "MOVED_OUT" && (
-            <Card title={tr("noticeMoveOut")}>
+            <FoldCard title={tr("noticeMoveOut")}>
               <div className="space-y-5">
                 {t.status === "ACTIVE" ? (
                   <ActionForm action={giveNotice.bind(null, t.id)} submitLabel={tr("recordNotice")} submitClassName="btn-secondary">
@@ -401,11 +453,11 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
                   </ActionForm>
                 </div>
               </div>
-            </Card>
+            </FoldCard>
           )}
 
           {isOwner && t.status !== "ACTIVE" && (
-            <Card title={tr("refundToTenant")}>
+            <FoldCard title={tr("refundToTenant")}>
               <ActionForm action={recordRefund.bind(null, t.id)} submitLabel={tr("recordRefund")} submitClassName="btn-secondary" resetOnSuccess>
                 <p className="text-sm text-muted">
                   {s.advance > 0
@@ -423,15 +475,15 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
                   </Field>
                 </div>
               </ActionForm>
-            </Card>
+            </FoldCard>
           )}
 
           {isOwner && t.status !== "MOVED_OUT" && beds.length > 0 && (
-            <Card title={tr("shiftBedCard")}>
+            <FoldCard title={tr("shiftBedCard")}>
               <ActionForm action={changeBed.bind(null, t.id)} submitLabel={tr("shiftBedBtn")} submitClassName="btn-secondary">
                 <BedPicker beds={beds} withRent={false} />
               </ActionForm>
-            </Card>
+            </FoldCard>
           )}
         </div>
       </div>

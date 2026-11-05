@@ -8,7 +8,7 @@ import type { TFn } from "@/lib/i18n";
 import { syncRentCharges, tenantBalances } from "@/lib/ledger";
 import { ActionForm } from "@/components/action-form";
 import { BulkRoomsForm } from "@/components/bulk-rooms-form";
-import { Badge, Card, EmptyState, Field, PageHeader, Stat } from "@/components/ui";
+import { Badge, FoldCard, Card, EmptyState, Field, PageHeader, Stat } from "@/components/ui";
 import {
   createRoom,
   deleteProperty,
@@ -79,7 +79,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         <Stat label={t("pendingDues")} value={rupees(dues)} tone={dues ? "warn" : "default"} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           {rooms.length === 0 && (
             <EmptyState
@@ -157,15 +157,15 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         </div>
 
         <div className="space-y-6">
-          <Card title={t("bulkOpen")}>
+          <FoldCard title={t("bulkOpen")} open={rooms.length === 0}>
             <BulkRoomsForm propertyId={property.id} existing={rooms.map((r) => r.number)} />
-          </Card>
-          <Card title={t("addRoom")}>
+          </FoldCard>
+          <FoldCard title={t("addRoom")}>
             <ActionForm action={createRoom.bind(null, property.id)} submitLabel={t("addRoomBtn")} resetOnSuccess>
               <RoomFields t={t} />
             </ActionForm>
-          </Card>
-          <Card title={t("propDetails")}>
+          </FoldCard>
+          <FoldCard title={t("propDetails")}>
             <ActionForm action={updateProperty.bind(null, property.id)} submitLabel={t("save")}>
               <Field label={t("name")}>
                 <input className="input" name="name" defaultValue={property.name} required />
@@ -185,7 +185,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                 confirm={t("deletePropertyConfirm")}
               />
             </div>
-          </Card>
+          </FoldCard>
         </div>
       </div>
     </>

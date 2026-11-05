@@ -60,13 +60,13 @@ export default async function TenantsPage({
           ) : undefined
         }
       />
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-3 flex flex-col gap-2 sm:mb-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex gap-1 overflow-x-auto rounded-xl bg-white p-1 ring-1 ring-line">
           {TABS.map((tab) => (
             <Link
               key={tab.key}
               href={`/tenants?tab=${tab.key}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium whitespace-nowrap ${
+              className={`rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap ${
                 tab.key === active.key ? "bg-brand-600 text-white" : "text-muted hover:text-ink"
               }`}
             >
@@ -93,7 +93,41 @@ export default async function TenantsPage({
           }
         />
       ) : (
-        <div className="card overflow-x-auto">
+        <>
+        <ul className="space-y-2 md:hidden">
+          {rows.map((tn) => {
+            const b = balances.get(tn.id);
+            return (
+              <li key={tn.id}>
+                <Link href={`/tenants/${tn.id}`} className="card flex items-center justify-between gap-3 p-3.5 active:bg-canvas">
+                  <span className="min-w-0">
+                    <span className="block truncate text-base font-semibold text-brand-900">{tn.name}</span>
+                    <span className="block text-sm text-muted">
+                      {tn.property.name}
+                      {tn.bed ? ` · ${t("roomBed", { r: tn.bed.room.number, b: tn.bed.label })}` : ""}
+                    </span>
+                    <span className="block text-sm text-muted">
+                      {rupees(tn.monthlyRent)} · {tn.phone}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    {b && b.outstanding > 0 ? (
+                      <Badge tone="red">{t("dueAmt", { amt: rupees(b.outstanding) })}</Badge>
+                    ) : b && b.advance > 0 ? (
+                      <Badge tone="green">{t("advanceAmt", { amt: rupees(b.advance) })}</Badge>
+                    ) : (
+                      <Badge tone="green">{t("settled")}</Badge>
+                    )}
+                    <span className="mt-1 block">
+                      <TenantStatusBadge status={tn.status} />
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="card hidden overflow-x-auto md:block">
           <table className="table">
             <thead>
               <tr>
@@ -140,6 +174,7 @@ export default async function TenantsPage({
             </tbody>
           </table>
         </div>
+        </>
       )}
     </>
   );

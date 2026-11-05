@@ -23,7 +23,7 @@ export default async function PropertiesPage() {
   return (
     <>
       <PageHeader title={t("propsTitle")} subtitle={t("propsSub")} />
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           {properties.length === 0 && (
             <EmptyState

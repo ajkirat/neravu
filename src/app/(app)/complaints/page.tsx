@@ -32,7 +32,7 @@ export default async function ComplaintsPage() {
   return (
     <>
       <PageHeader title={t("complaintsTitle")} subtitle={t("complaintsSub")} />
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-3 lg:col-span-2">
           {sorted.length === 0 ? (
             <EmptyState title={t("noComplaints")} />

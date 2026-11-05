@@ -18,10 +18,10 @@ export default async function MorePage() {
   return (
     <>
       <PageHeader title={t("moreTitle")} subtitle={t("moreSubtitle")} />
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {(role === "OWNER" ? MORE : STAFF_MORE).map((n) => (
-          <Link key={n.href} href={n.href} className="card flex flex-col items-center gap-3 px-3 py-6 text-center text-base font-semibold hover:shadow-sm">
-            <Icon d={n.icon} className="h-10 w-10 text-brand-600" />
+          <Link key={n.href} href={n.href} className="card flex flex-col items-center gap-1.5 px-1 py-4 text-center text-sm sm:py-6 sm:text-base font-semibold hover:shadow-sm">
+            <Icon d={n.icon} className="h-8 w-8 sm:h-10 sm:w-10 text-brand-600" />
             {t(n.key)}
           </Link>
         ))}
