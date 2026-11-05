@@ -1,0 +1,145 @@
+// Neravu data model. Money is stored as whole rupees (Int).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Owner {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  phone        String?
+  passwordHash String
+  createdAt    DateTime   @default(now())
+  properties   Property[]
+  tenants      Tenant[]
+  expenses     Expense[]
+}
+
+model Property {
+  id        String    @id @default(cuid())
+  ownerId   String
+  owner     Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name      String
+  address   String?
+  city      String?
+  createdAt DateTime  @default(now())
+  rooms     Room[]
+  tenants   Tenant[]
+  expenses  Expense[]
+
+  @@index([ownerId])
+}
+
+model Room {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  number     String
+  floor      String?
+  // Number of beds in the room (1 = single, 2 = double sharing, ...)
+  sharing    Int
+  // Default monthly rent per bed
+  rent       Int
+  createdAt  DateTime @default(now())
+  beds       Bed[]
+
+  @@unique([propertyId, number])
+}
+
+model Bed {
+  id      String   @id @default(cuid())
+  roomId  String
+  room    Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  label   String
+  tenants Tenant[]
+
+  @@unique([roomId, label])
+}
+
+model Tenant {
+  id             String    @id @default(cuid())
+  ownerId        String
+  owner          Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  propertyId     String
+  property       Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  bedId          String?
+  bed            Bed?      @relation(fields: [bedId], references: [id], onDelete: SetNull)
+  name           String
+  phone          String
+  email          String?
+  occupation     String?
+  idType         String?
+  idNumber       String?
+  emergencyName  String?
+  emergencyPhone String?
+  monthlyRent    Int
+  deposit        Int       @default(0)
+  // Day of month rent falls due (1-28)
+  rentDueDay     Int
+  moveInDate     DateTime
+  noticeDate     DateTime?
+  moveOutDate    DateTime?
+  // ACTIVE | NOTICE | MOVED_OUT
+  status         String    @default("ACTIVE")
+  notes          String?
+  createdAt      DateTime  @default(now())
+  charges        Charge[]
+  payments       Payment[]
+
+  @@index([ownerId, status])
+  @@index([bedId])
+}
+
+model Charge {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  // RENT | DEPOSIT | ELECTRICITY | MAINTENANCE | OTHER
+  type        String
+  // Billing month for rent, e.g. "2026-11"
+  period      String?
+  description String
+  amount      Int
+  dueDate     DateTime
+  createdAt   DateTime @default(now())
+
+  @@unique([tenantId, type, period])
+  @@index([tenantId, dueDate])
+}
+
+model Payment {
+  // Integer id doubles as the receipt number
+  id        Int      @id @default(autoincrement())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  amount    Int
+  paidOn    DateTime
+  // CASH | UPI | BANK | CARD | OTHER
+  method    String
+  reference String?
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, paidOn])
+}
+
+model Expense {
+  id         String    @id @default(cuid())
+  ownerId    String
+  owner      Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  propertyId String?
+  property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  category   String
+  amount     Int
+  spentOn    DateTime
+  note       String?
+  createdAt  DateTime  @default(now())
+
+  @@index([ownerId, spentOn])
+}
