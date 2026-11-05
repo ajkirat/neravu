@@ -37,6 +37,23 @@ describe("planReminders: overdue", () => {
   });
 });
 
+describe("planReminders: timezone", () => {
+  const owing = { ...base, outstanding: 5000, oldestUnpaid: d("2026-11-01") };
+  it("treats a message sent late in the UTC day as sent today in India", () => {
+    // 19:00 UTC on 10 Nov is 00:30 IST on 11 Nov: the same Indian day as asOf = 11 Nov.
+    const justSent: PlanLog = { tenantId: "t1", kind: "OVERDUE", sentAt: new Date("2026-11-10T19:00:00Z") };
+    expect(planReminders([owing], [justSent], cfg, d("2026-11-11"))).toEqual([]);
+    // ...but that same message is yesterday's by the next Indian day, and the 3-day gap still applies.
+    expect(planReminders([owing], [justSent], cfg, d("2026-11-12"))).toEqual([]);
+    expect(planReminders([owing], [justSent], cfg, d("2026-11-14"))).toHaveLength(1);
+  });
+  it("measures the I've-paid grace in Indian days", () => {
+    const claimed = new Date("2026-11-10T19:00:00Z"); // 11 Nov in India
+    expect(planReminders([{ ...owing, payClaimedAt: claimed }], [], cfg, d("2026-11-13"))).toEqual([]);
+    expect(planReminders([{ ...owing, payClaimedAt: claimed }], [], cfg, d("2026-11-14"))).toHaveLength(1);
+  });
+});
+
 describe("planReminders: guard rails", () => {
   const owing = { ...base, outstanding: 5000, oldestUnpaid: d("2026-11-01") };
   it("never sends twice in a day", () => {
