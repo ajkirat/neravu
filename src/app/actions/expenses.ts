@@ -22,6 +22,7 @@ const itemsSchema = z
   .max(MAX_ITEMS);
 
 export async function createExpense(_: FormState, fd: FormData): Promise<FormState> {
+  const { t: tr } = await getT();
   const owner = await requireOwner();
   const { t } = await getT();
 
@@ -46,7 +47,7 @@ export async function createExpense(_: FormState, fd: FormData): Promise<FormSta
   if (!(EXPENSE_CATEGORIES as readonly string[]).includes(category)) return { error: t("errCategory") };
   const propertyId = optStr(fd, "propertyId");
   if (propertyId && !(await db.property.findFirst({ where: { id: propertyId, ownerId: owner.id } }))) {
-    return { error: "Property not found." };
+    return { error: tr("errPropertyNotFound") };
   }
   const billTotal = int(fd, "billTotal");
   await db.expense.create({
@@ -68,10 +69,11 @@ export async function createExpense(_: FormState, fd: FormData): Promise<FormSta
 }
 
 export async function deleteExpense(id: string, _: FormState): Promise<FormState> {
+  const { t: tr } = await getT();
   const owner = await requireOwner();
   const e = await db.expense.findFirst({ where: { id, ownerId: owner.id } });
-  if (!e) return { error: "Expense not found." };
+  if (!e) return { error: tr("errExpenseNotFound") };
   await db.expense.delete({ where: { id } });
   revalidatePath("/", "layout");
-  return { ok: "Deleted.", at: Date.now() };
+  return { ok: tr("deletedOk"), at: Date.now() };
 }

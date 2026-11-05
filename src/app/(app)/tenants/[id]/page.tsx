@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { requireOwner } from "@/lib/auth";
+import { requireActor } from "@/lib/auth";
 import { nextDueDate, summarizeLedger } from "@/lib/billing";
 import { vacantBeds } from "@/lib/beds";
 import { toDateInput, today } from "@/lib/dates";
@@ -22,6 +22,7 @@ import { appOrigin } from "@/lib/url";
 import { getT } from "@/lib/i18n/server";
 import { TenantStatusBadge } from "@/components/tenant-status";
 import { LANGS, asLang } from "@/lib/i18n";
+import { parseElectricityDescription } from "@/lib/electricity";
 import { CopyButton } from "@/components/copy-button";
 import { ActionForm } from "@/components/action-form";
 import { BedPicker } from "@/components/bed-picker";
@@ -40,7 +41,8 @@ import { deletePayment, recordRefund } from "@/app/actions/payments";
 
 export default async function TenantPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const owner = await requireOwner();
+  const { owner, role } = await requireActor();
+  const isOwner = role === "OWNER";
   const { t: tr, lang } = await getT();
   await syncRentCharges(owner.id, id);
   const t = await db.tenant.findFirst({
@@ -70,7 +72,7 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
       kind: "charge" as const,
       date: c.dueDate,
       id: c.id,
-      label: c.type === "RENT" && c.period ? tr("rentForMonth", { month: fmtPeriod(c.period, lang) }) : c.type === "DEPOSIT" && c.description === "Security deposit" ? tr("charge_DEPOSIT") : c.description,
+      label: parseElectricityDescription(c.description) ? tr("elecChargeLabel", { month: fmtPeriod(parseElectricityDescription(c.description)!.period, lang), room: parseElectricityDescription(c.description)!.room, days: parseElectricityDescription(c.description)!.days, total: parseElectricityDescription(c.description)!.total }) : c.type === "RENT" && c.period ? tr("rentForMonth", { month: fmtPeriod(c.period, lang) }) : c.type === "DEPOSIT" && c.description === "Security deposit" ? tr("charge_DEPOSIT") : c.description,
       type: c.type,
       amount: c.amount,
       future: c.dueDate > asOf,
@@ -112,9 +114,11 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
         }
         actions={
           <>
+            {isOwner && (
             <Link href={`/tenants/${t.id}/agreement`} className="btn-secondary">
               {tr("rentAgreement")}
             </Link>
+            )}
             {s.outstanding > 0 && (
               <a
                 className="btn-accent"
@@ -235,6 +239,7 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
                               <Link href={`/payments/${r.id}/receipt`} className="text-xs text-brand-600 hover:underline">
                                 {tr("receipt")}
                               </Link>
+{isOwner && (
                               <ActionForm
                                 action={deletePayment.bind(null, r.id)}
                                 submitLabel={tr("delete")}
@@ -242,8 +247,9 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
                                 className="inline"
                                 confirm={tr("deletePaymentConfirm")}
                               />
+)}
                             </span>
-                          ) : r.amount > 0 ? (
+                          ) : isOwner && r.amount > 0 ? (
                             <ActionForm
                               action={deleteCharge.bind(null, r.id)}
                               submitLabel={r.type === "RENT" ? tr("waive") : tr("remove")}
@@ -261,7 +267,8 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
             )}
           </Card>
 
-          <Card title={tr("profileKyc")}>
+          {isOwner && (
+<Card title={tr("profileKyc")}>
             <ActionForm action={updateTenant.bind(null, t.id)} submitLabel={tr("saveChanges")}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label={tr("fullName")}>
@@ -314,6 +321,7 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
                 </Field>
             </ActionForm>
           </Card>
+)}
         </div>
 
         <div className="space-y-6">
@@ -321,7 +329,8 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
             <PaymentForm tenantId={t.id} defaultAmount={s.outstanding} />
           </Card>
 
-          <Card title={tr("addCharge")}>
+          {isOwner && (
+<Card title={tr("addCharge")}>
             <ActionForm action={addCharge.bind(null, t.id)} submitLabel={tr("addChargeBtn")} resetOnSuccess>
               <div className="grid grid-cols-2 gap-3">
                 <Field label={tr("type")}>
@@ -345,8 +354,9 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
               </Field>
             </ActionForm>
           </Card>
+)}
 
-          {t.status !== "MOVED_OUT" && (
+          {isOwner && t.status !== "MOVED_OUT" && (
             <Card title={tr("noticeMoveOut")}>
               <div className="space-y-5">
                 {t.status === "ACTIVE" ? (
@@ -394,7 +404,7 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
             </Card>
           )}
 
-          {t.status !== "ACTIVE" && (
+          {isOwner && t.status !== "ACTIVE" && (
             <Card title={tr("refundToTenant")}>
               <ActionForm action={recordRefund.bind(null, t.id)} submitLabel={tr("recordRefund")} submitClassName="btn-secondary" resetOnSuccess>
                 <p className="text-sm text-muted">
@@ -416,7 +426,7 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
             </Card>
           )}
 
-          {t.status !== "MOVED_OUT" && beds.length > 0 && (
+          {isOwner && t.status !== "MOVED_OUT" && beds.length > 0 && (
             <Card title={tr("shiftBedCard")}>
               <ActionForm action={changeBed.bind(null, t.id)} submitLabel={tr("shiftBedBtn")} submitClassName="btn-secondary">
                 <BedPicker beds={beds} withRent={false} />

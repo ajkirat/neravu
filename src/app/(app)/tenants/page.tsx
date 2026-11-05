@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { requireOwner } from "@/lib/auth";
+import { requireActor } from "@/lib/auth";
 import { fmtDate, rupees } from "@/lib/format";
 import { syncRentCharges, tenantBalances } from "@/lib/ledger";
 import { Badge, EmptyState, PageHeader } from "@/components/ui";
@@ -23,7 +23,8 @@ export default async function TenantsPage({
   searchParams: Promise<{ tab?: string; q?: string }>;
 }) {
   const { tab = "current", q = "" } = await searchParams;
-  const owner = await requireOwner();
+  const { owner, role } = await requireActor();
+  const isOwner = role === "OWNER";
   const { t, lang } = await getT();
   const active = TABS.find((t) => t.key === tab) ?? TABS[0];
   await syncRentCharges(owner.id);
@@ -52,9 +53,11 @@ export default async function TenantsPage({
         title={t("tenantsTitle")}
         subtitle={t("tenantsSub")}
         actions={
-          <Link href="/tenants/new" className="btn-primary">
-            {t("addTenant")}
-          </Link>
+          isOwner ? (
+            <Link href="/tenants/new" className="btn-primary">
+              {t("addTenant")}
+            </Link>
+          ) : undefined
         }
       />
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -82,7 +85,7 @@ export default async function TenantsPage({
           title={q ? t("noMatch") : t("noTenantsHere")}
           body={active.key === "current" ? t("noTenantsBody") : undefined}
           action={
-            active.key === "current" && !q ? (
+            isOwner && active.key === "current" && !q ? (
               <Link href="/tenants/new" className="btn-primary">
                 {t("addTenant")}
               </Link>

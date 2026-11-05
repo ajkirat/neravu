@@ -11,6 +11,8 @@ const I = {
   rupee: "M7 5h10M7 9.5h10M7 5h2.5c3.5 0 5.5 1.7 5.5 4.5S13 14 9.5 14H7l7 6",
   flag: "M5 21V4m0 0h11l-2 4 2 4H5",
   chart: "M4 20V10M10 20V4M16 20v-7M22 20H2",
+  download: "M12 3v12m0 0l-4-4m4 4l4-4M5 21h14",
+  bolt: "M13 2L4 14h7l-1 8 9-12h-7l1-8z",
   bell: "M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0",
   sliders: "M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M16 4v4M10 10v4M18 16v4",
   help: "M9 9a3 3 0 115 2c-1 1-2 1.5-2 3M12 18h.01M12 22a10 10 0 100-20 10 10 0 000 20z",
@@ -24,9 +26,11 @@ export const NAV: NavItem[] = [
   { href: "/tenants", key: "navTenants", icon: I.people },
   { href: "/payments", key: "navPayments", icon: I.card },
   { href: "/expenses", key: "navExpenses", icon: I.rupee },
+  { href: "/electricity", key: "navElectricity", icon: I.bolt },
   { href: "/leads", key: "navLeads", icon: I.phone },
   { href: "/complaints", key: "navComplaints", icon: I.flag },
   { href: "/reports", key: "navReports", icon: I.chart },
+  { href: "/staff", key: "navStaff", icon: I.people },
 ];
 
 /** The four things owners do daily, plus More, on the phone bottom bar. */
@@ -43,6 +47,15 @@ export const MORE: NavItem[] = [
   ...NAV,
   { href: "/reminders", key: "navReminders", icon: I.bell },
   { href: "/auto-reminders", key: "navAuto", icon: I.bell },
+  { href: "/export", key: "navExport", icon: I.download },
   { href: "/settings", key: "navSettings", icon: I.sliders },
   { href: "/help", key: "navHelp", icon: I.help },
 ];
+
+export const navIcon = (href: string): string => MORE.find((n) => n.href === href)?.icon ?? I.grid;
+const pick = (hrefs: string[]) => hrefs.map((h) => MORE.find((n) => n.href === h)!).filter(Boolean);
+
+/** What a caretaker sees in the sidebar, on the phone bottom bar, and on the More screen. */
+export const STAFF_NAV: NavItem[] = pick(["/dashboard", "/tenants", "/payments", "/complaints", "/leads"]);
+export const STAFF_BOTTOM: NavItem[] = [...pick(["/dashboard", "/tenants", "/payments", "/leads"]), { href: "/more", key: "navMore", icon: I.grid }];
+export const STAFF_MORE: NavItem[] = pick(["/dashboard", "/tenants", "/payments", "/complaints", "/leads", "/reminders", "/help"]);

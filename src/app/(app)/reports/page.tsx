@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth";
 import { monthRange, periodKey, shiftPeriod, today } from "@/lib/dates";
 import { fmtPeriod, rupees } from "@/lib/format";
+import { getT } from "@/lib/i18n/server";
 import { syncRentCharges } from "@/lib/ledger";
 import { MonthPicker } from "@/components/month-picker";
 import { Card, PageHeader } from "@/components/ui";
@@ -15,6 +16,7 @@ export default async function ReportsPage({
 }) {
   const sp = await searchParams;
   const owner = await requireOwner();
+  const { t: tr, lang } = await getT();
   await syncRentCharges(owner.id);
   const month = sp.month && monthRange(sp.month) ? sp.month : periodKey(today());
   const range = monthRange(month)!;
@@ -82,29 +84,29 @@ export default async function ReportsPage({
   return (
     <>
       <PageHeader
-        title="Reports"
-        subtitle="Billing, collections and spend by property."
+        title={tr("reportsTitle")}
+        subtitle={tr("reportsSub")}
         actions={
           <>
             <MonthPicker base="/reports" month={month} />
             <a href="/reports/dues.csv" className="btn-secondary">
-              Export dues (CSV)
+              {tr("exportDues")}
             </a>
           </>
         }
       />
 
-      <Card title={`${fmtPeriod(month)} by property`} padded={false} className="mb-6">
+      <Card title={tr("byProperty", { month: fmtPeriod(month, lang) })} padded={false} className="mb-6">
         <div className="overflow-x-auto">
           <table className="table">
             <thead>
               <tr>
-                <th>Property</th>
-                <th>Occupancy</th>
-                <th className="text-right">Billed</th>
-                <th className="text-right">Collected</th>
-                <th className="text-right">Expenses</th>
-                <th className="text-right">Net</th>
+                <th>{tr("colProperty")}</th>
+                <th>{tr("colOccupancy")}</th>
+                <th className="text-right">{tr("colBilled")}</th>
+                <th className="text-right">{tr("colCollected")}</th>
+                <th className="text-right">{tr("colExpenses")}</th>
+                <th className="text-right">{tr("colNet")}</th>
               </tr>
             </thead>
             <tbody>
@@ -112,7 +114,7 @@ export default async function ReportsPage({
                 <tr key={r.p.id}>
                   <td className="font-medium">{r.p.name}</td>
                   <td className="text-sm text-muted">
-                    {r.occupied}/{r.beds} beds
+                    {tr("bedsShort", { occ: r.occupied, beds: r.beds })}
                   </td>
                   <td className="text-right">{rupees(r.billed)}</td>
                   <td className="text-right">{rupees(r.collected)}</td>
@@ -122,7 +124,7 @@ export default async function ReportsPage({
               ))}
               {general > 0 && (
                 <tr>
-                  <td className="text-muted">General expenses</td>
+                  <td className="text-muted">{tr("generalExpenses")}</td>
                   <td />
                   <td />
                   <td />
@@ -131,7 +133,7 @@ export default async function ReportsPage({
                 </tr>
               )}
               <tr className="bg-canvas font-semibold">
-                <td>Total</td>
+                <td>{tr("totalRow")}</td>
                 <td />
                 <td className="text-right">{rupees(totals.billed)}</td>
                 <td className="text-right">{rupees(totals.collected)}</td>
@@ -142,18 +144,17 @@ export default async function ReportsPage({
           </table>
         </div>
         <p className="border-t border-line px-5 py-3 text-xs text-muted">
-          Billed is rent and other charges falling due this month (deposits excluded). Collected is net of
-          refunds.
+          {tr("reportNote")}
         </p>
       </Card>
 
-      <Card title="Last 6 months">
+      <Card title={tr("last6")}>
         <div className="mb-4 flex gap-4 text-xs text-muted">
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-sm bg-brand-500" /> Collected
+            <span className="h-2.5 w-2.5 rounded-sm bg-brand-500" /> {tr("legendCollected")}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-sm bg-marigold-400" /> Expenses
+            <span className="h-2.5 w-2.5 rounded-sm bg-marigold-400" /> {tr("legendExpenses")}
           </span>
         </div>
         <div className="grid h-56 grid-cols-6 items-end gap-3">
@@ -163,15 +164,15 @@ export default async function ReportsPage({
                 <div
                   className="w-1/3 rounded-t bg-brand-500"
                   style={{ height: `${(Math.max(0, t.collected) / max) * 100}%` }}
-                  title={`Collected ${rupees(t.collected)}`}
+                  title={`${tr("legendCollected")} ${rupees(t.collected)}`}
                 />
                 <div
                   className="w-1/3 rounded-t bg-marigold-400"
                   style={{ height: `${(t.spent / max) * 100}%` }}
-                  title={`Expenses ${rupees(t.spent)}`}
+                  title={`${tr("legendExpenses")} ${rupees(t.spent)}`}
                 />
               </div>
-              <p className="mt-2 text-center text-xs text-muted">{fmtPeriod(t.m).slice(0, 3)}</p>
+              <p className="mt-2 text-center text-xs text-muted">{fmtPeriod(t.m, lang).split(" ")[0].slice(0, 4)}</p>
               <p className="text-center text-[11px] font-medium">{rupees(t.collected - t.spent)}</p>
             </div>
           ))}

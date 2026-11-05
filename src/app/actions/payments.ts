@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { requireOwner } from "@/lib/auth";
+import { requireActor, requireOwner } from "@/lib/auth";
 import { parseDateInput, today } from "@/lib/dates";
 import { int, optStr, str } from "@/lib/forms";
 import { PAYMENT_METHODS, rupees } from "@/lib/format";
@@ -12,16 +12,17 @@ import { getT } from "@/lib/i18n/server";
 import type { FormState } from "@/components/action-form";
 
 export async function recordPayment(_: FormState, fd: FormData): Promise<FormState> {
-  const owner = await requireOwner();
+  const { t: tr } = await getT();
+  const { owner, staff } = await requireActor();
   const tenantId = str(fd, "tenantId");
   const tenant = await db.tenant.findFirst({ where: { id: tenantId, ownerId: owner.id } });
-  if (!tenant) return { error: "Choose a tenant." };
+  if (!tenant) return { error: tr("errChooseTenant") };
   const amount = int(fd, "amount");
-  if (!amount || amount <= 0) return { error: "Enter the amount received." };
+  if (!amount || amount <= 0) return { error: tr("errAmountReceived") };
   const method = str(fd, "method");
-  if (!PAYMENT_METHODS.includes(method as never)) return { error: "Pick a payment method." };
+  if (!PAYMENT_METHODS.includes(method as never)) return { error: tr("errPickMethod") };
   const paidOn = parseDateInput(str(fd, "paidOn")) ?? today();
-  if (paidOn > today()) return { error: "Payment date cannot be in the future." };
+  if (paidOn > today()) return { error: tr("errFutureDate") };
   await db.payment.create({
     data: {
       tenantId,
@@ -30,30 +31,34 @@ export async function recordPayment(_: FormState, fd: FormData): Promise<FormSta
       method,
       reference: optStr(fd, "reference"),
       note: optStr(fd, "note"),
+      recordedByStaffId: staff?.id ?? null,
+      recordedByName: staff?.name ?? null,
     },
   });
   // A recorded payment resolves any "I've paid" claim from the tenant.
   await db.tenant.update({ where: { id: tenantId }, data: { payClaimedAt: null } });
   revalidatePath("/", "layout");
-  return { ok: `Recorded ${rupees(amount)} from ${tenant.name}.`, at: Date.now() };
+  return { ok: tr("paidRecorded", { amt: rupees(amount), name: tenant.name }), at: Date.now() };
 }
 
 export async function deletePayment(id: number, _: FormState): Promise<FormState> {
+  const { t: tr } = await getT();
   const owner = await requireOwner();
   const p = await db.payment.findFirst({ where: { id, tenant: { ownerId: owner.id } } });
-  if (!p) return { error: "Payment not found." };
+  if (!p) return { error: tr("errPaymentNotFound") };
   await db.payment.delete({ where: { id } });
   revalidatePath("/", "layout");
-  return { ok: "Payment deleted.", at: Date.now() };
+  return { ok: tr("paymentDeleted"), at: Date.now() };
 }
 
 /** Record money returned to the tenant (e.g. deposit refund at move-out). */
 export async function recordRefund(tenantId: string, _: FormState, fd: FormData): Promise<FormState> {
+  const { t: tr } = await getT();
   const owner = await requireOwner();
   const tenant = await db.tenant.findFirst({ where: { id: tenantId, ownerId: owner.id } });
-  if (!tenant) return { error: "Tenant not found." };
+  if (!tenant) return { error: tr("errTenantNotFound") };
   const amount = int(fd, "amount");
-  if (!amount || amount <= 0) return { error: "Enter the amount refunded." };
+  if (!amount || amount <= 0) return { error: tr("errAmountRefunded") };
   const paidOn = parseDateInput(str(fd, "paidOn")) ?? today();
   await db.payment.create({
     data: {
@@ -65,27 +70,30 @@ export async function recordRefund(tenantId: string, _: FormState, fd: FormData)
     },
   });
   revalidatePath("/", "layout");
-  return { ok: `Recorded refund of ${rupees(amount)}.`, at: Date.now() };
+  return { ok: tr("refundRecorded", { amt: rupees(amount) }), at: Date.now() };
 }
 
 /** One tap: record the tenant's whole pending amount as received today (cash or UPI). */
 export async function collectFull(tenantId: string, method: string): Promise<{ error?: string; ok?: string }> {
-  const owner = await requireOwner();
+  const { t: tr } = await getT();
+  const { owner, staff } = await requireActor();
   const { t, lang } = await getT();
-  if (method !== "CASH" && method !== "UPI") return { error: "Invalid method." };
+  if (method !== "CASH" && method !== "UPI") return { error: tr("errInvalidMethod") };
   const tenant = await db.tenant.findFirst({
     where: { id: tenantId, ownerId: owner.id },
     include: { charges: { select: { amount: true, dueDate: true } }, payments: { select: { amount: true } } },
   });
-  if (!tenant) return { error: "Tenant not found." };
+  if (!tenant) return { error: tr("errTenantNotFound") };
   await syncRentCharges(owner.id, tenantId);
   const fresh = await db.tenant.findUnique({
     where: { id: tenantId },
     select: { charges: { select: { amount: true, dueDate: true } }, payments: { select: { amount: true } } },
   });
   const s = summarizeLedger(fresh?.charges ?? [], fresh?.payments ?? [], today());
-  if (s.outstanding <= 0) return { error: "Nothing is pending." };
-  await db.payment.create({ data: { tenantId, amount: s.outstanding, paidOn: today(), method } });
+  if (s.outstanding <= 0) return { error: tr("errNothingPending") };
+  await db.payment.create({
+    data: { tenantId, amount: s.outstanding, paidOn: today(), method, recordedByStaffId: staff?.id ?? null, recordedByName: staff?.name ?? null },
+  });
   await db.tenant.update({ where: { id: tenantId }, data: { payClaimedAt: null } });
   revalidatePath("/", "layout");
   void lang;

@@ -4,14 +4,16 @@ import { Logo } from "@/components/logo";
 import { BottomNav, SideNav } from "@/components/nav";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { TextSizeToggle } from "@/components/text-size-toggle";
-import { requireOwner } from "@/lib/auth";
+import { requireActor } from "@/lib/auth";
+import { BOTTOM, NAV, STAFF_BOTTOM, STAFF_NAV } from "@/lib/nav-items";
 import { emailEnabled } from "@/lib/email";
 import { VerifyBanner } from "@/components/verify-banner";
 import { getT } from "@/lib/i18n/server";
 import { logout } from "@/app/actions/auth";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const owner = await requireOwner();
+  const { owner, role, staff } = await requireActor();
+  const isOwner = role === "OWNER";
   const { t } = await getT();
   const large = (await cookies()).get("neravu_text")?.value === "lg";
   return (
@@ -20,16 +22,18 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Link href="/dashboard" className="mb-8 px-2 pt-1">
           <Logo light />
         </Link>
-        <SideNav />
+        <SideNav items={isOwner ? NAV : STAFF_NAV} />
         <div className="mt-auto space-y-3">
           <LanguageSwitcher className="w-full justify-between" />
           <div className="rounded-xl bg-brand-900/40 p-3">
-            <p className="truncate text-sm font-medium text-white">{owner.name}</p>
-            <p className="truncate text-xs text-brand-200">{owner.email}</p>
+            <p className="truncate text-sm font-medium text-white">{isOwner ? owner.name : staff?.name}</p>
+            <p className="truncate text-xs text-brand-200">{isOwner ? owner.email : `${t("roleStaff")} · ${owner.businessName ?? owner.name}`}</p>
             <div className="mt-2 flex items-center gap-3">
-              <Link href="/settings" className="text-xs font-medium text-brand-100 hover:underline">
-                {t("navSettings")}
-              </Link>
+              {isOwner && (
+                <Link href="/settings" className="text-xs font-medium text-brand-100 hover:underline">
+                  {t("navSettings")}
+                </Link>
+              )}
               <Link href="/help" className="text-xs font-medium text-brand-100 hover:underline">
                 {t("navHelp")}
               </Link>
@@ -52,10 +56,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="no-print mb-4 hidden justify-end lg:flex">
           <TextSizeToggle large={large} />
         </div>
-        {emailEnabled() && !owner.emailVerifiedAt && <VerifyBanner email={owner.email} />}
+        {isOwner && emailEnabled() && !owner.emailVerifiedAt && <VerifyBanner email={owner.email} />}
         {children}
       </main>
-      <BottomNav />
+      <BottomNav items={isOwner ? BOTTOM : STAFF_BOTTOM} />
     </div>
   );
 }

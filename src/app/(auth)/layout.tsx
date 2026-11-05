@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/logo";
-import { currentOwner } from "@/lib/auth";
+import { currentActor } from "@/lib/auth";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { getT } from "@/lib/i18n/server";
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
-  if (await currentOwner()) redirect("/dashboard");
+  if (await currentActor()) redirect("/dashboard");
   const { t } = await getT();
   return (
     <div className="grid min-h-screen lg:grid-cols-2">

@@ -7,7 +7,7 @@ import type { MsgKey } from "@/lib/i18n";
 
 const STATUSES = ["OPEN", "IN_PROGRESS", "RESOLVED"] as const;
 
-export function ComplaintControls({ id, status }: { id: string; status: string }) {
+export function ComplaintControls({ id, status, canDelete = true }: { id: string; status: string; canDelete?: boolean }) {
   const t = useT();
   const [pending, start] = useTransition();
   return (
@@ -25,14 +25,16 @@ export function ComplaintControls({ id, status }: { id: string; status: string }
           </option>
         ))}
       </select>
-      <button
-        type="button"
-        className="btn-danger btn-sm"
-        disabled={pending}
-        onClick={() => window.confirm(t("deleteComplaintConfirm")) && start(() => deleteComplaint(id))}
-      >
-        {t("delete")}
-      </button>
+      {canDelete && (
+        <button
+          type="button"
+          className="btn-danger btn-sm"
+          disabled={pending}
+          onClick={() => window.confirm(t("deleteComplaintConfirm")) && start(() => deleteComplaint(id))}
+        >
+          {t("delete")}
+        </button>
+      )}
     </div>
   );
 }

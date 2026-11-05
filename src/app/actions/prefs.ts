@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-import { currentOwner } from "@/lib/auth";
+import { currentActor } from "@/lib/auth";
 import { LANG_COOKIE, isLang } from "@/lib/i18n";
 
 const YEAR = 60 * 60 * 24 * 365;
@@ -13,8 +13,9 @@ const TEXT_COOKIE = "neravu_text";
 export async function setLanguage(lang: string): Promise<void> {
   if (!isLang(lang)) return;
   (await cookies()).set(LANG_COOKIE, lang, { path: "/", maxAge: YEAR, sameSite: "lax" });
-  const owner = await currentOwner();
-  if (owner) await db.owner.update({ where: { id: owner.id }, data: { language: lang } });
+  const actor = await currentActor();
+  // Only the owner's choice is saved on the account; a caretaker just changes their own screen.
+  if (actor && actor.role === "OWNER") await db.owner.update({ where: { id: actor.owner.id }, data: { language: lang } });
   revalidatePath("/", "layout");
 }
 

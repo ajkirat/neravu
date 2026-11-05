@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { requireOwner } from "@/lib/auth";
+import { requireActor } from "@/lib/auth";
 import { today, toDateInput } from "@/lib/dates";
 import { fmtDate, whatsappNumber } from "@/lib/format";
 import { followUpDue, isOpenLead } from "@/lib/leads";
@@ -16,7 +16,7 @@ export const metadata = { title: "Leads" };
 
 export default async function LeadsPage({ searchParams }: { searchParams: Promise<{ show?: string }> }) {
   const sp = await searchParams;
-  const owner = await requireOwner();
+  const { owner, role } = await requireActor();
   const { t, lang } = await getT();
   const showAll = sp.show === "all";
   const [all, properties] = await Promise.all([
@@ -90,7 +90,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                   </a>
                 </div>
                 <div className="mt-3 border-t border-line pt-3">
-                  <LeadControls id={l.id} status={l.status} followUp={l.followUpOn ? toDateInput(l.followUpOn) : ""} />
+                  <LeadControls id={l.id} status={l.status} followUp={l.followUpOn ? toDateInput(l.followUpOn) : ""} canDelete={role === "OWNER"} />
                 </div>
               </Card>
             ))
