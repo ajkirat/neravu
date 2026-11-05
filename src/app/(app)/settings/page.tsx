@@ -40,6 +40,9 @@ export default async function SettingsPage() {
             <Field label={t("businessName")} hint={t("businessNameHint")}>
               <input name="businessName" className="input" defaultValue={owner.businessName ?? ""} />
             </Field>
+            <Field label={t("houseRulesLabel")} hint={t("houseRulesHint")}>
+              <textarea name="houseRules" className="input" rows={4} maxLength={800} defaultValue={owner.houseRules ?? ""} />
+            </Field>
           </ActionForm>
         </Card>
         <Card title={t("payHowTitle")}>

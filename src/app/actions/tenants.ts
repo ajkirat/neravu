@@ -123,7 +123,7 @@ export async function createTenant(_: FormState, fd: FormData): Promise<FormStat
     });
   }
   await syncRentCharges(owner.id, tenant.id);
-  redirect(`/tenants/${tenant.id}`);
+  redirect(`/tenants/${tenant.id}?welcome=1`);
 }
 
 export async function updateTenant(id: string, _: FormState, fd: FormData): Promise<FormState> {

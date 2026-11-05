@@ -17,6 +17,8 @@ model Owner {
   passwordHash             String
   // Shown on tenant messages and pay pages; optional
   businessName             String?
+  // Shown to new tenants in the welcome WhatsApp message (wifi, timings, rules)
+  houseRules               String?
   // UPI ID (e.g. name@bank) rent is paid to; enables tenant pay links
   upiId                    String?
   // en | kn | te: the language the app opens in

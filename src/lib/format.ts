@@ -95,3 +95,22 @@ export function reminderLink(opts: {
     t("rmThanks");
   return `https://wa.me/${whatsappNumber(opts.phone)}?text=${encodeURIComponent(text)}`;
 }
+
+/** WhatsApp welcome message for a newly added tenant: how to pay, who to call, house rules. */
+export function welcomeLink(opts: {
+  phone: string;
+  tenantName: string;
+  propertyName: string;
+  ownerPhone?: string | null;
+  rules?: string | null;
+  payUrl?: string;
+  lang?: Lang;
+}): string {
+  const t = makeT(opts.lang ?? "en");
+  const text =
+    t("welHello", { name: opts.tenantName.split(" ")[0], pg: opts.propertyName }) +
+    (opts.payUrl ? t("welPay", { url: opts.payUrl }) : "") +
+    (opts.ownerPhone ? t("welCall", { phone: opts.ownerPhone }) : "") +
+    (opts.rules ? t("welRules", { rules: opts.rules }) : "");
+  return `https://wa.me/${whatsappNumber(opts.phone)}?text=${encodeURIComponent(text)}`;
+}

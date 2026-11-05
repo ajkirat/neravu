@@ -13,6 +13,7 @@ import {
   fmtPeriod,
   methodText,
   reminderLink,
+  welcomeLink,
   rupees,
 } from "@/lib/format";
 import { syncRentCharges } from "@/lib/ledger";
@@ -39,8 +40,15 @@ import {
 } from "@/app/actions/tenants";
 import { deletePayment, recordRefund } from "@/app/actions/payments";
 
-export default async function TenantPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function TenantPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ welcome?: string }>;
+}) {
   const { id } = await params;
+  const justAdded = (await searchParams).welcome === "1";
   const { owner, role } = await requireActor();
   const isOwner = role === "OWNER";
   const { t: tr, lang } = await getT();
@@ -57,6 +65,15 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
   if (!t) notFound();
   const tokens = payLinksOn(owner) ? await payTokens(owner.id, [t.id]) : new Map<string, string>();
   const payUrl = tokens.get(t.id) ? `${await appOrigin()}/pay/${tokens.get(t.id)}` : undefined;
+  const welcomeUrl = welcomeLink({
+    phone: t.phone,
+    tenantName: t.name,
+    propertyName: owner.businessName ?? t.property.name,
+    ownerPhone: owner.phone,
+    rules: owner.houseRules,
+    payUrl,
+    lang: asLang(t.language ?? lang),
+  });
   const asOf = today();
   const s = summarizeLedger(t.charges, t.payments, asOf);
   const beds = t.status === "MOVED_OUT" ? [] : await vacantBeds(owner.id);
@@ -97,6 +114,14 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
 
   return (
     <>
+      {isOwner && justAdded && t.status !== "MOVED_OUT" && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-brand-50 px-4 py-3">
+          <p className="text-base font-semibold text-brand-900">{tr("welcomeAdded", { name: t.name.split(" ")[0] })}</p>
+          <a className="btn-accent" target="_blank" rel="noreferrer" href={welcomeUrl}>
+            {tr("welcomeBtn")}
+          </a>
+        </div>
+      )}
       <PageHeader
         back={{ href: "/tenants", label: tr("tenantsTitle") }}
         title={t.name}
@@ -114,6 +139,11 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
         }
         actions={
           <>
+            {isOwner && t.status !== "MOVED_OUT" && !justAdded && (
+              <a className="btn-secondary" target="_blank" rel="noreferrer" href={welcomeUrl}>
+                {tr("welcomeBtn")}
+              </a>
+            )}
             {isOwner && (
             <Link href={`/tenants/${t.id}/agreement`} className="btn-secondary">
               {tr("rentAgreement")}

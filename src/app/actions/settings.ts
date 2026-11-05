@@ -14,7 +14,7 @@ export async function saveSettings(_: FormState, fd: FormData): Promise<FormStat
   if (!name) return { error: t("errName") };
   await db.owner.update({
     where: { id: owner.id },
-    data: { name, phone: optStr(fd, "phone"), businessName: optStr(fd, "businessName") },
+    data: { name, phone: optStr(fd, "phone"), businessName: optStr(fd, "businessName"), houseRules: optStr(fd, "houseRules")?.slice(0, 800) ?? null },
   });
   revalidatePath("/", "layout");
   return { ok: t("settingsSaved"), at: Date.now() };

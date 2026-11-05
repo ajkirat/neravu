@@ -28,6 +28,7 @@ export const leads = {
   lead_NEW: { en: "New", kn: "ಹೊಸ", te: "కొత్త" },
   lead_CONTACTED: { en: "Contacted", kn: "ಸಂಪರ್ಕಿಸಲಾಗಿದೆ", te: "సంప్రదించారు" },
   lead_VISIT: { en: "Visit scheduled", kn: "ಭೇಟಿ ನಿಗದಿ", te: "సందర్శన నిర్ణయించారు" },
+  lead_VISITED: { en: "Visited", kn: "ಭೇಟಿ ನೀಡಿದ್ದಾರೆ", te: "సందర్శించారు" },
   lead_WON: { en: "Won", kn: "ಯಶಸ್ವಿ", te: "విజయవంతం" },
   lead_LOST: { en: "Lost", kn: "ಕೈತಪ್ಪಿತು", te: "చేజారింది" },
   statusLabel: { en: "Status", kn: "ಸ್ಥಿತಿ", te: "స్థితి" },

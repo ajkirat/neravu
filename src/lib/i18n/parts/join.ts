@@ -77,4 +77,20 @@ export const join = {
   call: { en: "Call", kn: "ಕರೆ", te: "కాల్" },
   leadMoveIn: { en: "Move in", kn: "ಸೇರಿಸಿ", te: "చేర్చండి" },
   leadSendJoin: { en: "Send Join link", kn: "ಸೇರುವ ಲಿಂಕ್ ಕಳುಹಿಸಿ", te: "చేరే లింక్ పంపండి" },
+  houseRulesLabel: { en: "House rules and info for new tenants", kn: "ಹೊಸ ಬಾಡಿಗೆದಾರರಿಗೆ ಮನೆ ನಿಯಮ ಮತ್ತು ಮಾಹಿತಿ", te: "కొత్త అద్దెదారులకు ఇంటి నియమాలు మరియు సమాచారం" },
+  houseRulesHint: {
+    en: "For example: Wi-Fi password, meal timings, gate closing time. Sent in the welcome message.",
+    kn: "ಉದಾ: ವೈ-ಫೈ ಪಾಸ್‌ವರ್ಡ್, ಊಟದ ಸಮಯ, ಗೇಟ್ ಮುಚ್ಚುವ ಸಮಯ. ಸ್ವಾಗತ ಸಂದೇಶದಲ್ಲಿ ಕಳುಹಿಸಲಾಗುತ್ತದೆ.",
+    te: "ఉదా: వై-ఫై పాస్‌వర్డ్, భోజన సమయాలు, గేట్ మూసే సమయం. స్వాగత సందేశంలో పంపబడుతుంది.",
+  },
+  welcomeBtn: { en: "Send welcome on WhatsApp", kn: "ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಸ್ವಾಗತ ಕಳುಹಿಸಿ", te: "వాట్సాప్‌లో స్వాగతం పంపండి" },
+  welcomeAdded: { en: "{name} is added. Send a welcome message on WhatsApp.", kn: "{name} ಅವರನ್ನು ಸೇರಿಸಲಾಗಿದೆ. ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಸ್ವಾಗತ ಸಂದೇಶ ಕಳುಹಿಸಿ.", te: "{name} జోడించబడ్డారు. వాట్సాప్‌లో స్వాగత సందేశం పంపండి." },
+  welHello: {
+    en: "Welcome to {pg}, {name}! We are happy to have you.",
+    kn: "{pg} ಗೆ ಸ್ವಾಗತ, {name}! ನಿಮ್ಮನ್ನು ಸ್ವಾಗತಿಸಲು ಸಂತೋಷ.",
+    te: "{pg} కు స్వాగతం, {name}! మిమ్మల్ని స్వాగతించడం సంతోషంగా ఉంది.",
+  },
+  welPay: { en: " You can pay your rent here: {url}", kn: " ನಿಮ್ಮ ಬಾಡಿಗೆಯನ್ನು ಇಲ್ಲಿ ಪಾವತಿಸಿ: {url}", te: " మీ అద్దెను ఇక్కడ చెల్లించండి: {url}" },
+  welCall: { en: " For any help, call the manager: {phone}.", kn: " ಸಹಾಯಕ್ಕಾಗಿ ಮ್ಯಾನೇಜರ್‌ಗೆ ಕರೆ ಮಾಡಿ: {phone}.", te: " సహాయం కోసం మేనేజర్‌కు కాల్ చేయండి: {phone}." },
+  welRules: { en: "\n\nHouse rules:\n{rules}", kn: "\n\nಮನೆ ನಿಯಮಗಳು:\n{rules}", te: "\n\nఇంటి నియమాలు:\n{rules}" },
 } satisfies Part;
