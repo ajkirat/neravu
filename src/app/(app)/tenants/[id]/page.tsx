@@ -17,14 +17,16 @@ import {
 } from "@/lib/format";
 import { syncRentCharges } from "@/lib/ledger";
 import { payTokens } from "@/lib/paylink";
+import { payLinksOn } from "@/lib/pay-mode";
 import { appOrigin } from "@/lib/url";
 import { getT } from "@/lib/i18n/server";
+import { TenantStatusBadge } from "@/components/tenant-status";
 import { LANGS, asLang } from "@/lib/i18n";
 import { CopyButton } from "@/components/copy-button";
 import { ActionForm } from "@/components/action-form";
 import { BedPicker } from "@/components/bed-picker";
 import { PaymentForm } from "@/components/payment-form";
-import { Badge, Card, Field, PageHeader, Stat, TenantStatusBadge } from "@/components/ui";
+import { Badge, Card, Field, PageHeader, Stat } from "@/components/ui";
 import {
   addCharge,
   cancelNotice,
@@ -51,7 +53,7 @@ export default async function TenantPage({ params }: { params: Promise<{ id: str
     },
   });
   if (!t) notFound();
-  const tokens = owner.upiId ? await payTokens(owner.id, [t.id]) : new Map<string, string>();
+  const tokens = payLinksOn(owner) ? await payTokens(owner.id, [t.id]) : new Map<string, string>();
   const payUrl = tokens.get(t.id) ? `${await appOrigin()}/pay/${tokens.get(t.id)}` : undefined;
   const asOf = today();
   const s = summarizeLedger(t.charges, t.payments, asOf);

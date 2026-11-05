@@ -42,6 +42,7 @@ export const BOTTOM: NavItem[] = [
 export const MORE: NavItem[] = [
   ...NAV,
   { href: "/reminders", key: "navReminders", icon: I.bell },
+  { href: "/auto-reminders", key: "navAuto", icon: I.bell },
   { href: "/settings", key: "navSettings", icon: I.sliders },
   { href: "/help", key: "navHelp", icon: I.help },
 ];

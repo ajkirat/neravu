@@ -1,10 +1,13 @@
 import { auth } from "./parts/auth";
+import { autorem } from "./parts/autorem";
 import { common } from "./parts/common";
 import { dashboard } from "./parts/dashboard";
+import { expenses } from "./parts/expenses";
 import { leads } from "./parts/leads";
 import { misc } from "./parts/misc";
 import { nav } from "./parts/nav";
 import { payments } from "./parts/payments";
+import { paymodes } from "./parts/paymodes";
 import { properties } from "./parts/properties";
 import { publicPages } from "./parts/public";
 import { settings } from "./parts/settings";
@@ -24,6 +27,9 @@ export const messages = {
   ...settings,
   ...publicPages,
   ...misc,
+  ...expenses,
+  ...paymodes,
+  ...autorem,
 };
 
 export type MsgKey = keyof typeof messages;

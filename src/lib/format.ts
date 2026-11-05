@@ -70,6 +70,8 @@ export function bedLabels(count: number): string[] {
   return Array.from({ length: count }, (_, i) => String.fromCharCode(65 + i));
 }
 
+export const categoryText = (t: TFn, c: string): string => (`cat_${c}` in messages ? t(`cat_${c}` as MsgKey) : c);
+
 export const chargeText = (t: TFn, type: string): string =>
   `charge_${type}` in messages ? t(`charge_${type}` as MsgKey) : type;
 export const methodText = (t: TFn, m: string): string => (`method_${m}` in messages ? t(`method_${m}` as MsgKey) : m);

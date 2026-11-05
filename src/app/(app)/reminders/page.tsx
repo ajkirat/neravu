@@ -4,6 +4,7 @@ import { requireOwner } from "@/lib/auth";
 import { fmtDate, reminderLink, rupees } from "@/lib/format";
 import { syncRentCharges, tenantBalances } from "@/lib/ledger";
 import { payTokens } from "@/lib/paylink";
+import { payLinksOn } from "@/lib/pay-mode";
 import { appOrigin } from "@/lib/url";
 import { getT } from "@/lib/i18n/server";
 import { asLang } from "@/lib/i18n";
@@ -24,7 +25,7 @@ export default async function RemindersPage() {
         include: { property: true, bed: { include: { room: true } } },
       })
     : [];
-  const tokens = owner.upiId ? await payTokens(owner.id, tenants.map((t) => t.id)) : new Map<string, string>();
+  const tokens = payLinksOn(owner) ? await payTokens(owner.id, tenants.map((t) => t.id)) : new Map<string, string>();
   const origin = await appOrigin();
   const rows = tenants
     .map((t) => ({ t, b: balances.get(t.id)! }))
@@ -37,8 +38,13 @@ export default async function RemindersPage() {
         title={tr("remindTitle")}
         subtitle={rows.length ? tr("remindSub", { n: rows.length, amt: rupees(total) }) : undefined}
         back={{ href: "/payments", label: tr("paymentsTitle") }}
+        actions={
+          <Link href="/auto-reminders" className="btn-secondary">
+            {tr("autoLink")}
+          </Link>
+        }
       />
-      {!owner.upiId && rows.length > 0 && (
+      {!payLinksOn(owner) && rows.length > 0 && (
         <p className="mb-4 rounded-lg bg-marigold-100 px-3 py-2 text-sm text-marigold-700">
           <Link href="/settings" className="font-medium underline">{tr("addUpiTip")}</Link>
         </p>

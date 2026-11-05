@@ -3,8 +3,9 @@ import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth";
 import { fmtDate, rupees } from "@/lib/format";
 import { syncRentCharges, tenantBalances } from "@/lib/ledger";
-import { Badge, EmptyState, PageHeader, TenantStatusBadge } from "@/components/ui";
+import { Badge, EmptyState, PageHeader } from "@/components/ui";
 import { getT } from "@/lib/i18n/server";
+import { TenantStatusBadge } from "@/components/tenant-status";
 import type { MsgKey } from "@/lib/i18n";
 
 export const metadata = { title: "Tenants" };

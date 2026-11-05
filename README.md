@@ -20,6 +20,10 @@ hunt through notebooks and chats.
 | **Expenses** | Log expenses by category (groceries, salaries, electricity, etc.) per property or as general overhead, with a monthly category breakdown. |
 | **Dashboard** | Occupancy, pending dues, this month's collections and expenses, a "dues to collect" list with remind/collect actions, rent due this week, upcoming move-outs and occupancy by property. |
 | **Reports** | Monthly billed vs collected vs expenses vs net, by property; a six-month collections and expenses trend; dues export to CSV. |
+| **Automatic reminders** | Turn on once; WhatsApp messages then go out by themselves a chosen number of days before rent is due and repeat when it is overdue, in each tenant's own language, with the pay link. Nobody is messaged twice in a day, anyone who says they have paid is left alone, and it stops after 4 overdue messages for one month. See exactly who would get a message today and a log of everything sent. Needs WhatsApp to be connected (below). |
+| **How tenants pay you** | Each owner picks one in Settings: **I collect it myself** (no pay links), **Direct to my UPI ID** (free; you confirm each payment), or **Razorpay** (optional, automatic). With Razorpay a tenant pays online and the payment is recorded and receipted for you with no typing. Each owner uses their own Razorpay account, so the money goes straight to them and never through Neravu. Keys are stored encrypted. |
+| **Scan a bill** | Take a photo of a bill in Expenses. The shop, date, category and each item are filled in and the total adds up by itself. You check, fix anything, and save. Works with printed or handwritten bills in English, Kannada or Telugu. Items are kept with each expense. The photo is read, then thrown away: Neravu does not store it. |
+| **Account safety** | Forgot-password by email (1-hour one-time link), email verification, a reset signs out other sessions, and login attempts are rate limited. Links are stored hashed. |
 | **Kannada, Telugu and English** | Switch the whole app (menus, forms, messages) with one tap. WhatsApp reminders and the tenant pay page go out in each tenant's own language. Remembered on your account across devices. Translations should be reviewed by a native speaker. |
 | **Made for everyone** | Big picture buttons on the home screen, a "More" screen of large tiles, one-tap "Paid cash / Paid UPI" for dues, voice typing for notes (Chrome), a large-text switch, a plain-language Help page, and install-to-home-screen. |
 | **Complaints** | Write down tenant problems (by voice or typing) and mark them open, being fixed or fixed. |
@@ -96,6 +100,11 @@ or create your own owner account.
 | `DATABASE_URL` | PostgreSQL connection string, e.g. `postgresql://user:pass@host:5432/neravu` |
 | `DATABASE_URL_UNPOOLED` | Optional. Direct (non-pooled) connection used only for migrations. Vercel + Neon sets it automatically. |
 | `AUTH_SECRET` | Secret used to sign session cookies. Required in production. Generate with `openssl rand -base64 32`. |
+| `RESEND_API_KEY` / `EMAIL_FROM` | Optional. Turns on password-reset and email-verification emails via [Resend](https://resend.com) (free tier). `EMAIL_FROM` looks like `Neravu <noreply@yourdomain.com>` on a domain you verified in Resend. Without them the app works, and the forgot-password page says email is not set up. |
+| `ANTHROPIC_API_KEY` | Optional. Turns on **bill scanning** in Expenses (Claude reads the photo). Get a key at console.anthropic.com. Each scan has a small cost on your Anthropic account. Without it, the Scan button is disabled and manual entry works as before. `ANTHROPIC_MODEL` can override the default model. |
+| `ENCRYPTION_KEY` | Optional. Encrypts saved third-party keys (Razorpay). Defaults to `AUTH_SECRET`. **If you change it, saved Razorpay keys stop working and must be entered again.** |
+| `WHATSAPP_TOKEN` / `WHATSAPP_PHONE_NUMBER_ID` | Optional. Connects a WhatsApp Business account so Neravu can send automatic reminders (see *Automatic WhatsApp reminders* below). `WHATSAPP_TEMPLATE_DUE` and `WHATSAPP_TEMPLATE_OVERDUE` override the template names (default `rent_due_soon` and `rent_overdue`). |
+| `CRON_SECRET` | Required for the daily reminder job. Any long random string; Vercel sends it to the job automatically. Without it the job refuses to run. |
 | `APP_URL` | Optional. Public address used in links sent to tenants, e.g. `https://neravu.example.com`. Detected from the request when unset. |
 | `APP_TIMEZONE` | Optional. Timezone used for "today" when billing rent. Defaults to `Asia/Kolkata`. |
 
@@ -111,6 +120,29 @@ or create your own owner account.
 | `npm run db:migrate` | Create and apply a migration after changing `schema.prisma` |
 | `npm run db:seed` | Load demo data (replaces the demo owner only) |
 | `npm run db:reset` | Wipe the database and reseed |
+
+## Automatic WhatsApp reminders (one-time setup by whoever runs Neravu)
+
+Owners switch the feature on in the app. Sending uses **one WhatsApp Business account** that you connect once, through Meta's WhatsApp Cloud API. Neravu does not work around Meta's rules: business messages must use **pre-approved templates**.
+
+1. Create a WhatsApp Business account and a phone number in [Meta for Developers](https://developers.facebook.com) (WhatsApp → API setup). Create a permanent access token (a System User token).
+2. In WhatsApp Manager create **two templates**, category *Utility*, each in **English, Kannada and Telugu**, with exactly **4 variables** in this order: `{{1}}` tenant first name, `{{2}}` PG name, `{{3}}` amount, `{{4}}` pay link (or the owner's phone when online payment is off). Suggested texts:
+
+   `rent_due_soon`
+   - en: `Hi {{1}}, a friendly reminder from {{2}}: your rent of {{3}} is due soon. Pay or contact: {{4}}. Thank you!`
+   - kn: `ನಮಸ್ಕಾರ {{1}}, {{2}} ಕಡೆಯಿಂದ ನೆನಪೋಲೆ: ನಿಮ್ಮ {{3}} ಬಾಡಿಗೆ ಶೀಘ್ರದಲ್ಲೇ ಬಾಕಿ ಆಗಲಿದೆ. ಪಾವತಿ ಅಥವಾ ಸಂಪರ್ಕ: {{4}}. ಧನ್ಯವಾದಗಳು!`
+   - te: `నమస్కారం {{1}}, {{2}} నుండి రిమైండర్: మీ {{3}} అద్దె త్వరలో గడువు కానుంది. చెల్లింపు లేదా సంప్రదింపు: {{4}}. ధన్యవాదాలు!`
+
+   `rent_overdue`
+   - en: `Hi {{1}}, this is a gentle reminder from {{2}}: your pending rent of {{3}} is overdue. Pay or contact: {{4}}. Thank you!`
+   - kn: `ನಮಸ್ಕಾರ {{1}}, {{2}} ಕಡೆಯಿಂದ ನೆನಪೋಲೆ: ನಿಮ್ಮ ಬಾಕಿ ಬಾಡಿಗೆ {{3}} ತಡವಾಗಿದೆ. ಪಾವತಿ ಅಥವಾ ಸಂಪರ್ಕ: {{4}}. ಧನ್ಯವಾದಗಳು!`
+   - te: `నమస్కారం {{1}}, {{2}} నుండి రిమైండర్: మీ బకాయి అద్దె {{3}} ఆలస్యమైంది. చెల్లింపు లేదా సంప్రదింపు: {{4}}. ధన్యవాదాలు!`
+
+   Meta reviews every template (usually minutes to a day) and may ask for small wording changes. Keep the 4 variables and their order.
+3. In Vercel add `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` and `CRON_SECRET`, then redeploy. `vercel.json` already schedules the daily job (09:00 IST).
+4. In the app open **Auto reminders**: it says "WhatsApp is connected". Use *Send a test message to my phone* before turning it on for real.
+
+Meta charges per conversation after a free monthly allowance; check their current pricing. Until WhatsApp is connected, the switch stays off and the manual WhatsApp buttons keep working.
 
 ## Deploy on Vercel
 
