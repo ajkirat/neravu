@@ -7,6 +7,7 @@ import { getT } from "@/lib/i18n/server";
 import type { TFn } from "@/lib/i18n";
 import { syncRentCharges, tenantBalances } from "@/lib/ledger";
 import { ActionForm } from "@/components/action-form";
+import { BulkRoomsForm } from "@/components/bulk-rooms-form";
 import { Badge, Card, EmptyState, Field, PageHeader, Stat } from "@/components/ui";
 import {
   createRoom,
@@ -156,6 +157,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         </div>
 
         <div className="space-y-6">
+          <Card title={t("bulkOpen")}>
+            <BulkRoomsForm propertyId={property.id} existing={rooms.map((r) => r.number)} />
+          </Card>
           <Card title={t("addRoom")}>
             <ActionForm action={createRoom.bind(null, property.id)} submitLabel={t("addRoomBtn")} resetOnSuccess>
               <RoomFields t={t} />

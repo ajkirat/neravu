@@ -1,5 +1,6 @@
 import { auth } from "./parts/auth";
 import { autorem } from "./parts/autorem";
+import { bulk } from "./parts/bulk";
 import { common } from "./parts/common";
 import { dashboard } from "./parts/dashboard";
 import { expenses } from "./parts/expenses";
@@ -30,6 +31,7 @@ export const messages = {
   ...expenses,
   ...paymodes,
   ...autorem,
+  ...bulk,
 };
 
 export type MsgKey = keyof typeof messages;
