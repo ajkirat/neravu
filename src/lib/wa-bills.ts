@@ -2,7 +2,7 @@ import "server-only";
 import { Prisma } from "@/generated/prisma/client";
 import { db } from "./db";
 import { asLang, makeT, type Lang } from "./i18n";
-import { categoryText, fmtDate, rupees } from "./format";
+import { canonicalCategory, categoryText, fmtDate, rupees } from "./format";
 import { today, parseDateInput } from "./dates";
 import { phoneKey } from "./join";
 import { extractReceipt, scanEnabled } from "./receipt-ai";
@@ -199,7 +199,7 @@ async function onAnswer(from: string, sender: Sender, t: ReturnType<typeof makeT
       data: {
         ownerId: sender.ownerId,
         propertyId: properties.length === 1 ? properties[0].id : null,
-        category: r.category,
+        category: canonicalCategory(r.category),
         amount,
         spentOn: (r.date && parseDateInput(r.date)) || today(),
         vendor: r.vendor,

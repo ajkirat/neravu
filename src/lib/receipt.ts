@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { EXPENSE_CATEGORIES } from "./format";
+import { canonicalCategory } from "./format";
 
 export type ReceiptItem = { name: string; quantity: number; amount: number };
 export type ReceiptData = {
@@ -56,7 +56,7 @@ export function parseReceipt(input: unknown, now: Date = new Date()): ReceiptDat
     items.push({ name, quantity: Math.round(Math.min(q, 100000) * 1000) / 1000, amount });
     if (items.length >= MAX_ITEMS) break;
   }
-  const category = (EXPENSE_CATEGORIES as readonly string[]).includes(r.category ?? "") ? (r.category as string) : "Other";
+  const category = canonicalCategory(r.category);
   const total = rupee(r.total);
   return {
     isReceipt: r.is_receipt !== false && (items.length > 0 || total !== null),

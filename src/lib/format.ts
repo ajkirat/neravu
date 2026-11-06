@@ -30,59 +30,74 @@ export function fmtPeriod(period: string, lang: Lang = "en"): string {
 
 export const PAYMENT_METHODS = ["UPI", "CASH", "BANK", "CARD", "OTHER"] as const;
 export const CHARGE_TYPES = ["ELECTRICITY", "MAINTENANCE", "OTHER"] as const;
-// Expense categories, grouped so the list is easy to scan. The stored value is the English name, so an
-// existing name must never be renamed (old expenses use it); add new ones freely. Keep them distinct:
-// diesel for the generator is not electricity, cooking gas is not diesel.
+// Expense categories: few, and each one a cost you would look at on its own (diesel is not electricity,
+// groceries are not daily fresh food). The stored value is the English name. To retire a category, add
+// it to CATEGORY_MERGED (and move old rows with a migration) instead of just deleting it.
 export const EXPENSE_GROUPS = [
-  { key: "power", cats: ["Electricity", "Diesel (generator)", "Cooking gas", "Water", "Water tanker", "Internet", "TV / DTH"] },
-  { key: "food", cats: ["Groceries", "Vegetables & fruits", "Milk & dairy", "Meat, fish & eggs", "Drinking water cans", "Food from outside"] },
-  { key: "people", cats: ["Staff salary", "Security guard"] },
-  { key: "repairs", cats: ["Maintenance", "Plumbing", "Electrical repairs", "Appliance repair", "Painting & civil work", "Furniture & fittings"] },
-  { key: "upkeep", cats: ["Cleaning", "Cleaning supplies", "Laundry", "Bedding & linen", "Pest control", "Garbage collection"] },
-  { key: "property", cats: ["Rent / lease", "Property tax & licences", "Bank charges"] },
-  { key: "other", cats: ["Advertising", "Transport", "Stationery & printing", "Medical / first aid", "Other"] },
+  { key: "bills", cats: ["Electricity", "Diesel (generator)", "Cooking gas", "Water", "Internet & TV"] },
+  { key: "food", cats: ["Groceries", "Daily fresh", "Food from outside"] },
+  { key: "building", cats: ["Staff salary", "Rent / lease", "Repairs & maintenance", "Furniture & bedding", "Cleaning & housekeeping"] },
+  { key: "other", cats: ["Other"] },
 ] as const;
 export const EXPENSE_CATEGORIES = EXPENSE_GROUPS.flatMap((g) => g.cats);
+
+/** Categories that were merged into another one. Old expenses, bills waiting for Yes/No, etc. are read through this. */
+export const CATEGORY_MERGED: Record<string, string> = {
+  "Water tanker": "Water",
+  "Drinking water cans": "Water",
+  "Vegetables & fruits": "Daily fresh",
+  "Milk & dairy": "Daily fresh",
+  "Meat, fish & eggs": "Daily fresh",
+  Internet: "Internet & TV",
+  "TV / DTH": "Internet & TV",
+  Maintenance: "Repairs & maintenance",
+  Plumbing: "Repairs & maintenance",
+  "Electrical repairs": "Repairs & maintenance",
+  "Appliance repair": "Repairs & maintenance",
+  "Painting & civil work": "Repairs & maintenance",
+  "Furniture & fittings": "Furniture & bedding",
+  "Bedding & linen": "Furniture & bedding",
+  Cleaning: "Cleaning & housekeeping",
+  "Cleaning supplies": "Cleaning & housekeeping",
+  Laundry: "Cleaning & housekeeping",
+  "Pest control": "Cleaning & housekeeping",
+  "Garbage collection": "Cleaning & housekeeping",
+  "Security guard": "Staff salary",
+  "Property tax & licences": "Other",
+  "Bank charges": "Other",
+  Advertising: "Other",
+  Transport: "Other",
+  "Stationery & printing": "Other",
+  "Medical / first aid": "Other",
+};
+
+/** Today's category for any stored or read value; anything unknown becomes "Other". */
+export function canonicalCategory(c: string | null | undefined): string {
+  if (!c) return "Other";
+  if ((EXPENSE_CATEGORIES as readonly string[]).includes(c)) return c;
+  return CATEGORY_MERGED[c] ?? "Other";
+}
 
 /**
  * Extra words people type when searching for a category: everyday English, and Kannada / Telugu words
  * written in English letters. The category's own name in the chosen language is always searched too.
+ * Words of merged categories are kept, so "tanker" still finds Water and "plumber" finds Repairs.
  */
 export const CATEGORY_KEYWORDS: Record<string, string> = {
   Electricity: "current power bescom eb bill vidyut karent",
   "Diesel (generator)": "dg genset generator fuel petrol bunk",
   "Cooking gas": "lpg cylinder gas bharat indane hp",
-  Water: "bwssb water bill neeru neellu",
-  "Water tanker": "tanker borewell lorry",
-  Internet: "wifi broadband jio airtel act net",
-  "TV / DTH": "tv dish tata play cable recharge",
-  Groceries: "kirana dinasi kirana-saman provisions rice oil dal atta sugar",
-  "Vegetables & fruits": "vegetables veg tarakari kooragayalu fruits hannu pandlu onion tomato",
-  "Milk & dairy": "milk curd haalu mosaru paalu perugu nandini dairy paneer",
-  "Meat, fish & eggs": "chicken mutton fish egg motte gudlu meat",
-  "Drinking water cans": "can bisleri 20 litre drinking",
+  Water: "bwssb water bill neeru neellu tanker borewell lorry can cans bisleri 20 litre drinking",
+  "Internet & TV": "wifi broadband jio airtel act net tv dish tata play cable dth recharge",
+  Groceries: "kirana dinasi provisions rice oil dal atta sugar akki enne bele biyyam nune pappu",
+  "Daily fresh": "vegetables veg tarakari kooragayalu fruits hannu pandlu onion tomato milk curd haalu mosaru paalu perugu nandini dairy paneer chicken mutton fish egg eggs motte gudlu meat",
   "Food from outside": "hotel restaurant cafe darshini tiffin meals parcel swiggy zomato tea coffee snacks oota bhojanam",
-  "Staff salary": "salary sambala jeetham wages cook helper",
-  "Security guard": "watchman guard security",
-  Maintenance: "repair general maintenance",
-  Plumbing: "plumber tap pipe leak nalli kulai",
-  "Electrical repairs": "electrician wiring fan light switch mcb",
-  "Appliance repair": "fridge geyser washing machine ac ro purifier service",
-  "Painting & civil work": "paint mason cement tiles civil",
-  "Furniture & fittings": "cot bed mattress table chair cupboard almirah",
-  Cleaning: "housekeeping sweeping mopping cleaning lady",
-  "Cleaning supplies": "phenyl harpic soap broom mop detergent",
-  Laundry: "dhobi washing ironing",
-  "Bedding & linen": "bedsheet pillow blanket mattress cover",
-  "Pest control": "cockroach rat termite mosquito",
-  "Garbage collection": "garbage waste kasa chetta",
+  "Staff salary": "salary sambala jeetham wages cook helper watchman guard security",
   "Rent / lease": "rent lease badige adde owner",
-  "Property tax & licences": "tax bbmp ghmc licence trade license",
-  "Bank charges": "bank charges fee gst interest",
-  Advertising: "ads olx nobroker banner pamphlet",
-  Transport: "auto cab taxi ola uber bus petrol travel",
-  "Stationery & printing": "pen paper xerox print register",
-  "Medical / first aid": "medicine medical tablet first aid doctor",
+  "Repairs & maintenance": "repair maintenance plumber plumbing tap pipe leak nalli kulai electrician wiring fan light switch mcb fridge geyser washing machine ac ro purifier service paint painting mason cement tiles civil",
+  "Furniture & bedding": "furniture cot bed mattress table chair cupboard almirah bedsheet pillow blanket cover",
+  "Cleaning & housekeeping": "cleaning housekeeping sweeping mopping phenyl harpic soap broom mop detergent laundry dhobi washing ironing pest cockroach rat termite mosquito garbage waste kasa chetta",
+  Other: "other misc medicine medical tablet auto cab taxi ola uber travel xerox print stationery ads",
 };
 
 /** Does this category match what was typed? Every word typed must appear in its name, English name or keywords. */
@@ -121,7 +136,13 @@ export function bedLabels(count: number): string[] {
   return Array.from({ length: count }, (_, i) => String.fromCharCode(65 + i));
 }
 
-export const categoryText = (t: TFn, c: string): string => (`cat_${c}` in messages ? t(`cat_${c}` as MsgKey) : c);
+export const categoryText = (t: TFn, c: string): string => {
+  const k = canonicalCategory(c);
+  return `cat_${k}` in messages ? t(`cat_${k}` as MsgKey) : k;
+};
+/** Examples shown in the Notes box for a category that covers several kinds of cost; null if it has none. */
+export const categoryNoteHint = (t: TFn, c: string): string | null =>
+  `catnote_${c}` in messages ? t(`catnote_${c}` as MsgKey) : null;
 
 export const chargeText = (t: TFn, type: string): string =>
   `charge_${type}` in messages ? t(`charge_${type}` as MsgKey) : type;

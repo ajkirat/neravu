@@ -4,7 +4,7 @@ import { PhotoThumb } from "@/components/photo-lightbox";
 import { db } from "@/lib/db";
 import { requireActor } from "@/lib/auth";
 import { monthRange, periodKey, toDateInput, today } from "@/lib/dates";
-import { EXPENSE_GROUPS, addedByText, categoryText, fmtDate, rupees } from "@/lib/format";
+import { EXPENSE_GROUPS, addedByText, canonicalCategory, categoryText, fmtDate, rupees } from "@/lib/format";
 import { ActionForm } from "@/components/action-form";
 import { ExpenseForm } from "@/components/expense-form";
 import { scanEnabled } from "@/lib/receipt-ai";
@@ -38,7 +38,7 @@ export default async function ExpensesPage({
   ]);
   const total = expenses.reduce((s, e) => s + e.amount, 0);
   const byCat = new Map<string, number>();
-  for (const e of expenses) byCat.set(e.category, (byCat.get(e.category) ?? 0) + e.amount);
+  for (const e of expenses) byCat.set(canonicalCategory(e.category), (byCat.get(canonicalCategory(e.category)) ?? 0) + e.amount);
   const cats = [...byCat].sort((a, b) => b[1] - a[1]);
 
   return (
