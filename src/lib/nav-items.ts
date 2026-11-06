@@ -45,6 +45,9 @@ export const BOTTOM: NavItem[] = [
 /** Everything, as big tiles on the More screen. */
 export const MORE: NavItem[] = [
   ...NAV,
+  { href: "/announce", key: "navAnnounce", icon: I.bell },
+  { href: "/cashbook", key: "navCashbook", icon: I.rupee },
+  { href: "/jobs", key: "navJobs", icon: I.flag },
   { href: "/reminders", key: "navReminders", icon: I.bell },
   { href: "/auto-reminders", key: "navAuto", icon: I.bell },
   { href: "/export", key: "navExport", icon: I.download },
@@ -58,4 +61,4 @@ const pick = (hrefs: string[]) => hrefs.map((h) => MORE.find((n) => n.href === h
 /** What a caretaker sees in the sidebar, on the phone bottom bar, and on the More screen. */
 export const STAFF_NAV: NavItem[] = pick(["/dashboard", "/tenants", "/payments", "/expenses", "/complaints", "/leads"]);
 export const STAFF_BOTTOM: NavItem[] = [...pick(["/dashboard", "/tenants", "/payments", "/expenses"]), { href: "/more", key: "navMore", icon: I.grid }];
-export const STAFF_MORE: NavItem[] = pick(["/dashboard", "/tenants", "/payments", "/expenses", "/complaints", "/leads", "/reminders", "/help"]);
+export const STAFF_MORE: NavItem[] = pick(["/dashboard", "/tenants", "/payments", "/expenses", "/complaints", "/leads", "/announce", "/jobs", "/reminders", "/help"]);

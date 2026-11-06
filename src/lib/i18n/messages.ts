@@ -14,6 +14,7 @@ import { settleMsgs } from "./parts/settle";
 import { landing } from "./parts/landing";
 import { flows } from "./parts/flows";
 import { dupes } from "./parts/dupes";
+import { rooms2 } from "./parts/rooms2";
 import { leads } from "./parts/leads";
 import { misc } from "./parts/misc";
 import { nav } from "./parts/nav";
@@ -42,6 +43,7 @@ export const messages = {
   ...landing,
   ...flows,
   ...dupes,
+  ...rooms2,
   ...leads,
   ...settings,
   ...publicPages,

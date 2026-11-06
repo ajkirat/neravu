@@ -8,7 +8,9 @@ import type { TFn } from "@/lib/i18n";
 import { syncRentCharges, tenantBalances } from "@/lib/ledger";
 import { ActionForm } from "@/components/action-form";
 import { BulkRoomsForm } from "@/components/bulk-rooms-form";
-import { Badge, FoldCard, Card, EmptyState, Field, PageHeader, Stat } from "@/components/ui";
+import { FoldCard, Field, PageHeader } from "@/components/ui";
+import { RoomCard } from "@/components/room-card";
+import { roomBoard } from "@/lib/rooms";
 import {
   createRoom,
   deleteProperty,
@@ -17,42 +19,36 @@ import {
   updateRoom,
 } from "@/app/actions/properties";
 
-export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PropertyPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ show?: string }>;
+}) {
   const { id } = await params;
+  const show = (await searchParams).show;
   const owner = await requireOwner();
-  const { t } = await getT();
-  const property = await db.property.findFirst({
-    where: { id, ownerId: owner.id },
-    include: {
-      rooms: {
-        include: {
-          beds: {
-            orderBy: { label: "asc" },
-            include: {
-              tenants: {
-                where: { status: { in: ["ACTIVE", "NOTICE"] } },
-                select: { id: true, name: true, status: true },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
+  const { t, lang } = await getT();
+  const property = await db.property.findFirst({ where: { id, ownerId: owner.id } });
   if (!property) notFound();
   await syncRentCharges(owner.id);
-  const balances = await tenantBalances(owner.id, {
-    propertyId: id,
-    status: { in: ["ACTIVE", "NOTICE"] },
-  });
-
-  const rooms = [...property.rooms].sort((a, b) =>
-    a.number.localeCompare(b.number, undefined, { numeric: true }),
-  );
+  const [rooms, balances] = await Promise.all([
+    roomBoard(owner.id, id),
+    tenantBalances(owner.id, { propertyId: id, status: { in: ["ACTIVE", "NOTICE"] } }),
+  ]);
+  const dues = new Map([...balances].map(([k, v]) => [k, v.outstanding]));
   const beds = rooms.flatMap((r) => r.beds);
-  const occupied = beds.filter((b) => b.tenants.length).length;
-  const potential = rooms.reduce((s, r) => s + r.rent * r.beds.length, 0);
-  const dues = [...balances.values()].reduce((s, b) => s + b.outstanding, 0);
+  const filled = beds.filter((b) => b.filled).length;
+  const free = rooms.filter((r) => r.beds.some((b) => !b.filled));
+  const full = rooms.filter((r) => r.beds.length > 0 && r.beds.every((b) => b.filled));
+  const shown = show === "free" ? free : show === "full" ? full : rooms;
+  const potential = rooms.reduce((sum, r) => sum + r.rent * r.beds.length, 0);
+  const owed = [...balances.values()].reduce((sum, b) => sum + b.outstanding, 0);
+  const pct = beds.length ? Math.round((filled / beds.length) * 100) : 0;
+  const chip = (on: boolean) => `rounded-lg px-3 py-2 text-sm font-semibold whitespace-nowrap ${on ? "bg-brand-600 text-white" : "bg-white text-muted ring-1 ring-line"}`;
+  const rawRooms = await db.room.findMany({ where: { propertyId: id }, select: { id: true, number: true, floor: true, sharing: true, rent: true } });
+  const roomById = new Map(rawRooms.map((r) => [r.id, r]));
 
   return (
     <>
@@ -62,81 +58,82 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         subtitle={[property.address, property.city].filter(Boolean).join(", ") || undefined}
         actions={
           <>
+            <Link href={`/tenants/new?property=${property.id}`} className="btn-primary">
+              {t("addTenant")}
+            </Link>
+            <Link href={`/properties/${property.id}/vacancies`} className="btn-accent">
+              {t("shareVacancies")}
+            </Link>
             <Link href={`/properties/${property.id}/qr`} className="btn-secondary">
               {t("enquiryQr")}
             </Link>
             <Link href={`/properties/${property.id}/qr?for=join`} className="btn-secondary">
               {t("joinQrBtn")}
             </Link>
-            <Link href={`/tenants/new?property=${property.id}`} className="btn-primary">
-              {t("addTenant")}
-            </Link>
           </>
         }
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label={t("bedsLabel")} value={beds.length} hint={t("roomsN", { n: rooms.length })} />
-        <Stat label={t("occupied")} value={occupied} hint={t("vacantN", { n: beds.length - occupied })} tone="good" />
-        <Stat label={t("fullHouseRent")} value={rupees(potential)} hint={t("perMonth")} />
-        <Stat label={t("pendingDues")} value={rupees(dues)} tone={dues ? "warn" : "default"} />
+      {/* One glance: how many beds are filled, how many are empty. */}
+      <div className="card mb-4 p-4">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <p className="text-2xl font-bold text-brand-900">{t("bedsFilledOf", { filled, total: beds.length })}</p>
+          <p className="text-lg font-semibold text-marigold-700">{t("bedsEmptyN", { n: beds.length - filled })}</p>
+        </div>
+        <div className="mt-2 h-3 rounded-full bg-marigold-100">
+          <div className="h-3 rounded-full bg-brand-600" style={{ width: `${pct}%` }} />
+        </div>
+        <div className="mt-3 flex flex-wrap gap-4 text-sm text-muted">
+          <span className="flex items-center gap-2">
+            <span className="inline-block h-4 w-4 rounded bg-brand-600" /> {t("legendFilled")}
+          </span>
+          <span className="flex items-center gap-2">
+            <span className="inline-block h-4 w-4 rounded border-2 border-dashed border-marigold-400" /> {t("legendEmpty")}
+          </span>
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+          <span>{t("roomsN", { n: rooms.length })}</span>
+          <span>
+            {t("fullHouseRent")}: <b>{rupees(potential)}</b>
+          </span>
+          <span className={owed ? "text-red-700" : ""}>
+            {t("pendingDues")}: <b>{rupees(owed)}</b>
+          </span>
+        </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="space-y-3">
-          <FoldCard title={t("bulkOpen")} open={rooms.length === 0}>
-            <BulkRoomsForm propertyId={property.id} existing={rooms.map((r) => r.number)} />
-          </FoldCard>
-          <FoldCard title={t("addRoom")}>
-            <ActionForm action={createRoom.bind(null, property.id)} submitLabel={t("addRoomBtn")} resetOnSuccess>
-              <RoomFields t={t} />
-            </ActionForm>
-          </FoldCard>
-          <FoldCard title={t("propDetails")}>
-            <ActionForm action={updateProperty.bind(null, property.id)} submitLabel={t("save")}>
-              <Field label={t("name")}>
-                <input className="input" name="name" defaultValue={property.name} required />
-              </Field>
-              <Field label={t("address")}>
-                <input className="input" name="address" defaultValue={property.address ?? ""} />
-              </Field>
-              <Field label={t("city")}>
-                <input className="input" name="city" defaultValue={property.city ?? ""} />
-              </Field>
-            </ActionForm>
-            <div className="mt-4 border-t border-line pt-4">
-              <ActionForm
-                action={deleteProperty.bind(null, property.id)}
-                submitLabel={t("deleteProperty")}
-                submitClassName="btn-danger btn-sm"
-                confirm={t("deletePropertyConfirm")}
-              />
-            </div>
-          </FoldCard>
+      {rooms.length > 0 && (
+        <div className="mb-3 flex flex-wrap gap-2">
+          <Link href={`/properties/${id}`} className={chip(!show)}>
+            {t("showAllRooms", { n: rooms.length })}
+          </Link>
+          <Link href={`/properties/${id}?show=free`} className={chip(show === "free")}>
+            {t("showFreeRooms", { n: free.length })}
+          </Link>
+          <Link href={`/properties/${id}?show=full`} className={chip(show === "full")}>
+            {t("showFullRooms", { n: full.length })}
+          </Link>
         </div>
-        <div className="space-y-4">
-          {rooms.length === 0 && (
-            <EmptyState
-              title={t("noRooms")}
-              body={t("noRoomsBody")}
-            />
-          )}
-          {rooms.map((room) => (
-            <div key={room.id} className="card p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <h3 className="font-semibold text-brand-900">{t("roomN", { n: room.number })}</h3>
-                  <p className="text-xs text-muted">
-                    {room.floor ? `${t("floorN", { n: room.floor })} · ` : ""}
-                    {room.sharing === 1 ? t("single") : t("sharingN", { n: room.sharing })} · {rupees(room.rent)}
-                    {t("perBed")}
-                  </p>
-                </div>
+      )}
+
+      {rooms.length === 0 && <p className="mb-3 rounded-xl bg-brand-50 px-4 py-3 text-base text-brand-700">{t("noRoomsYet")}</p>}
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {shown.map((room) => {
+          const raw = roomById.get(room.id)!;
+          return (
+            <RoomCard
+              key={room.id}
+              room={room}
+              t={t}
+              lang={lang}
+              dues={dues}
+              footer={
                 <details className="group relative">
-                  <summary className="btn-secondary btn-sm cursor-pointer list-none">{t("edit")}</summary>
+                  <summary className="cursor-pointer list-none text-sm font-medium text-brand-600 underline">{t("edit")}</summary>
                   <div className="absolute right-0 z-10 mt-2 w-72 rounded-xl border border-line bg-white p-4 shadow-lg">
                     <ActionForm action={updateRoom.bind(null, room.id)} submitLabel={t("saveRoom")}>
-                      <RoomFields room={room} t={t} />
+                      <RoomFields room={raw} t={t} />
                     </ActionForm>
                     <div className="mt-3 border-t border-line pt-3">
                       <ActionForm
@@ -148,48 +145,46 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                     </div>
                   </div>
                 </details>
-              </div>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                {room.beds.map((bed) => {
-                  const tn = bed.tenants[0];
-                  if (!tn) {
-                    return (
-                      <Link
-                        key={bed.id}
-                        href={`/tenants/new?bed=${bed.id}`}
-                        className="flex items-center justify-between rounded-lg border border-dashed border-brand-200 px-3 py-2 text-sm text-brand-600 hover:bg-brand-50"
-                      >
-                        <span>
-                          <span className="font-semibold">{t("bedN", { l: bed.label })}</span> · {t("vacant")}
-                        </span>
-                        <span className="text-xs font-medium">{t("plusAddTenant")}</span>
-                      </Link>
-                    );
-                  }
-                  const bal = balances.get(tn.id);
-                  return (
-                    <Link
-                      key={bed.id}
-                      href={`/tenants/${tn.id}`}
-                      className="flex items-center justify-between gap-2 rounded-lg bg-canvas px-3 py-2 text-sm hover:bg-brand-50"
-                    >
-                      <span className="truncate">
-                        <span className="font-semibold">{t("bedN", { l: bed.label })}</span> · {tn.name}
-                      </span>
-                      <span className="flex shrink-0 gap-1">
-                        {tn.status === "NOTICE" && <Badge tone="amber">{t("noticeBadge")}</Badge>}
-                        {bal && bal.outstanding > 0 && (
-                          <Badge tone="red">{t("dueAmt", { amt: rupees(bal.outstanding) })}</Badge>
-                        )}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
+              }
+            />
+          );
+        })}
+        {/* Adding a room happens right next to the rooms: one tile, three fields. */}
+        <details className="card group border-2 border-dashed border-brand-200 p-3 sm:p-4" open={rooms.length === 0}>
+          <summary className="flex min-h-24 cursor-pointer list-none items-center justify-center text-lg font-bold text-brand-600">{t("addARoom")}</summary>
+          <div className="mt-2">
+            <ActionForm action={createRoom.bind(null, property.id)} submitLabel={t("addRoomBtn")} resetOnSuccess>
+              <RoomFields t={t} />
+            </ActionForm>
+          </div>
+        </details>
+      </div>
 
+      <div className="mt-6 space-y-3">
+        <FoldCard title={t("addManyRooms")}>
+          <BulkRoomsForm propertyId={property.id} existing={rooms.map((r) => r.number)} />
+        </FoldCard>
+        <FoldCard title={t("propDetails")}>
+          <ActionForm action={updateProperty.bind(null, property.id)} submitLabel={t("save")}>
+            <Field label={t("name")}>
+              <input className="input" name="name" defaultValue={property.name} required />
+            </Field>
+            <Field label={t("address")}>
+              <input className="input" name="address" defaultValue={property.address ?? ""} />
+            </Field>
+            <Field label={t("city")}>
+              <input className="input" name="city" defaultValue={property.city ?? ""} />
+            </Field>
+          </ActionForm>
+          <div className="mt-4 border-t border-line pt-4">
+            <ActionForm
+              action={deleteProperty.bind(null, property.id)}
+              submitLabel={t("deleteProperty")}
+              submitClassName="btn-danger btn-sm"
+              confirm={t("deletePropertyConfirm")}
+            />
+          </div>
+        </FoldCard>
       </div>
     </>
   );

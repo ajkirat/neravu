@@ -64,6 +64,8 @@ model Owner {
   payClaims                PaymentClaim[]
   bankCredits              BankCredit[]
   tenantRequests           TenantRequest[]
+  dayCloses                DayClose[]
+  recurringJobs            RecurringJob[]
   complaints               Complaint[]
 }
 
@@ -499,4 +501,35 @@ model TenantRequest {
   createdAt DateTime  @default(now())
 
   @@index([ownerId, status])
+}
+
+// The owner closed a day in the cash book: optionally with the cash they counted in hand.
+model DayClose {
+  id          String   @id @default(cuid())
+  ownerId     String
+  owner       Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  day         DateTime
+  cashCounted Int?
+  note        String?
+  closedAt    DateTime @default(now())
+
+  @@unique([ownerId, day])
+}
+
+// A job that comes back every few weeks or months (tank cleaning, pest control, gas, RO service...).
+model RecurringJob {
+  id         String    @id @default(cuid())
+  ownerId    String
+  owner      Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  propertyId String?
+  title      String
+  // How often, in days
+  everyDays  Int
+  nextDue    DateTime
+  lastDone   DateTime?
+  lastDoneBy String?
+  active     Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+
+  @@index([ownerId, nextDue])
 }

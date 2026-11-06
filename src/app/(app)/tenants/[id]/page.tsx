@@ -28,7 +28,8 @@ import { LANGS, asLang } from "@/lib/i18n";
 import { parseElectricityDescription } from "@/lib/electricity";
 import { CopyButton } from "@/components/copy-button";
 import { ActionForm } from "@/components/action-form";
-import { BedPicker } from "@/components/bed-picker";
+import { BedBoard } from "@/components/bed-board";
+import { pickRooms } from "@/lib/rooms";
 import { PaymentForm } from "@/components/payment-form";
 import { FoldCard, Badge, Card, Field, PageHeader, Stat } from "@/components/ui";
 import {
@@ -92,6 +93,7 @@ export default async function TenantPage({
   const asOf = today();
   const s = summarizeLedger(t.charges, t.payments, asOf);
   const beds = t.status === "MOVED_OUT" ? [] : await vacantBeds(owner.id);
+  const pickRoomsList = t.status === "MOVED_OUT" ? [] : await pickRooms(owner.id);
   const next = t.status === "MOVED_OUT" ? null : nextDueDate({ moveIn: t.moveInDate, dueDay: t.rentDueDay, asOf });
   const willBill = next && (!t.moveOutDate || next < t.moveOutDate);
 
@@ -558,7 +560,7 @@ export default async function TenantPage({
           {isOwner && t.status !== "MOVED_OUT" && beds.length > 0 && (
             <FoldCard title={tr("shiftBedCard")}>
               <ActionForm action={changeBed.bind(null, t.id)} submitLabel={tr("shiftBedBtn")} submitClassName="btn-secondary">
-                <BedPicker beds={beds} withRent={false} />
+                <BedBoard rooms={pickRoomsList} withRent={false} />
               </ActionForm>
             </FoldCard>
           )}
