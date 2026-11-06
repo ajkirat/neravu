@@ -33,4 +33,7 @@ export const dupes = {
     te: "⚠️ ఇది {date} న ఇప్పటికే జోడించిన బిల్ లాగా ఉంది ({amt}{vendor}). {why}\\nఅయినా జోడించాలా?",
   },
   waAddAnyway: { en: "Add anyway", kn: "ಆದರೂ ಸೇರಿಸಿ", te: "అయినా జోడించండి" },
+  magnify: { en: "Magnify", kn: "ದೊಡ್ಡದಾಗಿ ನೋಡಿ", te: "పెద్దదిగా చూడండి" },
+  zoomInHint: { en: "Click or tap the bill to zoom in", kn: "ದೊಡ್ಡದಾಗಿಸಲು ಬಿಲ್ ಮೇಲೆ ಒತ್ತಿ", te: "పెద్దదిగా చూడటానికి బిల్‌పై నొక్కండి" },
+  zoomOutHint: { en: "Move to look around · click again to zoom out", kn: "ಸುತ್ತ ನೋಡಲು ಸರಿಸಿ · ಚಿಕ್ಕದಾಗಿಸಲು ಮತ್ತೆ ಒತ್ತಿ", te: "చుట్టూ చూడటానికి కదపండి · చిన్నదిగా చేయడానికి మళ్ళీ నొక్కండి" },
 } satisfies Part;

@@ -8,6 +8,7 @@ import { clearDuplicate, deleteExpenseAndBack } from "@/app/actions/expenses";
 import { ActionForm } from "@/components/action-form";
 import { ActionButton } from "@/components/today-actions";
 import { Badge, Card, PageHeader } from "@/components/ui";
+import { PhotoLarge } from "@/components/photo-lightbox";
 
 export const metadata = { title: "Expense" };
 
@@ -76,14 +77,8 @@ export default async function ExpensePage({ params }: { params: Promise<{ id: st
       <Card title={t("billPhoto")}>
         {e.receipt ? (
           <>
-            {/* Shown large by default: the attachment is the point of opening an expense. */}
-            <a href={`/expenses/${e.id}/bill`} target="_blank" rel="noreferrer" className="block">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/expenses/${e.id}/bill`} alt={t("billPhoto")} className="mx-auto max-h-[80vh] w-full rounded-lg border border-line object-contain" />
-            </a>
-            <a href={`/expenses/${e.id}/bill`} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm text-brand-600 underline">
-              {t("openFull")}
-            </a>
+            {/* Shown large by default: the attachment is the point of opening an expense. Click to magnify in place. */}
+            <PhotoLarge src={`/expenses/${e.id}/bill`} alt={t("billPhoto")} />
           </>
         ) : (
           <p className="text-sm text-muted">{t("noPhoto")}</p>
