@@ -10,6 +10,8 @@ import { exportmsgs } from "./parts/exportmsgs";
 import { join } from "./parts/join";
 import { wabot } from "./parts/wabot";
 import { register } from "./parts/register";
+import { settleMsgs } from "./parts/settle";
+import { landing } from "./parts/landing";
 import { leads } from "./parts/leads";
 import { misc } from "./parts/misc";
 import { nav } from "./parts/nav";
@@ -34,6 +36,8 @@ export const messages = {
   ...join,
   ...wabot,
   ...register,
+  ...settleMsgs,
+  ...landing,
   ...leads,
   ...settings,
   ...publicPages,

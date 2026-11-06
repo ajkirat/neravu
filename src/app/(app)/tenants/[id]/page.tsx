@@ -158,6 +158,11 @@ export default async function TenantPage({
                 {tr("welcomeBtn")}
               </a>
             )}
+            {isOwner && t.status !== "ACTIVE" && (
+              <Link href={`/tenants/${t.id}/settlement`} className="btn-primary">
+                {tr("setBtn")}
+              </Link>
+            )}
             {isOwner && (
             <Link href={`/tenants/${t.id}/agreement`} className="btn-secondary">
               {tr("rentAgreement")}
@@ -468,6 +473,9 @@ export default async function TenantPage({
           {isOwner && t.status !== "MOVED_OUT" && (
             <FoldCard title={tr("noticeMoveOut")}>
               <div className="space-y-5">
+                <Link href={`/tenants/${t.id}/settlement`} className="btn-secondary w-full sm:w-auto">
+                  {tr("setBtn")}
+                </Link>
                 {t.status === "ACTIVE" ? (
                   <ActionForm action={giveNotice.bind(null, t.id)} submitLabel={tr("recordNotice")} submitClassName="btn-secondary">
                     <Field label={tr("expectedMoveOut")}>

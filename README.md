@@ -111,6 +111,7 @@ or create your own owner account.
 | `WHATSAPP_APP_SECRET` / `WHATSAPP_VERIFY_TOKEN` | Needed for **bills over WhatsApp** (incoming messages). The app secret is in Meta → your app → Settings → Basic; the verify token is any random string you also type into Meta's webhook form. Without the app secret, incoming messages are refused. |
 | `WHATSAPP_DISPLAY_NUMBER` | Optional. The business number shown in the app ("send bills to +91 63634 62003"), e.g. `916363462003`. |
 | `WHATSAPP_TEMPLATE_RECEIPT` | Optional. Template name for payment receipts (default `payment_receipt`). |
+| `DEMO_OWNER_EMAILS` | Optional. Comma-separated emails of demo accounts that may wipe and refill themselves with sample data from Settings (default `demo@neravu.app`). Never put a real owner here. |
 | `CRON_SECRET` | Required for the daily reminder job. Any long random string; Vercel sends it to the job automatically. Without it the job refuses to run. |
 | `APP_URL` | Optional. Public address used in links sent to tenants, e.g. `https://neravu.example.com`. Detected from the request when unset. |
 | `APP_TIMEZONE` | Optional. Timezone used for "today" when billing rent. Defaults to `Asia/Kolkata`. |
