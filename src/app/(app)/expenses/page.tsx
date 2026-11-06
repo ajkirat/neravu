@@ -60,6 +60,7 @@ export default async function ExpensesPage({
             categories={EXPENSE_CATEGORIES.map((c) => ({ value: c, label: categoryText(t, c) }))}
             defaultDate={toDateInput(today())}
             scanEnabled={scanEnabled()}
+            currentMonth={month}
           />
         </Card>
         <div className="space-y-4">

@@ -205,5 +205,5 @@ async function onAnswer(from: string, sender: Sender, t: ReturnType<typeof makeT
     return exp.id;
   });
   if (!expenseId) return void (await sendText(from, t("waBillAlready")));
-  await sendText(from, t("waBillAdded", { amt: rupees(amount), cat: categoryText(t, r.category) }));
+  await sendText(from, t("waBillAdded", { amt: rupees(amount), cat: categoryText(t, r.category), when: fmtDate((r.date && parseDateInput(r.date)) || today(), sender.lang) }));
 }

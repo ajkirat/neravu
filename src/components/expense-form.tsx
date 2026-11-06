@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState, startTransition } from "react";
+import { useRouter } from "next/navigation";
 import { createExpense } from "@/app/actions/expenses";
 import { VoiceInput } from "@/components/voice-input";
 import { Field } from "@/components/ui";
@@ -24,13 +25,17 @@ export function ExpenseForm({
   categories,
   defaultDate,
   scanEnabled,
+  currentMonth,
 }: {
   properties: { id: string; name: string }[];
   categories: { value: string; label: string }[];
   defaultDate: string;
   scanEnabled: boolean;
+  /** The month the list below is showing (YYYY-MM). */
+  currentMonth: string;
 }) {
   const { t } = useI18n();
+  const router = useRouter();
   const [state, dispatch, pending] = useActionState(createExpense, undefined);
   const fileRef = useRef<HTMLInputElement>(null);
   const [rows, setRows] = useState<Row[]>([]);
@@ -45,6 +50,9 @@ export function ExpenseForm({
   // Clear everything once an expense has been saved.
   useEffect(() => {
     if (state?.ok) {
+      // A bill dated in another month is saved there: show that month so the new expense is visible.
+      const savedMonth = date.slice(0, 7);
+      if (/^\d{4}-\d{2}$/.test(savedMonth) && savedMonth !== currentMonth) router.push(`/expenses?month=${savedMonth}`);
       setRows([]);
       setVendor("");
       setBillTotal(null);
