@@ -111,6 +111,7 @@ or create your own owner account.
 | `ENCRYPTION_KEY` | Optional. Encrypts saved third-party keys (Razorpay). Defaults to `AUTH_SECRET`. **If you change it, saved Razorpay keys stop working and must be entered again.** |
 | `WHATSAPP_TOKEN` / `WHATSAPP_PHONE_NUMBER_ID` | Optional. Connects a WhatsApp Business account so Neravu can send automatic reminders (see *Automatic WhatsApp reminders* below). `WHATSAPP_TEMPLATE_DUE` and `WHATSAPP_TEMPLATE_OVERDUE` override the template names (default `rent_due_soon` and `rent_overdue`). |
 | `WHATSAPP_APP_SECRET` / `WHATSAPP_VERIFY_TOKEN` | Needed for **bills over WhatsApp** (incoming messages). The app secret is in Meta → your app → Settings → Basic; the verify token is any random string you also type into Meta's webhook form. Without the app secret, incoming messages are refused. |
+| `WHATSAPP_WABA_ID` | Optional. Your WhatsApp Business Account ID (Meta → WhatsApp → API Setup). Lets the WhatsApp check see, and fix, whether the account is linked to the app so incoming messages are delivered. Needed when the token does not name the account itself. |
 | `WHATSAPP_DISPLAY_NUMBER` | Optional. The business number shown in the app ("send bills to +91 63634 62003"), e.g. `916363462003`. |
 | `WHATSAPP_TEMPLATE_RECEIPT` | Optional. Template name for payment receipts (default `payment_receipt`). |
 | `DEMO_OWNER_EMAILS` | Optional. Comma-separated emails of demo accounts that may wipe and refill themselves with sample data from Settings (default `demo@neravu.app`). Never put a real owner here. |
