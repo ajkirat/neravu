@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createExpense } from "@/app/actions/expenses";
 import { VoiceInput } from "@/components/voice-input";
 import { Field } from "@/components/ui";
+import { CategoryPicker } from "@/components/category-picker";
 import { useI18n } from "@/lib/i18n/client";
 import { shrinkImage } from "@/lib/image";
 import { fmtDate, rupees } from "@/lib/format";
@@ -168,19 +169,11 @@ export function ExpenseForm({
         <Field label={t("date")}>
           <input className="input" type="date" name="spentOn" value={date} onChange={(e) => setDate(e.target.value)} />
         </Field>
-        <Field label={t("categoryLabel")}>
-          <select className="input" name="category" value={category} onChange={(e) => setCategory(e.target.value)}>
-            {groups.map((g) => (
-              <optgroup key={g.label} label={g.label}>
-                {g.options.map((c) => (
-                  <option key={c.value} value={c.value}>
-                    {c.label}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-        </Field>
+        {/* Not a <label>: a click inside the open list would otherwise also toggle it. */}
+        <div>
+          <span className="label">{t("categoryLabel")}</span>
+          <CategoryPicker name="category" groups={groups} value={category} onChange={setCategory} />
+        </div>
       </div>
       <Field label={t("vendorLabel")} className="col-span-2 lg:col-span-1">
         <input className="input" name="vendor" value={vendor} maxLength={120} onChange={(e) => setVendor(e.target.value)} />

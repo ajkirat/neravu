@@ -35,7 +35,7 @@ export const CHARGE_TYPES = ["ELECTRICITY", "MAINTENANCE", "OTHER"] as const;
 // diesel for the generator is not electricity, cooking gas is not diesel.
 export const EXPENSE_GROUPS = [
   { key: "power", cats: ["Electricity", "Diesel (generator)", "Cooking gas", "Water", "Water tanker", "Internet", "TV / DTH"] },
-  { key: "food", cats: ["Groceries", "Vegetables & fruits", "Milk & dairy", "Meat, fish & eggs", "Drinking water cans"] },
+  { key: "food", cats: ["Groceries", "Vegetables & fruits", "Milk & dairy", "Meat, fish & eggs", "Drinking water cans", "Food from outside"] },
   { key: "people", cats: ["Staff salary", "Security guard"] },
   { key: "repairs", cats: ["Maintenance", "Plumbing", "Electrical repairs", "Appliance repair", "Painting & civil work", "Furniture & fittings"] },
   { key: "upkeep", cats: ["Cleaning", "Cleaning supplies", "Laundry", "Bedding & linen", "Pest control", "Garbage collection"] },
@@ -43,6 +43,55 @@ export const EXPENSE_GROUPS = [
   { key: "other", cats: ["Advertising", "Transport", "Stationery & printing", "Medical / first aid", "Other"] },
 ] as const;
 export const EXPENSE_CATEGORIES = EXPENSE_GROUPS.flatMap((g) => g.cats);
+
+/**
+ * Extra words people type when searching for a category: everyday English, and Kannada / Telugu words
+ * written in English letters. The category's own name in the chosen language is always searched too.
+ */
+export const CATEGORY_KEYWORDS: Record<string, string> = {
+  Electricity: "current power bescom eb bill vidyut karent",
+  "Diesel (generator)": "dg genset generator fuel petrol bunk",
+  "Cooking gas": "lpg cylinder gas bharat indane hp",
+  Water: "bwssb water bill neeru neellu",
+  "Water tanker": "tanker borewell lorry",
+  Internet: "wifi broadband jio airtel act net",
+  "TV / DTH": "tv dish tata play cable recharge",
+  Groceries: "kirana dinasi kirana-saman provisions rice oil dal atta sugar",
+  "Vegetables & fruits": "vegetables veg tarakari kooragayalu fruits hannu pandlu onion tomato",
+  "Milk & dairy": "milk curd haalu mosaru paalu perugu nandini dairy paneer",
+  "Meat, fish & eggs": "chicken mutton fish egg motte gudlu meat",
+  "Drinking water cans": "can bisleri 20 litre drinking",
+  "Food from outside": "hotel restaurant cafe darshini tiffin meals parcel swiggy zomato tea coffee snacks oota bhojanam",
+  "Staff salary": "salary sambala jeetham wages cook helper",
+  "Security guard": "watchman guard security",
+  Maintenance: "repair general maintenance",
+  Plumbing: "plumber tap pipe leak nalli kulai",
+  "Electrical repairs": "electrician wiring fan light switch mcb",
+  "Appliance repair": "fridge geyser washing machine ac ro purifier service",
+  "Painting & civil work": "paint mason cement tiles civil",
+  "Furniture & fittings": "cot bed mattress table chair cupboard almirah",
+  Cleaning: "housekeeping sweeping mopping cleaning lady",
+  "Cleaning supplies": "phenyl harpic soap broom mop detergent",
+  Laundry: "dhobi washing ironing",
+  "Bedding & linen": "bedsheet pillow blanket mattress cover",
+  "Pest control": "cockroach rat termite mosquito",
+  "Garbage collection": "garbage waste kasa chetta",
+  "Rent / lease": "rent lease badige adde owner",
+  "Property tax & licences": "tax bbmp ghmc licence trade license",
+  "Bank charges": "bank charges fee gst interest",
+  Advertising: "ads olx nobroker banner pamphlet",
+  Transport: "auto cab taxi ola uber bus petrol travel",
+  "Stationery & printing": "pen paper xerox print register",
+  "Medical / first aid": "medicine medical tablet first aid doctor",
+};
+
+/** Does this category match what was typed? Every word typed must appear in its name, English name or keywords. */
+export function categoryMatches(query: string, value: string, label: string): boolean {
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  if (!words.length) return true;
+  const hay = `${label} ${value} ${CATEGORY_KEYWORDS[value] ?? ""}`.toLowerCase();
+  return words.every((w) => hay.includes(w));
+}
 export const ID_TYPES = ["Aadhaar", "PAN", "Passport", "Driving licence", "Voter ID", "Other"];
 
 export const chargeLabel: Record<string, string> = {
