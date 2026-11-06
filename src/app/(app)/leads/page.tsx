@@ -11,7 +11,7 @@ import { appOrigin } from "@/lib/url";
 import { VoiceInput } from "@/components/voice-input";
 import { ActionForm } from "@/components/action-form";
 import { LeadControls } from "@/components/lead-controls";
-import { Badge, Card, EmptyState, Field, PageHeader, Stat } from "@/components/ui";
+import { FoldCard, Badge, Card, EmptyState, Field, PageHeader, Stat } from "@/components/ui";
 
 export const metadata = { title: "Leads" };
 
@@ -50,8 +50,34 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
         <Stat label={t("followUpsDue")} value={dueCount} tone={dueCount ? "warn" : "default"} />
         <Stat label={t("won")} value={all.filter((l) => l.status === "WON").length} />
       </div>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-3 lg:col-span-2">
+      <div className="space-y-4">
+        <FoldCard title={"+ " + t("addLead")} open={leads.length === 0}>
+          <ActionForm action={createLead} submitLabel={t("addLeadBtn")} cols resetOnSuccess>
+            <Field label={t("name")}>
+              <input name="name" className="input" required maxLength={80} />
+            </Field>
+            <Field label={t("phone")}>
+              <input name="phone" type="tel" className="input" required />
+            </Field>
+            <Field label={t("interestedIn")}>
+              <select name="propertyId" className="input" defaultValue="">
+                <option value="">{t("anyProperty")}</option>
+                {properties.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label={t("note")}>
+              <VoiceInput name="note" maxLength={500} />
+            </Field>
+            <Field label={t("followUpOn")}>
+              <input name="followUpOn" type="date" className="input" />
+            </Field>
+          </ActionForm>
+        </FoldCard>
+        <div className="space-y-3">
           {leads.length === 0 ? (
             <EmptyState
               title={t("noLeads")}
@@ -125,32 +151,6 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
             ))
           )}
         </div>
-        <Card title={t("addLead")}>
-          <ActionForm action={createLead} submitLabel={t("addLeadBtn")} resetOnSuccess>
-            <Field label={t("name")}>
-              <input name="name" className="input" required maxLength={80} />
-            </Field>
-            <Field label={t("phone")}>
-              <input name="phone" type="tel" className="input" required />
-            </Field>
-            <Field label={t("interestedIn")}>
-              <select name="propertyId" className="input" defaultValue="">
-                <option value="">{t("anyProperty")}</option>
-                {properties.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label={t("note")}>
-              <VoiceInput name="note" maxLength={500} />
-            </Field>
-            <Field label={t("followUpOn")}>
-              <input name="followUpOn" type="date" className="input" />
-            </Field>
-          </ActionForm>
-        </Card>
       </div>
     </>
   );

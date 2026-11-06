@@ -17,6 +17,7 @@ export function ActionForm({
   submitClassName = "btn-primary",
   resetOnSuccess = false,
   className = "space-y-4",
+  cols = false,
   confirm,
   footer,
 }: {
@@ -26,6 +27,8 @@ export function ActionForm({
   submitClassName?: string;
   resetOnSuccess?: boolean;
   className?: string;
+  /** Lay fields out in 1/2/3 columns as the screen widens (full-width form cards). */
+  cols?: boolean | "pairs";
   confirm?: string;
   footer?: ReactNode;
 }) {
@@ -40,7 +43,7 @@ export function ActionForm({
   return (
     <form
       ref={ref}
-      className={className}
+      className={cols === "pairs" ? "grid grid-cols-2 items-start gap-x-3 gap-y-3 lg:grid-cols-3 lg:gap-x-4" : cols ? "grid items-start gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-3" : className}
       onSubmit={(e) => {
         e.preventDefault();
         if (confirm && !window.confirm(confirm)) return;
@@ -50,16 +53,16 @@ export function ActionForm({
     >
       {children}
       {state?.error && (
-        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p role="alert" className="col-span-full rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
           {state.error}
         </p>
       )}
       {state?.ok && !state.error && (
-        <p role="status" className="rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-700">
+        <p role="status" className="col-span-full rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-700">
           {state.ok}
         </p>
       )}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="col-span-full flex flex-wrap items-center gap-3">
         <button type="submit" className={submitClassName} disabled={pending}>
           {pending ? t("saving") : submitLabel}
         </button>

@@ -53,8 +53,16 @@ export default async function ExpensesPage({
         }
         actions={<MonthPicker base="/expenses" month={month} />}
       />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+      <div className="space-y-4">
+        <Card title={t("addExpenseCard")}>
+          <ExpenseForm
+            properties={properties.map((p) => ({ id: p.id, name: p.name }))}
+            categories={EXPENSE_CATEGORIES.map((c) => ({ value: c, label: categoryText(t, c) }))}
+            defaultDate={toDateInput(today())}
+            scanEnabled={scanEnabled()}
+          />
+        </Card>
+        <div className="space-y-4">
           <div className="card p-4">
             <p className="text-xs text-muted uppercase">{t("spentThisMonth")}</p>
             <p className="text-2xl font-bold text-brand-900">{rupees(total)}</p>
@@ -192,14 +200,6 @@ export default async function ExpensesPage({
             </>
           )}
         </div>
-        <Card title={t("addExpenseCard")} className="order-first lg:order-none">
-          <ExpenseForm
-            properties={properties.map((p) => ({ id: p.id, name: p.name }))}
-            categories={EXPENSE_CATEGORIES.map((c) => ({ value: c, label: categoryText(t, c) }))}
-            defaultDate={toDateInput(today())}
-            scanEnabled={scanEnabled()}
-          />
-        </Card>
       </div>
     </>
   );
