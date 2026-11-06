@@ -204,7 +204,7 @@ async function onAnswer(from: string, sender: Sender, t: ReturnType<typeof makeT
         spentOn: (r.date && parseDateInput(r.date)) || today(),
         vendor: r.vendor,
         source: "WHATSAPP",
-        addedByName: pending.staffId ? pending.senderName : null,
+        addedByName: pending.senderName,
         addedByStaffId: pending.staffId,
         billTotal: r.total && r.total > 0 ? r.total : null,
         items: r.items.length ? { create: r.items.map((i) => ({ name: i.name, quantity: i.quantity, amount: i.amount })) } : undefined,

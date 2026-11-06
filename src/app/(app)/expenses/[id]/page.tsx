@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireActor } from "@/lib/auth";
-import { categoryText, fmtDate, rupees } from "@/lib/format";
+import { addedByText, categoryText, fmtDate, rupees } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import { clearDuplicate, deleteExpenseAndBack } from "@/app/actions/expenses";
 import { ActionForm } from "@/components/action-form";
@@ -56,7 +56,7 @@ export default async function ExpensePage({ params }: { params: Promise<{ id: st
             </p>
             {e.vendor && <p className="text-base font-medium">{e.vendor}</p>}
             {e.note && <p className="text-sm text-muted">{e.note}</p>}
-            {e.addedByName && <p className="text-sm text-muted">{t("sentBy", { name: e.addedByName })}</p>}
+            <p className="text-sm text-muted">{t("addedByLine", { who: addedByText(t, e, owner.name) })}</p>
           </div>
           <p className="text-2xl font-bold text-brand-900">{rupees(e.amount)}</p>
         </div>
