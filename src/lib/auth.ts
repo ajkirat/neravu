@@ -57,6 +57,7 @@ const OWNER_FIELDS = {
   name: true,
   email: true,
   phone: true,
+  phoneKey: true,
   businessName: true,
   houseRules: true,
   upiId: true,

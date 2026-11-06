@@ -4,7 +4,7 @@ import { PhotoThumb } from "@/components/photo-lightbox";
 import { db } from "@/lib/db";
 import { requireActor } from "@/lib/auth";
 import { monthRange, periodKey, toDateInput, today } from "@/lib/dates";
-import { EXPENSE_CATEGORIES, categoryText, fmtDate, rupees } from "@/lib/format";
+import { EXPENSE_GROUPS, categoryText, fmtDate, rupees } from "@/lib/format";
 import { ActionForm } from "@/components/action-form";
 import { ExpenseForm } from "@/components/expense-form";
 import { scanEnabled } from "@/lib/receipt-ai";
@@ -61,7 +61,7 @@ export default async function ExpensesPage({
         <Card title={t("addExpenseCard")}>
           <ExpenseForm
             properties={properties.map((p) => ({ id: p.id, name: p.name }))}
-            categories={EXPENSE_CATEGORIES.map((c) => ({ value: c, label: categoryText(t, c) }))}
+            groups={EXPENSE_GROUPS.map((g) => ({ label: t(`catgrp_${g.key}`), options: g.cats.map((c) => ({ value: c, label: categoryText(t, c) })) }))}
             defaultDate={toDateInput(today())}
             scanEnabled={scanEnabled()}
             currentMonth={month}

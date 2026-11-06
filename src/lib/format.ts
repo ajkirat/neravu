@@ -30,17 +30,19 @@ export function fmtPeriod(period: string, lang: Lang = "en"): string {
 
 export const PAYMENT_METHODS = ["UPI", "CASH", "BANK", "CARD", "OTHER"] as const;
 export const CHARGE_TYPES = ["ELECTRICITY", "MAINTENANCE", "OTHER"] as const;
-export const EXPENSE_CATEGORIES = [
-  "Electricity",
-  "Water",
-  "Groceries",
-  "Staff salary",
-  "Maintenance",
-  "Internet",
-  "Rent / lease",
-  "Cleaning",
-  "Other",
+// Expense categories, grouped so the list is easy to scan. The stored value is the English name, so an
+// existing name must never be renamed (old expenses use it); add new ones freely. Keep them distinct:
+// diesel for the generator is not electricity, cooking gas is not diesel.
+export const EXPENSE_GROUPS = [
+  { key: "power", cats: ["Electricity", "Diesel (generator)", "Cooking gas", "Water", "Water tanker", "Internet", "TV / DTH"] },
+  { key: "food", cats: ["Groceries", "Vegetables & fruits", "Milk & dairy", "Meat, fish & eggs", "Drinking water cans"] },
+  { key: "people", cats: ["Staff salary", "Security guard"] },
+  { key: "repairs", cats: ["Maintenance", "Plumbing", "Electrical repairs", "Appliance repair", "Painting & civil work", "Furniture & fittings"] },
+  { key: "upkeep", cats: ["Cleaning", "Cleaning supplies", "Laundry", "Bedding & linen", "Pest control", "Garbage collection"] },
+  { key: "property", cats: ["Rent / lease", "Property tax & licences", "Bank charges"] },
+  { key: "other", cats: ["Advertising", "Transport", "Stationery & printing", "Medical / first aid", "Other"] },
 ] as const;
+export const EXPENSE_CATEGORIES = EXPENSE_GROUPS.flatMap((g) => g.cats);
 export const ID_TYPES = ["Aadhaar", "PAN", "Passport", "Driving licence", "Voter ID", "Other"];
 
 export const chargeLabel: Record<string, string> = {

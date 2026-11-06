@@ -48,7 +48,7 @@ const ACTOR_ACTIONS = new Set(["recordPayment", "collectFull", "markReminded", "
 
 /** Actions anyone may call without signing in (they protect themselves another way). */
 const PUBLIC_ACTIONS = new Set([
-  "signup", "login", "logout", "staffLogin", "claimPayment", "startRazorpayPayment", "submitEnquiry", "submitJoin", "submitTenantComplaint", "requestLeave",
+  "signup", "login", "logout", "claimPayment", "startRazorpayPayment", "submitEnquiry", "submitJoin", "submitTenantComplaint", "requestLeave",
   "requestPasswordReset", "resetPassword", "resendVerification", "verifyEmailToken", "sendVerificationEmail",
   "setLanguage", "setTextSize",
 ]);

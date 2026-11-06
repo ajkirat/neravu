@@ -94,7 +94,9 @@ npm run db:seed               # optional: demo data
 npm run dev
 ```
 
-Open http://localhost:3000. With demo data loaded, log in as **demo@neravu.app** / **demo1234**,
+Open http://localhost:3000. Owners and caretakers sign in on the same page with **mobile number, name
+and password** (all three required; the first name is enough). With demo data loaded, log in as the owner
+with **9876500000 / Lakshmi / demo1234**, or as the caretaker with **9000012345 / Ramesh / ramesh123**,
 or create your own owner account.
 
 ### Environment variables

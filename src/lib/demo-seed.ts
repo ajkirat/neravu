@@ -162,7 +162,10 @@ export async function fillDemo(db: PrismaClient, ownerId: string) {
     ["Staff salary", 24000, "Cook and housekeeping"],
     ["Electricity", 9500, "BESCOM / MSEDCL bill"],
     ["Internet", 1800, "Broadband"],
-    ["Water", 2500, "Tanker water"],
+    ["Water tanker", 2500, "Tanker water"],
+    ["Diesel (generator)", 2200, "Generator diesel, 25 L"],
+    ["Cooking gas", 1900, "2 commercial cylinders"],
+    ["Vegetables & fruits", 6500, "Weekly vegetables"],
   ];
   for (let m = 0; m < 4; m++) {
     for (const [pi, pid] of propertyIds.entries()) {
