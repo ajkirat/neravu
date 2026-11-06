@@ -40,6 +40,10 @@ export default async function AutoRemindersPage() {
                 <input type="checkbox" name="enabled" defaultChecked={owner.autoReminders} disabled={!connected && !owner.autoReminders} className="h-5 w-5" />
                 {t("autoOn")}
               </label>
+              <label className="flex items-center gap-3 text-sm font-semibold text-brand-900">
+                <input type="checkbox" name="receipts" defaultChecked={owner.autoReceipts} className="h-5 w-5" />
+                {t("autoReceiptsLabel")}
+              </label>
               <Field label={t("autoBefore")}>
                 <select className="input" name="before" defaultValue={owner.remindBefore}>
                   {[0, 1, 2, 3, 5, 7].map((n) => (

@@ -1,3 +1,5 @@
+import { after } from "next/server";
+import { sendPaymentReceipt } from "@/lib/payment-receipt";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { parsePaidEvent, verifySignature } from "@/lib/razorpay-utils";
@@ -37,7 +39,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ ownerId
   if (!tenant) return NextResponse.json({ ok: true, ignored: true });
 
   try {
-    await db.payment.create({
+    const created = await db.payment.create({
       data: {
         tenantId: tenant.id,
         amount: paid.amountRupees,
@@ -49,6 +51,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ ownerId
       },
     });
     await db.tenant.update({ where: { id: tenant.id }, data: { payClaimedAt: null } });
+    after(() => sendPaymentReceipt(created.id));
   } catch (e) {
     // A replayed webhook hits the unique externalId: that is fine, it was already recorded.
     if ((e as { code?: string }).code !== "P2002") throw e;

@@ -10,75 +10,82 @@ datasource db {
 }
 
 model Owner {
-  id           String     @id @default(cuid())
-  name         String
-  email        String     @unique
-  phone        String?
-  passwordHash String
+  id                       String            @id @default(cuid())
+  name                     String
+  email                    String            @unique
+  phone                    String?
+  passwordHash             String
   // Shown on tenant messages and pay pages; optional
-  businessName String?
+  businessName             String?
+  // Shown to new tenants in the welcome WhatsApp message (wifi, timings, rules)
+  houseRules               String?
+  // Send a WhatsApp receipt to the tenant after every payment (when WhatsApp is connected)
+  autoReceipts             Boolean           @default(true)
   // UPI ID (e.g. name@bank) rent is paid to; enables tenant pay links
-  upiId        String?
+  upiId                    String?
   // en | kn | te: the language the app opens in
-  language     String    @default("en")
-  emailVerifiedAt  DateTime?
+  language                 String            @default("en")
+  emailVerifiedAt          DateTime?
   // How tenants pay: NONE (collect yourself) | UPI (direct to your UPI ID) | RAZORPAY (your own Razorpay account)
-  paymentMode  String    @default("UPI")
-  razorpayKeyId  String?
+  paymentMode              String            @default("UPI")
+  razorpayKeyId            String?
   // AES-256-GCM encrypted; never shown again after saving
-  razorpayKeySecretEnc  String?
-  razorpayWebhookSecretEnc  String?
+  razorpayKeySecretEnc     String?
+  razorpayWebhookSecretEnc String?
   // True once the keys were saved and passed a live check
-  razorpayEnabled  Boolean  @default(false)
+  razorpayEnabled          Boolean           @default(false)
   // Automatic WhatsApp reminders (needs WhatsApp to be connected by whoever runs Neravu)
-  autoReminders  Boolean  @default(false)
+  autoReminders            Boolean           @default(false)
   // Days before the due date to send a heads-up (0 = never)
-  remindBefore  Int  @default(2)
+  remindBefore             Int               @default(2)
   // Repeat overdue reminders every N days (0 = never)
-  remindOverdueEvery  Int  @default(3)
-  reminderLogs  ReminderLog[]
-  electricityBills  ElectricityBill[]
-  staff  Staff[]
+  remindOverdueEvery       Int               @default(3)
+  reminderLogs             ReminderLog[]
+  electricityBills         ElectricityBill[]
+  staff                    Staff[]
   // Sessions issued before this moment are rejected (set on password reset)
-  passwordChangedAt DateTime?
-  authTokens   AuthToken[]
-  createdAt    DateTime   @default(now())
-  properties   Property[]
-  tenants      Tenant[]
-  expenses     Expense[]
-  leads        Lead[]
-  complaints   Complaint[]
+  passwordChangedAt        DateTime?
+  authTokens               AuthToken[]
+  createdAt                DateTime          @default(now())
+  properties               Property[]
+  tenants                  Tenant[]
+  expenses                 Expense[]
+  leads                    Lead[]
+  joinRequests             JoinRequest[]
+  pendingExpenses          PendingExpense[]
+  complaints               Complaint[]
 }
 
 model Property {
-  id        String    @id @default(cuid())
-  ownerId   String
-  owner     Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  name      String
-  address   String?
-  city      String?
-  createdAt DateTime  @default(now())
-  rooms     Room[]
-  tenants   Tenant[]
-  expenses  Expense[]
-  leads     Lead[]
-  complaints Complaint[]
+  id           String        @id @default(cuid())
+  ownerId      String
+  owner        Owner         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name         String
+  address      String?
+  city         String?
+  createdAt    DateTime      @default(now())
+  rooms        Room[]
+  tenants      Tenant[]
+  expenses     Expense[]
+  leads        Lead[]
+  joinRequests JoinRequest[]
+  complaints   Complaint[]
 
   @@index([ownerId])
 }
 
 model Room {
-  id         String   @id @default(cuid())
-  propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  number     String
-  floor      String?
+  id               String            @id @default(cuid())
+  propertyId       String
+  property         Property          @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  number           String
+  floor            String?
   // Number of beds in the room (1 = single, 2 = double sharing, ...)
-  sharing    Int
+  sharing          Int
   // Default monthly rent per bed
-  rent       Int
-  createdAt  DateTime @default(now())
-  beds       Bed[]
+  rent             Int
+  createdAt        DateTime          @default(now())
+  beds             Bed[]
   electricityBills ElectricityBill[]
 
   @@unique([propertyId, number])
@@ -95,52 +102,56 @@ model Bed {
 }
 
 model Tenant {
-  id             String    @id @default(cuid())
-  ownerId        String
-  owner          Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  propertyId     String
-  property       Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  bedId          String?
-  bed            Bed?      @relation(fields: [bedId], references: [id], onDelete: SetNull)
-  name           String
-  phone          String
-  email          String?
-  occupation     String?
-  idType         String?
-  idNumber       String?
-  emergencyName  String?
-  emergencyPhone String?
-  monthlyRent    Int
-  deposit        Int       @default(0)
+  id               String        @id @default(cuid())
+  ownerId          String
+  owner            Owner         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  propertyId       String
+  property         Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  bedId            String?
+  bed              Bed?          @relation(fields: [bedId], references: [id], onDelete: SetNull)
+  name             String
+  phone            String
+  email            String?
+  occupation       String?
+  idType           String?
+  idNumber         String?
+  emergencyName    String?
+  emergencyPhone   String?
+  // Home address, for the police tenant register
+  permanentAddress String?
+  monthlyRent      Int
+  deposit          Int           @default(0)
   // Day of month rent falls due (1-28)
-  rentDueDay     Int
-  moveInDate     DateTime
-  noticeDate     DateTime?
-  moveOutDate    DateTime?
+  rentDueDay       Int
+  moveInDate       DateTime
+  // Imported tenants: rent is billed from this date (older dues come in as an opening balance)
+  billFrom         DateTime?
+  noticeDate       DateTime?
+  moveOutDate      DateTime?
   // ACTIVE | NOTICE | MOVED_OUT
-  status         String    @default("ACTIVE")
-  notes          String?
+  status           String        @default("ACTIVE")
+  notes            String?
   // Unguessable token for the public /pay/<token> page
-  payToken       String?   @unique
+  payToken         String?       @unique
   // Set when the tenant taps "I've paid"; cleared when the owner records a payment
-  payClaimedAt   DateTime?
-  lastRemindedAt DateTime?
+  payClaimedAt     DateTime?
+  lastRemindedAt   DateTime?
   // en | kn | te: language of messages and the pay page for this tenant
-  language       String?
-  complaints     Complaint[]
-  reminderLogs   ReminderLog[]
-  createdAt      DateTime  @default(now())
-  charges        Charge[]
-  payments       Payment[]
+  language         String?
+  complaints       Complaint[]
+  reminderLogs     ReminderLog[]
+  createdAt        DateTime      @default(now())
+  charges          Charge[]
+  payments         Payment[]
 
   @@index([ownerId, status])
   @@index([bedId])
 }
 
 model Charge {
-  id          String   @id @default(cuid())
+  id          String           @id @default(cuid())
   tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant      Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   // RENT | DEPOSIT | ELECTRICITY | MAINTENANCE | OTHER
   type        String
   // Billing month for rent, e.g. "2026-11"
@@ -151,7 +162,7 @@ model Charge {
   // Set when the charge came from splitting an electricity bill
   billId      String?
   bill        ElectricityBill? @relation(fields: [billId], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
+  createdAt   DateTime         @default(now())
 
   @@unique([tenantId, type, period])
   @@index([tenantId, dueDate])
@@ -159,44 +170,49 @@ model Charge {
 
 model Payment {
   // Integer id doubles as the receipt number
-  id        Int      @id @default(autoincrement())
-  tenantId  String
-  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  amount    Int
+  id                Int       @id @default(autoincrement())
+  tenantId          String
+  tenant            Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  amount            Int
   // Id from the payment provider (e.g. Razorpay pay_xxx); unique so a webhook replay cannot double-count
-  externalId String?  @unique
+  externalId        String?   @unique
   // Which caretaker recorded it (kept as a name too, so it survives the caretaker being removed)
   recordedByStaffId String?
-  recordedBy Staff? @relation(fields: [recordedByStaffId], references: [id], onDelete: SetNull)
-  recordedByName String?
-  paidOn    DateTime
+  recordedBy        Staff?    @relation(fields: [recordedByStaffId], references: [id], onDelete: SetNull)
+  recordedByName    String?
+  // Cash a caretaker collected: set when the owner confirms they received it
+  handedOverAt      DateTime?
+  paidOn            DateTime
   // CASH | UPI | BANK | CARD | OTHER
-  method    String
-  reference String?
-  note      String?
-  createdAt DateTime @default(now())
+  method            String
+  reference         String?
+  note              String?
+  createdAt         DateTime  @default(now())
 
   @@index([tenantId, paidOn])
 }
 
 model Expense {
-  id         String    @id @default(cuid())
-  ownerId    String
-  owner      Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  propertyId String?
-  property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
-  category   String
-  amount     Int
-  spentOn    DateTime
-  note       String?
+  id          String          @id @default(cuid())
+  ownerId     String
+  owner       Owner           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  propertyId  String?
+  property    Property?       @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  category    String
+  amount      Int
+  spentOn     DateTime
+  note        String?
   // Shop or supplier name, usually read from a bill photo
-  vendor     String?
-  // MANUAL | SCAN
-  source     String    @default("MANUAL")
+  vendor      String?
+  // MANUAL | SCAN | WHATSAPP
+  source      String          @default("MANUAL")
+  // Who sent it on WhatsApp (caretaker or owner name)
+  addedByName String?
   // Grand total printed on the bill, kept to flag mismatches with the items
-  billTotal  Int?
-  createdAt  DateTime  @default(now())
-  items      ExpenseItem[]
+  billTotal   Int?
+  createdAt   DateTime        @default(now())
+  items       ExpenseItem[]
+  receipt     ExpenseReceipt?
 
   @@index([ownerId, spentOn])
 }
@@ -215,7 +231,35 @@ model Lead {
   // NEW | CONTACTED | VISIT | WON | LOST
   status     String    @default("NEW")
   followUpOn DateTime?
+  // CALLBACK | INFO: what the visitor asked for on the QR enquiry page
+  want       String?
   createdAt  DateTime  @default(now())
+
+  @@index([ownerId, status])
+}
+
+// A prospective tenant who filled the Join form (QR or WhatsApp link). Not billed
+// and holds no bed until the owner approves it, which creates the Tenant.
+model JoinRequest {
+  id               String   @id @default(cuid())
+  ownerId          String
+  owner            Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  propertyId       String
+  property         Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  name             String
+  phone            String
+  email            String?
+  occupation       String?
+  idType           String?
+  idNumber         String?
+  emergencyName    String?
+  emergencyPhone   String?
+  permanentAddress String?
+  language         String?
+  // PENDING | APPROVED | REJECTED
+  status           String   @default("PENDING")
+  tenantId         String?
+  createdAt        DateTime @default(now())
 
   @@index([ownerId, status])
 }
@@ -286,11 +330,11 @@ model ReminderLog {
 
 // The electricity bill for one room for one month, optionally from meter readings, and whether it was split into tenants' dues.
 model ElectricityBill {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   ownerId     String
-  owner       Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner       Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   roomId      String
-  room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  room        Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
   // "2026-10"
   period      String
   prevReading Float?
@@ -302,7 +346,7 @@ model ElectricityBill {
   // When it was added to tenants' dues
   appliedAt   DateTime?
   charges     Charge[]
-  createdAt   DateTime @default(now())
+  createdAt   DateTime  @default(now())
 
   @@unique([roomId, period])
   @@index([ownerId, period])
@@ -326,4 +370,41 @@ model Staff {
   payments          Payment[]
 
   @@index([ownerId])
+}
+
+// The bill photo behind an expense (sent on WhatsApp). Shrunk before storing.
+model ExpenseReceipt {
+  expenseId String   @id
+  expense   Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  mime      String
+  data      Bytes
+  createdAt DateTime @default(now())
+}
+
+// A bill photo sent to the WhatsApp number, waiting for the sender to reply Yes or No.
+model PendingExpense {
+  id         String   @id @default(cuid())
+  ownerId    String
+  owner      Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  staffId    String?
+  senderName String
+  // Sender's WhatsApp number (digits)
+  waFrom     String
+  // What the bill reader found: vendor, date, category, items, total
+  data       Json
+  mime       String
+  image      Bytes
+  // PENDING | ADDED | CANCELLED
+  status     String   @default("PENDING")
+  expenseId  String?
+  createdAt  DateTime @default(now())
+
+  @@index([waFrom, status])
+  @@index([ownerId, createdAt])
+}
+
+// WhatsApp message ids already handled, so a webhook retry is not processed twice.
+model WaInbound {
+  id        String   @id
+  createdAt DateTime @default(now())
 }

@@ -93,16 +93,16 @@ export function ExpenseForm({
   return (
     <form
       key={key}
-      className="space-y-4"
+      className="grid grid-cols-2 items-start gap-x-3 gap-y-3 lg:grid-cols-4 lg:gap-x-4"
       onSubmit={(e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
         startTransition(() => dispatch(fd));
       }}
     >
-      <div className="rounded-xl border border-dashed border-brand-200 bg-brand-50/50 p-3">
+      <div className="col-span-full rounded-xl border border-dashed border-brand-200 bg-brand-50/50 p-3">
         <input ref={fileRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
-        <button type="button" className="btn-primary w-full" disabled={!scanEnabled || scan.busy} onClick={() => fileRef.current?.click()}>
+        <button type="button" className="btn-primary w-full sm:w-auto" disabled={!scanEnabled || scan.busy} onClick={() => fileRef.current?.click()}>
           📷 {scan.busy ? t("scanning") : scanned ? t("scanAgain") : t("scanBill")}
         </button>
         <p className="mt-2 text-xs text-muted">{scanEnabled ? t("scanHint") : t("scanOff")}</p>
@@ -110,7 +110,7 @@ export function ExpenseForm({
         {scan.error && <p role="alert" className="mt-2 text-sm text-red-700">{scan.error}</p>}
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="contents">
         <Field label={t("date")}>
           <input className="input" type="date" name="spentOn" value={date} onChange={(e) => setDate(e.target.value)} />
         </Field>
@@ -124,21 +124,21 @@ export function ExpenseForm({
           </select>
         </Field>
       </div>
-      <Field label={t("vendorLabel")}>
+      <Field label={t("vendorLabel")} className="col-span-2 lg:col-span-1">
         <input className="input" name="vendor" value={vendor} maxLength={120} onChange={(e) => setVendor(e.target.value)} />
       </Field>
 
       {rows.length === 0 ? (
         <>
-          <Field label={t("amount")}>
+          <Field label={t("amount")} className="col-span-2 lg:col-span-1">
             <input className="input" name="amount" inputMode="numeric" required />
           </Field>
-          <button type="button" className="text-sm font-medium text-brand-600 hover:underline" onClick={() => setRows([emptyRow()])}>
+          <button type="button" className="col-span-full justify-self-start text-sm font-medium text-brand-600 hover:underline" onClick={() => setRows([emptyRow()])}>
             {t("addItemsToggle")}
           </button>
         </>
       ) : (
-        <div className="space-y-2">
+        <div className="col-span-full space-y-2">
           <p className="text-sm font-semibold text-brand-900">{t("itemsTitle")}</p>
           <div className="space-y-2">
             {rows.map((r, i) => (
@@ -170,7 +170,7 @@ export function ExpenseForm({
         </div>
       )}
 
-      <Field label={t("propertyLabel")}>
+      <Field label={t("propertyLabel")} className="col-span-2">
         <select className="input" name="propertyId" defaultValue={properties.length === 1 ? properties[0].id : ""}>
           <option value="">{t("allGeneral")}</option>
           {properties.map((p) => (
@@ -180,13 +180,13 @@ export function ExpenseForm({
           ))}
         </select>
       </Field>
-      <Field label={t("note")}>
+      <Field label={t("note")} className="col-span-2">
         <VoiceInput name="note" maxLength={500} placeholder={t("notePh")} />
       </Field>
 
-      {state?.error && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}
-      {state?.ok && !state.error && <p role="status" className="rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-700">{state.ok}</p>}
-      <button type="submit" className="btn-primary w-full" disabled={pending}>
+      {state?.error && <p role="alert" className="col-span-full rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}
+      {state?.ok && !state.error && <p role="status" className="col-span-full rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-700">{state.ok}</p>}
+      <button type="submit" className="btn-primary col-span-full w-full justify-self-start sm:w-auto" disabled={pending}>
         {pending ? t("saving") : t("addExpenseBtn")}
       </button>
     </form>

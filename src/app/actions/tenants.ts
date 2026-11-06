@@ -2,6 +2,8 @@
 
 import { isLang } from "@/lib/i18n";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { sendPaymentReceipt } from "@/lib/payment-receipt";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
@@ -45,6 +47,7 @@ function profile(fd: FormData) {
     idNumber: optStr(fd, "idNumber"),
     emergencyName: optStr(fd, "emergencyName"),
     emergencyPhone: optStr(fd, "emergencyPhone"),
+    permanentAddress: optStr(fd, "permanentAddress")?.slice(0, 300) ?? null,
     notes: optStr(fd, "notes"),
     language: isLang(str(fd, "language")) ? str(fd, "language") : null,
   };
@@ -99,9 +102,20 @@ export async function createTenant(_: FormState, fd: FormData): Promise<FormStat
     },
   });
 
+  // Came from a Join request or a lead: close it so it leaves the waiting lists.
+  const joinId = str(fd, "joinId");
+  if (joinId) {
+    await db.joinRequest.updateMany({
+      where: { id: joinId, ownerId: owner.id, status: "PENDING" },
+      data: { status: "APPROVED", tenantId: tenant.id },
+    });
+  }
+  const leadId = str(fd, "leadId");
+  if (leadId) await db.lead.updateMany({ where: { id: leadId, ownerId: owner.id }, data: { status: "WON" } });
+
   const paidNow = int(fd, "paidNow") ?? 0;
   if (paidNow > 0) {
-    await db.payment.create({
+    const created = await db.payment.create({
       data: {
         tenantId: tenant.id,
         amount: paidNow,
@@ -110,9 +124,10 @@ export async function createTenant(_: FormState, fd: FormData): Promise<FormStat
         note: "Collected at move-in",
       },
     });
+    after(() => sendPaymentReceipt(created.id));
   }
   await syncRentCharges(owner.id, tenant.id);
-  redirect(`/tenants/${tenant.id}`);
+  redirect(`/tenants/${tenant.id}?welcome=1`);
 }
 
 export async function updateTenant(id: string, _: FormState, fd: FormData): Promise<FormState> {

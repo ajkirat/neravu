@@ -58,6 +58,7 @@ const OWNER_FIELDS = {
   email: true,
   phone: true,
   businessName: true,
+  houseRules: true,
   upiId: true,
   language: true,
   emailVerifiedAt: true,
@@ -66,6 +67,7 @@ const OWNER_FIELDS = {
   razorpayKeyId: true,
   razorpayEnabled: true,
   autoReminders: true,
+  autoReceipts: true,
   remindBefore: true,
   remindOverdueEvery: true,
 } as const;

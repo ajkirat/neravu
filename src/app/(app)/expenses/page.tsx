@@ -1,3 +1,4 @@
+import { waBillNumber } from "@/lib/whatsapp";
 import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth";
 import { monthRange, periodKey, toDateInput, today } from "@/lib/dates";
@@ -26,7 +27,7 @@ export default async function ExpensesPage({
   const [expenses, properties] = await Promise.all([
     db.expense.findMany({
       where: { ownerId: owner.id, spentOn: { gte: range.start, lt: range.end } },
-      include: { property: true, items: { orderBy: { id: "asc" } } },
+      include: { property: true, items: { orderBy: { id: "asc" } }, receipt: { select: { expenseId: true } } },
       orderBy: [{ spentOn: "desc" }, { createdAt: "desc" }],
     }),
     db.property.findMany({ where: { ownerId: owner.id }, orderBy: { name: "asc" } }),
@@ -40,11 +41,28 @@ export default async function ExpensesPage({
     <>
       <PageHeader
         title={t("expensesTitle")}
-        subtitle={t("expensesSub")}
+        subtitle={
+          waBillNumber() ? (
+            <>
+              {t("expensesSub")}{" "}
+              <span className="mt-1 block font-medium text-brand-700">{t("waBillsHint", { num: waBillNumber()! })}</span>
+            </>
+          ) : (
+            t("expensesSub")
+          )
+        }
         actions={<MonthPicker base="/expenses" month={month} />}
       />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+      <div className="space-y-4">
+        <Card title={t("addExpenseCard")}>
+          <ExpenseForm
+            properties={properties.map((p) => ({ id: p.id, name: p.name }))}
+            categories={EXPENSE_CATEGORIES.map((c) => ({ value: c, label: categoryText(t, c) }))}
+            defaultDate={toDateInput(today())}
+            scanEnabled={scanEnabled()}
+          />
+        </Card>
+        <div className="space-y-4">
           <div className="card p-4">
             <p className="text-xs text-muted uppercase">{t("spentThisMonth")}</p>
             <p className="text-2xl font-bold text-brand-900">{rupees(total)}</p>
@@ -76,6 +94,13 @@ export default async function ExpensesPage({
                     <div className="min-w-0">
                       <p className="text-base font-semibold text-brand-900">
                         {categoryText(t, e.category)} {e.source === "SCAN" && <Badge tone="green">{t("scannedBadge")}</Badge>}
+                        {e.source === "WHATSAPP" && <Badge tone="green">{t("waBadge")}</Badge>}
+                        {e.addedByName && <span className="block text-xs font-normal text-muted">{t("sentBy", { name: e.addedByName })}</span>}
+                        {e.receipt && (
+                          <a href={`/expenses/${e.id}/bill`} target="_blank" rel="noreferrer" className="block text-sm font-normal text-brand-600 underline">
+                            {t("viewBill")}
+                          </a>
+                        )}
                       </p>
                       <p className="text-sm text-muted">
                         {fmtDate(e.spentOn, lang)} · {e.property?.name ?? t("allGeneral")}
@@ -130,6 +155,13 @@ export default async function ExpensesPage({
                       <td className="text-sm whitespace-nowrap text-muted">{fmtDate(e.spentOn, lang)}</td>
                       <td className="text-sm">
                         {categoryText(t, e.category)} {e.source === "SCAN" && <Badge tone="green">{t("scannedBadge")}</Badge>}
+                        {e.source === "WHATSAPP" && <Badge tone="green">{t("waBadge")}</Badge>}
+                        {e.addedByName && <span className="block text-xs font-normal text-muted">{t("sentBy", { name: e.addedByName })}</span>}
+                        {e.receipt && (
+                          <a href={`/expenses/${e.id}/bill`} target="_blank" rel="noreferrer" className="block text-sm font-normal text-brand-600 underline">
+                            {t("viewBill")}
+                          </a>
+                        )}
                         {e.vendor && <div className="text-xs font-medium text-brand-900">{e.vendor}</div>}
                         {e.note && <div className="text-xs text-muted">{e.note}</div>}
                         {e.items.length > 0 && (
@@ -168,14 +200,6 @@ export default async function ExpensesPage({
             </>
           )}
         </div>
-        <Card title={t("addExpenseCard")} className="order-first lg:order-none">
-          <ExpenseForm
-            properties={properties.map((p) => ({ id: p.id, name: p.name }))}
-            categories={EXPENSE_CATEGORIES.map((c) => ({ value: c, label: categoryText(t, c) }))}
-            defaultDate={toDateInput(today())}
-            scanEnabled={scanEnabled()}
-          />
-        </Card>
       </div>
     </>
   );

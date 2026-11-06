@@ -22,7 +22,7 @@ export async function saveAutoReminders(_: FormState, fd: FormData): Promise<For
   const every = Number(fd.get("every"));
   if (!BEFORE.includes(before) || !EVERY.includes(every)) return { error: t("autoNotConnected") };
   if (enabled && !whatsappConfigured()) return { error: t("autoNeedWhatsapp") };
-  await db.owner.update({ where: { id: owner.id }, data: { autoReminders: enabled, remindBefore: before, remindOverdueEvery: every } });
+  await db.owner.update({ where: { id: owner.id }, data: { autoReminders: enabled, remindBefore: before, remindOverdueEvery: every, autoReceipts: fd.get("receipts") === "on" } });
   revalidatePath("/", "layout");
   return { ok: t("autoSaved"), at: Date.now() };
 }

@@ -74,3 +74,24 @@ export async function deleteStaff(id: string): Promise<void> {
   await db.staff.delete({ where: { id } });
   revalidatePath("/staff");
 }
+
+/**
+ * The owner confirms they got a caretaker's cash. Only payments recorded up to the moment the
+ * owner saw the amount are marked, so cash collected after that stays pending.
+ */
+export async function confirmCashHandover(staffId: string, upTo: string): Promise<void> {
+  const owner = await requireOwner();
+  const until = new Date(upTo);
+  if (Number.isNaN(until.getTime())) return;
+  await db.payment.updateMany({
+    where: {
+      recordedByStaffId: staffId,
+      method: "CASH",
+      handedOverAt: null,
+      createdAt: { lte: until },
+      tenant: { ownerId: owner.id },
+    },
+    data: { handedOverAt: new Date() },
+  });
+  revalidatePath("/", "layout");
+}

@@ -108,6 +108,9 @@ or create your own owner account.
 | `ANTHROPIC_API_KEY` | Optional. Turns on **bill scanning** in Expenses (Claude reads the photo). Get a key at console.anthropic.com. Each scan has a small cost on your Anthropic account. Without it, the Scan button is disabled and manual entry works as before. `ANTHROPIC_MODEL` can override the default model. |
 | `ENCRYPTION_KEY` | Optional. Encrypts saved third-party keys (Razorpay). Defaults to `AUTH_SECRET`. **If you change it, saved Razorpay keys stop working and must be entered again.** |
 | `WHATSAPP_TOKEN` / `WHATSAPP_PHONE_NUMBER_ID` | Optional. Connects a WhatsApp Business account so Neravu can send automatic reminders (see *Automatic WhatsApp reminders* below). `WHATSAPP_TEMPLATE_DUE` and `WHATSAPP_TEMPLATE_OVERDUE` override the template names (default `rent_due_soon` and `rent_overdue`). |
+| `WHATSAPP_APP_SECRET` / `WHATSAPP_VERIFY_TOKEN` | Needed for **bills over WhatsApp** (incoming messages). The app secret is in Meta → your app → Settings → Basic; the verify token is any random string you also type into Meta's webhook form. Without the app secret, incoming messages are refused. |
+| `WHATSAPP_DISPLAY_NUMBER` | Optional. The business number shown in the app ("send bills to +91 63634 62003"), e.g. `916363462003`. |
+| `WHATSAPP_TEMPLATE_RECEIPT` | Optional. Template name for payment receipts (default `payment_receipt`). |
 | `CRON_SECRET` | Required for the daily reminder job. Any long random string; Vercel sends it to the job automatically. Without it the job refuses to run. |
 | `APP_URL` | Optional. Public address used in links sent to tenants, e.g. `https://neravu.example.com`. Detected from the request when unset. |
 | `APP_TIMEZONE` | Optional. Timezone used for "today" when billing rent. Defaults to `Asia/Kolkata`. |
@@ -146,7 +149,29 @@ Owners switch the feature on in the app. Sending uses **one WhatsApp Business ac
 3. In Vercel add `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` and `CRON_SECRET`, then redeploy. `vercel.json` already schedules the daily job (09:00 IST).
 4. In the app open **Auto reminders**: it says "WhatsApp is connected". Use *Send a test message to my phone* before turning it on for real.
 
-Meta charges per conversation after a free monthly allowance; check their current pricing. Until WhatsApp is connected, the switch stays off and the manual WhatsApp buttons keep working.
+5. **Payment receipts**: create a third Utility template `payment_receipt` (en, kn, te) with **5 variables**: `{{1}}` first name, `{{2}}` amount, `{{3}}` PG name, `{{4}}` date · method · receipt no., `{{5}}` what is still pending. Suggested text:
+   - en: `Hi {{1}}, {{3}} received {{2}} from you ({{4}}). {{5}}. Thank you!`
+   - kn: `ನಮಸ್ಕಾರ {{1}}, {{3}} ನಿಮ್ಮಿಂದ {{2}} ಸ್ವೀಕರಿಸಿದೆ ({{4}}). {{5}}. ಧನ್ಯವಾದಗಳು!`
+   - te: `నమస్కారం {{1}}, {{3}} మీ నుండి {{2}} అందుకుంది ({{4}}). {{5}}. ధన్యవాదాలు!`
+
+   Receipts go out after every payment (cash, UPI, Razorpay) while the owner keeps "Send a WhatsApp receipt" ticked on the Auto reminders page.
+
+Meta charges per conversation after a free monthly allowance; check their current pricing.
+
+## Bills over WhatsApp
+
+A caretaker (or the owner) sends a photo of a bill to the business number. Neravu reads it and replies *"Is this an expense? ₹1,200 · Groceries · Sri Ganesh Stores"* with **Yes / No** buttons. On *Yes* the expense, its items and the bill photo are saved under Expenses. Nothing else is needed in the app.
+
+- The sender is recognised by their mobile number: a caretaker added on the **Caretakers** page, or the owner's mobile in **Settings**. Unknown numbers get a polite "ask your owner" reply.
+- Typed answers work too: yes / haan / ಹೌದು / అవును, no / illa / ಇಲ್ಲ / వద్దు.
+- Needs `ANTHROPIC_API_KEY` (bill reading) and the WhatsApp variables above.
+
+Setup, once:
+1. In Meta for Developers → your app → WhatsApp → Configuration → **Webhook**: callback URL `https://<your-app>/api/webhooks/whatsapp`, verify token = `WHATSAPP_VERIFY_TOKEN`. Click *Verify and save*.
+2. Subscribe the webhook to the **messages** field.
+3. Add `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN` and `WHATSAPP_DISPLAY_NUMBER` in Vercel and redeploy.
+
+Note: a number connected to the Cloud API cannot be used in the normal WhatsApp Business phone app at the same time (unless Meta's coexistence option is enabled for it). Until WhatsApp is connected, the switch stays off and the manual WhatsApp buttons keep working.
 
 ## Deploy on Vercel
 

@@ -1,10 +1,11 @@
-export const LEAD_STATUSES = ["NEW", "CONTACTED", "VISIT", "WON", "LOST"] as const;
+export const LEAD_STATUSES = ["NEW", "CONTACTED", "VISIT", "VISITED", "WON", "LOST"] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
 
 export const leadStatusLabel: Record<string, string> = {
   NEW: "New",
   CONTACTED: "Contacted",
   VISIT: "Visit scheduled",
+  VISITED: "Visited",
   WON: "Won",
   LOST: "Lost",
 };

@@ -9,18 +9,21 @@ export async function PaymentForm({
   tenantId,
   tenants,
   defaultAmount,
+  wide = false,
 }: {
   tenantId?: string;
   tenants?: { id: string; name: string; detail: string }[];
   defaultAmount?: number;
+  wide?: boolean;
 }) {
+  const pair = wide ? "contents" : "grid grid-cols-2 gap-3";
   const { t } = await getT();
   return (
-    <ActionForm action={recordPayment} submitLabel={t("recordPaymentBtn")} resetOnSuccess>
+    <ActionForm action={recordPayment} submitLabel={t("recordPaymentBtn")} resetOnSuccess cols={wide ? "pairs" : false}>
       {tenantId ? (
         <input type="hidden" name="tenantId" value={tenantId} />
       ) : (
-        <Field label={t("tenant")}>
+        <Field label={t("tenant")} className="col-span-2 lg:col-span-1">
           <select className="input" name="tenantId" defaultValue="" required>
             <option value="" disabled>
               {t("chooseTenant")}
@@ -33,7 +36,7 @@ export async function PaymentForm({
           </select>
         </Field>
       )}
-      <div className="grid grid-cols-2 gap-3">
+      <div className={pair}>
         <Field label={t("amount")}>
           <input
             className="input"
@@ -47,7 +50,7 @@ export async function PaymentForm({
           <input className="input" type="date" name="paidOn" defaultValue={toDateInput(today())} required />
         </Field>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className={pair}>
         <Field label={t("method")}>
           <select className="input" name="method" defaultValue="UPI">
             {PAYMENT_METHODS.map((m) => (
@@ -61,7 +64,7 @@ export async function PaymentForm({
           <input className="input" name="reference" placeholder={t("referencePh")} />
         </Field>
       </div>
-      <Field label={t("note")}>
+      <Field label={t("note")} className={wide ? "col-span-2 lg:col-span-1" : ""}>
         <input className="input" name="note" placeholder={t("optional")} />
       </Field>
     </ActionForm>

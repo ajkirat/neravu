@@ -50,8 +50,21 @@ export default async function PaymentsPage({
           </>
         }
       />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+      <div className="space-y-4">
+        <Card title={t("recordPaymentCard")}>
+          {tenants.length ? (
+            <PaymentForm wide
+              tenants={tenants.map((t) => ({
+                id: t.id,
+                name: t.name,
+                detail: t.bed ? `${t.property.name}, ${t.bed.room.number}${t.bed.label}` : t.property.name,
+              }))}
+            />
+          ) : (
+            <p className="text-sm text-muted">{t("addTenantsFirst")}</p>
+          )}
+        </Card>
+        <div className="space-y-4">
           <div className="card flex flex-wrap items-center gap-x-8 gap-y-2 p-4">
             <div>
               <p className="text-xs text-muted uppercase">{t("netReceived")}</p>
@@ -131,19 +144,6 @@ export default async function PaymentsPage({
             </>
           )}
         </div>
-        <Card title={t("recordPaymentCard")} className="order-first lg:order-none">
-          {tenants.length ? (
-            <PaymentForm
-              tenants={tenants.map((t) => ({
-                id: t.id,
-                name: t.name,
-                detail: t.bed ? `${t.property.name}, ${t.bed.room.number}${t.bed.label}` : t.property.name,
-              }))}
-            />
-          ) : (
-            <p className="text-sm text-muted">{t("addTenantsFirst")}</p>
-          )}
-        </Card>
       </div>
     </>
   );
