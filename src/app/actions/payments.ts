@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { after } from "next/server";
 import { sendPaymentReceipt } from "@/lib/payment-receipt";
 import { closePendingClaims } from "@/lib/claims";
 import { db } from "@/lib/db";
@@ -40,7 +39,7 @@ export async function recordPayment(_: FormState, fd: FormData): Promise<FormSta
   });
   // A recorded payment resolves any "I've paid" claim from the tenant.
   await closePendingClaims(tenantId, created.id, staff ? `caretaker ${staff.name}` : "owner");
-  after(() => sendPaymentReceipt(created.id));
+  await sendPaymentReceipt(created.id);
   revalidatePath("/", "layout");
   return { ok: tr("paidRecorded", { amt: rupees(amount), name: tenant.name }), at: Date.now() };
 }
@@ -98,9 +97,24 @@ export async function collectFull(tenantId: string, method: string): Promise<{ e
   const created = await db.payment.create({
     data: { tenantId, amount: s.outstanding, paidOn: today(), method, recordedByStaffId: staff?.id ?? null, recordedByName: staff?.name ?? null },
   });
-  after(() => sendPaymentReceipt(created.id));
+  await sendPaymentReceipt(created.id);
   await closePendingClaims(tenantId, created.id, staff ? `caretaker ${staff.name}` : "owner");
   revalidatePath("/", "layout");
   void lang;
   return { ok: t("paidRecorded", { amt: rupees(s.outstanding), name: tenant.name }) };
+}
+
+/** Try the WhatsApp receipt again (owner or caretaker), e.g. after the template was approved in Meta. */
+export async function resendReceipt(paymentId: number): Promise<{ ok?: string; error?: string }> {
+  const { owner } = await requireActor();
+  const { t } = await getT();
+  const p = await db.payment.findFirst({ where: { id: paymentId, tenant: { ownerId: owner.id }, amount: { gt: 0 } }, select: { id: true, receiptAt: true } });
+  if (!p) return { error: t("receiptResendFail", { why: "-" }) };
+  // One try a minute is plenty and keeps a stuck button from hammering Meta.
+  if (p.receiptAt && Date.now() - p.receiptAt.getTime() < 60_000) return { error: t("tryAgainLater") };
+  const r = await sendPaymentReceipt(p.id);
+  revalidatePath(`/payments/${p.id}/receipt`);
+  revalidatePath("/tenants", "layout");
+  if (!r) return { error: t("receiptResendOff") };
+  return r.ok ? { ok: t("receiptSentOk") } : { error: t("receiptResendFail", { why: r.status }) };
 }

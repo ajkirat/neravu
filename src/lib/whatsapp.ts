@@ -28,8 +28,9 @@ export async function sendTemplate(o: { phone: string; template: string; languag
       body: JSON.stringify(buildTemplatePayload({ to, template: o.template, language: o.language, params: o.params })),
     });
     if (res.ok) return { ok: true };
-    if (res.status === 401 || res.status === 403) return { ok: false, reason: "auth", detail: `WhatsApp refused our access (${res.status})` };
-    return { ok: false, reason: "rejected", detail: `WhatsApp rejected the message (${res.status})` };
+    const why = await metaError(res);
+    if (res.status === 401 || res.status === 403) return { ok: false, reason: "auth", detail: `WhatsApp refused our access (${res.status}): ${why}` };
+    return { ok: false, reason: "rejected", detail: why };
   } catch {
     return { ok: false, reason: "network", detail: "Could not reach WhatsApp" };
   } finally {
@@ -209,4 +210,35 @@ export async function linkInbound(): Promise<{ ok: boolean; detail: string }> {
     out.push(`account ${w}: ${r.ok ? "linked" : r.detail}`);
   }
   return { ok, detail: out.join("; ") };
+}
+
+/** Is each message template set up in Meta, in which languages, and approved? One line per template name. */
+export async function checkTemplates(names: string[]): Promise<{ name: string; ok: boolean; detail: string }[]> {
+  if (!whatsappConfigured()) return [];
+  const t = await tokenInfo();
+  if (!t.ok || !t.info.wabaIds.length) return names.map((name) => ({ name, ok: false, detail: t.ok ? "Add WHATSAPP_WABA_ID in Vercel first" : t.detail }));
+  const out: { name: string; ok: boolean; detail: string }[] = [];
+  for (const name of names) {
+    const found: { language: string; status: string }[] = [];
+    let error: string | null = null;
+    for (const w of t.info.wabaIds) {
+      const r = await metaCall(`${w}/message_templates?name=${encodeURIComponent(name)}&fields=name,language,status&limit=50`);
+      if (!r.ok) {
+        error = r.detail;
+        continue;
+      }
+      for (const x of (r.json.data ?? []) as { name?: string; language?: string; status?: string }[]) {
+        if (x.name === name) found.push({ language: x.language ?? "?", status: x.status ?? "?" });
+      }
+    }
+    const approved = found.filter((f) => f.status === "APPROVED").map((f) => f.language);
+    out.push({
+      name,
+      ok: approved.length > 0,
+      detail: found.length
+        ? found.map((f) => `${f.language}: ${f.status.toLowerCase()}`).join(", ")
+        : (error ?? "Not created in Meta yet (WhatsApp Manager → Message templates)"),
+    });
+  }
+  return out;
 }

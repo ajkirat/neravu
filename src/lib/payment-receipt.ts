@@ -45,15 +45,34 @@ export async function receiptParams(paymentId: number) {
   };
 }
 
-/** Send the tenant a WhatsApp receipt, if WhatsApp is connected and the owner keeps receipts on. */
-export async function sendPaymentReceipt(paymentId: number): Promise<void> {
-  if (!whatsappConfigured()) return;
+/** Turn Meta's error into words an owner can act on. Unknown errors are passed through as they are. */
+export function explainSendError(detail: string): string {
+  if (/#132001\b/.test(detail)) return `The "${receiptTemplate()}" message template is not set up or not approved in Meta yet (for this language).`;
+  if (/#131030\b/.test(detail)) return "This tenant's number is not on the test number's allowed list (Meta → WhatsApp → API Setup → To).";
+  if (/#131026\b/.test(detail)) return "This number does not seem to be on WhatsApp.";
+  if (/#132000\b/.test(detail)) return `The "${receiptTemplate()}" template in Meta needs exactly 5 blanks ({{1}} to {{5}}).`;
+  if (/#190\b/.test(detail)) return "Meta says our WhatsApp token has expired. Make a new one and put it in Vercel.";
+  return detail;
+}
+
+/**
+ * Send the tenant a WhatsApp receipt, if WhatsApp is connected and the owner keeps receipts on. The
+ * outcome is saved on the payment, so the owner can see it (and send the receipt by hand if it failed).
+ * Awaited by every caller: background work after the response is not reliable on Vercel.
+ */
+export async function sendPaymentReceipt(paymentId: number): Promise<{ ok: boolean; status: string } | null> {
+  if (!whatsappConfigured()) return null;
+  let status: string;
   try {
     const r = await receiptParams(paymentId);
-    if (!r || !r.auto) return;
+    if (!r || !r.auto) return null;
     const res = await sendTemplate({ phone: r.phone, template: receiptTemplate(), language: r.lang, params: r.params });
+    status = res.ok ? "SENT" : explainSendError(res.detail);
     if (!res.ok) console.error(`Receipt #${paymentId}: ${res.detail}`);
   } catch (e) {
     console.error(`Receipt #${paymentId} failed:`, (e as Error).message);
+    status = "Could not send (unexpected error)";
   }
+  await db.payment.update({ where: { id: paymentId }, data: { receiptStatus: status.slice(0, 300), receiptAt: new Date() } }).catch(() => {});
+  return { ok: status === "SENT", status };
 }

@@ -6,6 +6,7 @@ import { getT } from "@/lib/i18n/server";
 import { asLang, makeT } from "@/lib/i18n";
 import { LogoMark } from "@/components/logo";
 import { PrintButton } from "@/components/print-button";
+import { ReceiptStatus } from "@/components/receipt-status";
 
 export const metadata = { title: "Receipt" };
 
@@ -52,6 +53,11 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
           <PrintButton />
         </span>
       </div>
+      {!refund && p.receiptStatus && (
+        <div className="no-print mb-4">
+          <ReceiptStatus paymentId={p.id} status={p.receiptStatus} />
+        </div>
+      )}
       <div className="card overflow-hidden">
         <div className="flex items-center justify-between bg-brand-700 px-6 py-5 text-white">
           <div>
