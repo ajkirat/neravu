@@ -160,7 +160,7 @@ export default async function ExpensesPage({
                 <tbody>
                   {expenses.map((e) => (
                     <tr key={e.id}>
-                      <td>{e.receipt ? <PhotoThumb src={`/expenses/${e.id}/bill`} alt={t("billPhoto")} /> : <span className="text-xs text-muted">—</span>}</td>
+                      <td>{e.receipt ? <PhotoThumb src={`/expenses/${e.id}/bill`} alt={t("billPhoto")} className="h-14 w-14" /> : <span className="text-xs text-muted">—</span>}</td>
                       <td className="text-sm whitespace-nowrap text-muted">{fmtDate(e.spentOn, lang)}</td>
                       <td className="text-sm">
                         <Link href={`/expenses/${e.id}`} className="font-medium text-brand-900 hover:underline">{categoryText(t, e.category)}</Link>{" "}

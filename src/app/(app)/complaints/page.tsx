@@ -7,6 +7,7 @@ import type { MsgKey } from "@/lib/i18n";
 import { createComplaint } from "@/app/actions/complaints";
 import { ActionForm } from "@/components/action-form";
 import { ComplaintControls } from "@/components/complaint-controls";
+import { PhotoThumb } from "@/components/photo-lightbox";
 import { VoiceInput } from "@/components/voice-input";
 import { FoldCard, Badge, Card, EmptyState, Field, PageHeader } from "@/components/ui";
 
@@ -85,11 +86,7 @@ export default async function ComplaintsPage() {
                     {c.details && <p className="mt-1 text-sm">{c.details}</p>}
                     <p className="mt-1 flex flex-wrap items-center gap-3 text-sm">
                       {c.source === "TENANT" && <Badge tone="green">{t("cmpFromTenant")}</Badge>}
-                      {c.photoMime && (
-                        <a href={`/complaints/${c.id}/photo`} target="_blank" rel="noreferrer" className="text-brand-600 underline">
-                          {t("cmpPhoto")}
-                        </a>
-                      )}
+                      {c.photoMime && <PhotoThumb src={`/complaints/${c.id}/photo`} alt={t("cmpPhoto")} className="h-14 w-14" />}
                       {c.status === "RESOLVED" && c.tenant?.phone && (
                         <a
                           className="text-brand-600 underline"
