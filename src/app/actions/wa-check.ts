@@ -32,6 +32,14 @@ export async function checkWhatsApp(sendTest: boolean): Promise<CheckLine[]> {
     lines.push({ label: "Database has the WhatsApp tables", ok: false, detail: "The latest database update was not applied. Redeploy on Vercel." });
   }
 
+  try {
+    const recent = await db.waInbound.findMany({ orderBy: { createdAt: "desc" }, take: 4, select: { createdAt: true, trace: true } });
+    for (const r of recent) {
+      lines.push({ label: `Message at ${r.createdAt.toISOString().replace("T", " ").slice(5, 16)} UTC`, ok: !!r.trace && !/FAILED|unknown|ambiguous/.test(r.trace), detail: r.trace ?? "(nothing recorded: older version)" });
+    }
+  } catch {
+    /* table check above already reports this */
+  }
   const mine = owner.phone ? phoneKey(owner.phone) : "";
   lines.push({ label: "Your mobile number is saved in Settings", ok: mine.length === 10, detail: mine ? `ends ...${mine.slice(-4)}` : "not saved" });
   const staff = await db.staff.count({ where: { ownerId: owner.id, active: true } });

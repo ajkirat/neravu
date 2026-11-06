@@ -13,6 +13,17 @@ import { fetchMedia, sendButtons, sendText } from "./whatsapp";
 const DAILY_LIMIT = 60; // bill photos per PG per day, to cap reading costs
 const KEEP_DAYS = 7;
 
+/** Append a step to this message's trace (shown in the WhatsApp check). Best effort: never breaks the flow. */
+async function step(id: string, text: string) {
+  try {
+    const row = await db.waInbound.findUnique({ where: { id }, select: { trace: true } });
+    const next = `${row?.trace ? row.trace + " > " : ""}${text}`.slice(-900);
+    await db.waInbound.update({ where: { id }, data: { trace: next } });
+  } catch {
+    /* ignore */
+  }
+}
+
 type Sender = { ownerId: string; staffId: string | null; name: string; lang: Lang; pg: string };
 
 /** Who sent this? A caretaker (phone is unique) or an owner whose profile phone matches. */
@@ -77,13 +88,16 @@ export async function handleInbound(m: Inbound): Promise<void> {
     db.pendingExpense.deleteMany({ where: { createdAt: { lt: cutoff } } }),
   ]);
 
+  await step(m.id, m.kind);
   const sender = await findSender(m.from);
   console.log(`WhatsApp inbound: ${m.kind} from ...${m.from.slice(-4)} -> ${typeof sender === "string" ? sender : "known sender"}`);
   if (sender === "unknown" || sender === "ambiguous") {
+    await step(m.id, `sender ${sender}`);
     if (m.kind !== "other") await sendText(m.from, makeT("en")(sender === "unknown" ? "waUnknown" : "waAmbiguous"));
     return;
   }
   const t = makeT(sender.lang);
+  await step(m.id, "known sender");
 
   if (m.kind === "image") return onPhoto(m, sender, t);
   if (m.kind === "document") {
@@ -98,6 +112,7 @@ export async function handleInbound(m: Inbound): Promise<void> {
 }
 
 async function onPhoto(m: Inbound, sender: Sender, t: ReturnType<typeof makeT>) {
+  await step(m.id, "photo");
   if (!scanEnabled()) {
     console.error("WhatsApp bill: ANTHROPIC_API_KEY is not set");
     return void (await sendText(m.from, t("waBillOff")));
@@ -107,9 +122,11 @@ async function onPhoto(m: Inbound, sender: Sender, t: ReturnType<typeof makeT>) 
     return void (await sendText(m.from, t("waBillLimit")));
   }
   const media = m.mediaId ? await fetchMedia(m.mediaId) : null;
+  await step(m.id, media ? `downloaded ${Math.round(media.bytes.length / 1024)}KB` : "DOWNLOAD FAILED");
   if (!media) console.error("WhatsApp bill: could not download the photo");
   if (!media || !media.mime.startsWith("image/")) return void (await sendText(m.from, media ? t("waBillPhotoOnly") : t("waBillFailed")));
   const img = await shrink(media.bytes);
+  await step(m.id, img ? "resized" : "RESIZE FAILED");
   const bytes = img ? new Uint8Array(img.data) : null;
   if (!img) return void (await sendText(m.from, t("waBillFailed")));
 
@@ -117,9 +134,11 @@ async function onPhoto(m: Inbound, sender: Sender, t: ReturnType<typeof makeT>) 
   try {
     data = await extractReceipt(img.data.toString("base64"), img.mime);
   } catch (e) {
+    await step(m.id, `READ FAILED (${(e as Error).message})`);
     console.error("WhatsApp bill: reading failed:", (e as Error).message);
     return void (await sendText(m.from, t("waBillFailed")));
   }
+  await step(m.id, data.isReceipt ? `read ${billAmount(data)}` : "read: not a bill");
   if (!data.isReceipt || billAmount(data) <= 0) return void (await sendText(m.from, t("waBillNotBill")));
 
   const pending = await db.pendingExpense.create({
@@ -137,6 +156,7 @@ async function onPhoto(m: Inbound, sender: Sender, t: ReturnType<typeof makeT>) 
     { id: `exp_yes_${pending.id}`, title: t("waYes") },
     { id: `exp_no_${pending.id}`, title: t("waNo") },
   ]);
+  await step(m.id, res.ok ? "asked OK" : `ASK FAILED (${res.detail.slice(0, 160)})`);
   if (!res.ok) console.error("WhatsApp bill: could not ask", res.detail);
 }
 
