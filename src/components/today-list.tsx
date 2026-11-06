@@ -11,6 +11,8 @@ import { confirmClaim, rejectClaim } from "@/app/actions/claims";
 import { assignCredit, ignoreCredit } from "@/app/actions/pay-confirm";
 import { acceptLeave, dismissRequest } from "@/app/actions/requests";
 import { ActionButton, AssignCredit } from "@/components/today-actions";
+import { jobDone, jobLater } from "@/app/actions/jobs";
+import { diffDays, today } from "@/lib/dates";
 
 type Props = { ownerId: string; isOwner: boolean; staffId: string | null; autoReminders: boolean };
 
@@ -21,7 +23,8 @@ type Props = { ownerId: string; isOwner: boolean; staffId: string | null; autoRe
 export async function TodayList({ ownerId, isOwner, staffId, autoReminders }: Props) {
   const { t, lang } = await getT();
   const ownerRow = await db.owner.findUnique({ where: { id: ownerId }, select: ownerSelect });
-  const [claims, credits, leaves, complaints, joining, cash, lad, bills, tenants] = await Promise.all([
+  const [jobs, claims, credits, leaves, complaints, joining, cash, lad, bills, tenants] = await Promise.all([
+    db.recurringJob.findMany({ where: { ownerId, active: true, nextDue: { lte: today() } }, orderBy: { nextDue: "asc" }, take: 10 }),
     isOwner ? db.paymentClaim.findMany({ where: { ownerId, status: "PENDING" }, include: { tenant: { select: { name: true } } }, orderBy: { createdAt: "asc" } }) : [],
     isOwner ? db.bankCredit.findMany({ where: { ownerId, status: "UNMATCHED" }, orderBy: { createdAt: "asc" }, take: 20 }) : [],
     isOwner ? db.tenantRequest.findMany({ where: { ownerId, status: "PENDING" }, include: { tenant: { select: { name: true } } } }) : [],
@@ -38,7 +41,7 @@ export async function TodayList({ ownerId, isOwner, staffId, autoReminders }: Pr
   const cashTotal = cash.reduce((n, c) => n + c.amount, 0);
   const billIds = new Set(bills.map((b) => b.id));
   const remindOnly = remind.filter((r) => !billIds.has(r.tenantId));
-  const count = claims.length + credits.length + leaves.length + (complaints ? 1 : 0) + (joining ? 1 : 0) + (cashTotal ? 1 : 0) + bills.length + remindOnly.length + lad.calls.length;
+  const count = jobs.length + claims.length + credits.length + leaves.length + (complaints ? 1 : 0) + (joining ? 1 : 0) + (cashTotal ? 1 : 0) + bills.length + remindOnly.length + lad.calls.length;
 
   const Row = ({ children }: { children: React.ReactNode }) => <li className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-3 sm:px-5">{children}</li>;
 
@@ -52,6 +55,21 @@ export async function TodayList({ ownerId, isOwner, staffId, autoReminders }: Pr
         <p className="px-4 py-4 text-sm text-muted sm:px-5">{t("todayNothing")}</p>
       ) : (
         <ul className="divide-y divide-line">
+          {jobs.map((j) => {
+            const late = diffDays(today(), j.nextDue);
+            return (
+              <Row key={`job-${j.id}`}>
+                <span className="text-base">
+                  <span className="font-semibold">{t("todayJob", { title: j.title })}</span>
+                  <span className="block text-sm text-muted">{late > 0 ? t("jobLate", { n: late }) : t("jobDueToday")}</span>
+                </span>
+                <span className="flex gap-2">
+                  <ActionButton action={jobDone.bind(null, j.id)} label={t("jobDoneBtn")} className="btn-primary btn-sm" />
+                  <ActionButton action={jobLater.bind(null, j.id)} label={t("jobLaterBtn")} />
+                </span>
+              </Row>
+            );
+          })}
           {claims.map((c) => (
             <Row key={c.id}>
               <span className="min-w-0 text-base">

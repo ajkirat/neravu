@@ -139,8 +139,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
               ]
             : []),
           { href: "/reminders", label: t("qaRemind"), icon: "M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0", tone: "bg-marigold-100" },
-          { href: "/leads", label: t("qaLeads"), icon: navIcon("/leads"), tone: "bg-white" },
-          { href: "/complaints", label: t("qaComplaints"), icon: navIcon("/complaints"), tone: "bg-white" },
+          { href: "/announce", label: t("navAnnounce"), icon: "M3 11l15-6v14L3 13zM8 13v5", tone: "bg-white" },
+          ...(isOwner
+            ? [{ href: "/cashbook", label: t("navCashbook"), icon: navIcon("/expenses"), tone: "bg-white" }]
+            : [{ href: "/complaints", label: t("qaComplaints"), icon: navIcon("/complaints"), tone: "bg-white" }]),
         ].map((q) => (
           <Link
             key={q.href}

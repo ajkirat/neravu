@@ -7,7 +7,8 @@ import { ID_TYPES, PAYMENT_METHODS, methodText } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import { LANGS } from "@/lib/i18n";
 import { ActionForm } from "@/components/action-form";
-import { BedPicker } from "@/components/bed-picker";
+import { BedBoard } from "@/components/bed-board";
+import { pickRooms } from "@/lib/rooms";
 import { Card, EmptyState, Field, PageHeader } from "@/components/ui";
 import { createTenant } from "@/app/actions/tenants";
 
@@ -21,7 +22,7 @@ export default async function NewTenantPage({
   const { bed, property, join, lead } = await searchParams;
   const owner = await requireOwner();
   const { t, lang } = await getT();
-  const beds = await vacantBeds(owner.id);
+  const [beds, rooms] = await Promise.all([vacantBeds(owner.id), pickRooms(owner.id)]);
   const jr = join ? await db.joinRequest.findFirst({ where: { id: join, ownerId: owner.id, status: "PENDING" } }) : null;
   const ld = !jr && lead ? await db.lead.findFirst({ where: { id: lead, ownerId: owner.id } }) : null;
   const pre = jr ?? (ld ? { name: ld.name, phone: ld.phone, propertyId: ld.propertyId } : null);
@@ -97,7 +98,7 @@ export default async function NewTenantPage({
           </Card>
           <Card title={t("stayAndRent")}>
             <div className="space-y-4">
-              <BedPicker beds={beds} defaultBed={defaultBed} />
+              <BedBoard rooms={rooms} defaultBed={defaultBed} />
               <div className="grid gap-4 sm:grid-cols-3">
                 <Field label={t("moveInDate")}>
                   <input
