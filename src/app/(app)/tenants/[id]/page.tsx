@@ -19,7 +19,8 @@ import {
 } from "@/lib/format";
 import { syncRentCharges } from "@/lib/ledger";
 import { payTokens } from "@/lib/paylink";
-import { payLinksOn } from "@/lib/pay-mode";
+import { ActionButton } from "@/components/today-actions";
+import { pauseReminders } from "@/app/actions/requests";
 import { appOrigin } from "@/lib/url";
 import { getT } from "@/lib/i18n/server";
 import { TenantStatusBadge } from "@/components/tenant-status";
@@ -64,7 +65,8 @@ export default async function TenantPage({
     },
   });
   if (!t) notFound();
-  const tokens = payLinksOn(owner) ? await payTokens(owner.id, [t.id]) : new Map<string, string>();
+  // Every tenant has a My PG link (receipts, complaints, notice), even without online payment.
+  const tokens = await payTokens(owner.id, [t.id]);
   const payUrl = tokens.get(t.id) ? `${await appOrigin()}/pay/${tokens.get(t.id)}` : undefined;
   const welcomeUrl = welcomeLink({
     phone: t.phone,
@@ -153,6 +155,13 @@ export default async function TenantPage({
         }
         actions={
           <>
+            {isOwner && t.status !== "MOVED_OUT" && (
+              <ActionButton
+                action={pauseReminders.bind(null, t.id, t.remindersPausedUntil && t.remindersPausedUntil > new Date() ? 0 : 30)}
+                label={t.remindersPausedUntil && t.remindersPausedUntil > new Date() ? tr("resumeReminders") : tr("pauseReminders")}
+                className="btn-secondary"
+              />
+            )}
             {isOwner && t.status !== "MOVED_OUT" && !justAdded && (
               <a className="btn-secondary" target="_blank" rel="noreferrer" href={welcomeUrl}>
                 {tr("welcomeBtn")}
@@ -214,6 +223,9 @@ export default async function TenantPage({
         />
       </div>
 
+      {t.remindersPausedUntil && t.remindersPausedUntil > new Date() && (
+        <p className="mb-4 rounded-lg bg-canvas px-4 py-3 text-sm text-muted">{tr("remindersPausedTill", { date: fmtDate(t.remindersPausedUntil, lang) })}</p>
+      )}
       {t.payClaimedAt && s.outstanding > 0 && (
         <p className="mb-4 rounded-lg bg-marigold-100 px-4 py-3 text-sm text-marigold-700">
           {tr("saysPaidBanner", { name: t.name.split(" ")[0], date: fmtDate(t.payClaimedAt, lang) })}

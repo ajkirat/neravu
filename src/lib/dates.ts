@@ -63,3 +63,9 @@ export function shiftPeriod(period: string, months: number): string {
   const [y, m] = period.split("-").map(Number);
   return periodKey(utcDate(y, m - 1 + months, 1));
 }
+
+/** Night time in the app timezone (9 pm to 8 am): no reminders go out then. */
+export function isQuietHours(now: Date = new Date(), timeZone = APP_TIMEZONE): boolean {
+  const hour = Number(new Intl.DateTimeFormat("en-GB", { timeZone, hour: "2-digit", hour12: false }).format(now));
+  return hour >= 21 || hour < 8;
+}

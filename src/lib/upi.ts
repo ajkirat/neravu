@@ -5,13 +5,13 @@ export function isValidUpiId(v: string): boolean {
 }
 
 /** `upi://pay` deep link understood by GPay, PhonePe, Paytm, BHIM and others. */
-export function upiLink(opts: { upiId: string; name: string; amount: number; note: string }): string {
+export function upiLink(opts: { upiId: string; name: string; amount: number | string; note: string }): string {
   const q = [
     ["pa", opts.upiId],
     ["pn", opts.name],
     ["am", String(opts.amount)],
     ["cu", "INR"],
-    ["tn", opts.note],
+    ["tn", opts.note.slice(0, 50)],
   ]
     .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
     .join("&");

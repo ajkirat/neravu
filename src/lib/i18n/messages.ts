@@ -12,6 +12,7 @@ import { wabot } from "./parts/wabot";
 import { register } from "./parts/register";
 import { settleMsgs } from "./parts/settle";
 import { landing } from "./parts/landing";
+import { flows } from "./parts/flows";
 import { leads } from "./parts/leads";
 import { misc } from "./parts/misc";
 import { nav } from "./parts/nav";
@@ -38,6 +39,7 @@ export const messages = {
   ...register,
   ...settleMsgs,
   ...landing,
+  ...flows,
   ...leads,
   ...settings,
   ...publicPages,

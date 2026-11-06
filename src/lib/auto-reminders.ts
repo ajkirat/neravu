@@ -1,13 +1,13 @@
 import "server-only";
 import { db } from "./db";
 import { nextDueDate } from "./billing";
-import { today } from "./dates";
+import { isQuietHours, today } from "./dates";
 import { rupees } from "./format";
 import { asLang } from "./i18n";
 import { syncRentCharges, tenantBalances } from "./ledger";
 import { payLinksOn } from "./pay-mode";
 import { payTokens } from "./paylink";
-import { planReminders, type PlanItem, type PlanLog, type PlanTenant, type ReminderKind } from "./reminder-plan";
+import { needsCall, planReminders, type PlanItem, type PlanLog, type PlanTenant, type ReminderKind } from "./reminder-plan";
 import { appOrigin } from "./url";
 import { sendTemplate, templateNames, whatsappConfigured } from "./whatsapp";
 
@@ -41,11 +41,16 @@ export const ownerSelect = {
 
 /** Who would get a reminder today, with names for display. Read-only. */
 export async function buildPlan(owner: OwnerRow, asOf = today()) {
+  return (await ladder(owner, asOf)).items;
+}
+
+/** Today's reminders, plus the people who have had every reminder and should get a call. Read-only. */
+export async function ladder(owner: OwnerRow, asOf = today()) {
   await syncRentCharges(owner.id);
   const [tenants, balances, logs] = await Promise.all([
     db.tenant.findMany({
       where: { ownerId: owner.id, status: { in: ["ACTIVE", "NOTICE"] } },
-      select: { id: true, name: true, phone: true, status: true, monthlyRent: true, moveInDate: true, moveOutDate: true, rentDueDay: true, payClaimedAt: true, language: true },
+      select: { id: true, name: true, phone: true, status: true, monthlyRent: true, moveInDate: true, moveOutDate: true, rentDueDay: true, payClaimedAt: true, remindersPausedUntil: true, language: true },
     }),
     tenantBalances(owner.id),
     db.reminderLog.findMany({
@@ -65,12 +70,16 @@ export async function buildPlan(owner: OwnerRow, asOf = today()) {
       oldestUnpaid: b?.oldestUnpaid ?? null,
       nextDue: !t.moveOutDate || next < t.moveOutDate ? next : null,
       payClaimedAt: t.payClaimedAt,
+      pausedUntil: t.remindersPausedUntil,
     };
   });
   const planLogs: PlanLog[] = logs.filter((l) => l.tenantId).map((l) => ({ tenantId: l.tenantId!, kind: l.kind as ReminderKind, sentAt: l.sentAt }));
   const items = planReminders(planTenants, planLogs, { before: owner.remindBefore, overdueEvery: owner.remindOverdueEvery }, asOf);
   const byId = new Map(tenants.map((t) => [t.id, t]));
-  return items.map((i) => ({ ...i, tenant: byId.get(i.tenantId)! }));
+  const calls = planTenants
+    .filter((p) => needsCall(p, planLogs) && !(p.pausedUntil && p.pausedUntil > asOf))
+    .map((p) => ({ tenant: byId.get(p.id)!, amount: p.outstanding }));
+  return { items: items.map((i) => ({ ...i, tenant: byId.get(i.tenantId)! })), calls };
 }
 
 export type RunSummary = { planned: number; sent: number; failed: number; stopped?: string };
@@ -78,6 +87,8 @@ export type RunSummary = { planned: number; sent: number; failed: number; stoppe
 /** Send today's reminders for one owner and log every attempt. */
 export async function runForOwner(owner: OwnerRow): Promise<RunSummary> {
   if (!whatsappConfigured()) return { planned: 0, sent: 0, failed: 0, stopped: "WhatsApp is not connected" };
+  // Never message people at night, whoever starts the run.
+  if (isQuietHours()) return { planned: 0, sent: 0, failed: 0, stopped: "Quiet hours (9 pm - 8 am)" };
   const plan = (await buildPlan(owner)).slice(0, MAX_PER_OWNER);
   const tokens = payLinksOn(owner) ? await payTokens(owner.id, plan.map((p) => p.tenantId)) : new Map<string, string>();
   const origin = tokens.size ? await appOrigin() : "";

@@ -9,19 +9,25 @@ import { tooMany } from "@/lib/throttle";
 import { getT } from "@/lib/i18n/server";
 import { appOrigin } from "@/lib/url";
 import { createPaymentLink } from "@/lib/razorpay";
+import { cleanUtr } from "@/lib/claims";
 import { decryptSecret } from "@/lib/secrets";
 import type { FormState } from "@/components/action-form";
 
-/** Public: a tenant taps "I've paid" on their pay page. The owner still confirms by recording the payment. */
-export async function claimPayment(token: string, _: FormState): Promise<FormState> {
+/**
+ * Public: a tenant taps "I've paid" on their My PG page (Option A). This is only a note for the owner:
+ * it never changes what they owe. The owner checks their own UPI app and taps OK, which records it.
+ */
+export async function claimPayment(token: string, _: FormState, fd: FormData): Promise<FormState> {
   const { t: tr } = await getT();
   if (!/^[a-f0-9]{32}$/.test(token)) return { error: tr("errBadLink") };
   if (await tooMany("claim", 10, 60 * 60 * 1000)) return { error: tr("tryAgainLater") };
   const t = await db.tenant.findUnique({
     where: { payToken: token },
-    select: { id: true, ownerId: true },
+    select: { id: true, ownerId: true, payCode: true, owner: { select: { payConfirm: true, paymentMode: true } } },
   });
   if (!t) return { error: tr("errBadLink") };
+  // With bank-email confirmation (Option C) payments show up by themselves: there is nothing to claim.
+  if (t.owner.payConfirm === "BANK" || t.owner.paymentMode === "NONE") return { error: tr("errBadLink") };
   await syncRentCharges(t.ownerId, t.id);
   const full = await db.tenant.findUnique({
     where: { id: t.id },
@@ -29,6 +35,13 @@ export async function claimPayment(token: string, _: FormState): Promise<FormSta
   });
   const s = summarizeLedger(full?.charges ?? [], full?.payments ?? [], today());
   if (s.outstanding <= 0) return { ok: tr("payNothingPendingOk"), at: Date.now() };
+  const utr = cleanUtr(String(fd.get("utr") ?? ""));
+  const pending = await db.paymentClaim.findFirst({ where: { tenantId: t.id, status: "PENDING" } });
+  if (pending) {
+    await db.paymentClaim.update({ where: { id: pending.id }, data: { utr: utr ?? pending.utr, amount: s.outstanding } });
+  } else {
+    await db.paymentClaim.create({ data: { ownerId: t.ownerId, tenantId: t.id, amount: s.outstanding, paise: t.payCode ?? 0, utr } });
+  }
   await db.tenant.update({ where: { id: t.id }, data: { payClaimedAt: new Date() } });
   revalidatePath("/", "layout");
   return { ok: tr("payClaimedOk"), at: Date.now() };
