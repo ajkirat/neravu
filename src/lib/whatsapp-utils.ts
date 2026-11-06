@@ -20,3 +20,12 @@ export function buildTemplatePayload(opts: { to: string; template: string; langu
     },
   };
 }
+
+/** Human-friendly number: Indian mobiles as +91 98450 11122, US/Canada as +1 555 147 2730, others as +<digits>. */
+export function formatWaNumber(digits: string): string {
+  const d = digits.replace(/\D/g, "");
+  if (d.length === 10) return `+91 ${d.slice(0, 5)} ${d.slice(5)}`;
+  if (d.length === 12 && d.startsWith("91")) return `+91 ${d.slice(2, 7)} ${d.slice(7)}`;
+  if (d.length === 11 && d.startsWith("1")) return `+1 ${d.slice(1, 4)} ${d.slice(4, 7)} ${d.slice(7)}`;
+  return `+${d}`;
+}
