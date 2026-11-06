@@ -75,6 +75,7 @@ export async function handleInbound(m: Inbound): Promise<void> {
   ]);
 
   const sender = await findSender(m.from);
+  console.log(`WhatsApp inbound: ${m.kind} from ...${m.from.slice(-4)} -> ${typeof sender === "string" ? sender : "known sender"}`);
   if (sender === "unknown" || sender === "ambiguous") {
     if (m.kind !== "other") await sendText(m.from, makeT("en")(sender === "unknown" ? "waUnknown" : "waAmbiguous"));
     return;
@@ -94,12 +95,16 @@ export async function handleInbound(m: Inbound): Promise<void> {
 }
 
 async function onPhoto(m: Inbound, sender: Sender, t: ReturnType<typeof makeT>) {
-  if (!scanEnabled()) return void (await sendText(m.from, t("waBillOff")));
+  if (!scanEnabled()) {
+    console.error("WhatsApp bill: ANTHROPIC_API_KEY is not set");
+    return void (await sendText(m.from, t("waBillOff")));
+  }
   const since = new Date(Date.now() - 86400_000);
   if ((await db.pendingExpense.count({ where: { ownerId: sender.ownerId, createdAt: { gte: since } } })) >= DAILY_LIMIT) {
     return void (await sendText(m.from, t("waBillLimit")));
   }
   const media = m.mediaId ? await fetchMedia(m.mediaId) : null;
+  if (!media) console.error("WhatsApp bill: could not download the photo");
   if (!media || !media.mime.startsWith("image/")) return void (await sendText(m.from, media ? t("waBillPhotoOnly") : t("waBillFailed")));
   const img = await shrink(media.bytes);
   const bytes = img ? new Uint8Array(img.data) : null;
@@ -108,7 +113,8 @@ async function onPhoto(m: Inbound, sender: Sender, t: ReturnType<typeof makeT>) 
   let data: ReceiptData;
   try {
     data = await extractReceipt(img.data.toString("base64"), img.mime);
-  } catch {
+  } catch (e) {
+    console.error("WhatsApp bill: reading failed:", (e as Error).message);
     return void (await sendText(m.from, t("waBillFailed")));
   }
   if (!data.isReceipt || billAmount(data) <= 0) return void (await sendText(m.from, t("waBillNotBill")));

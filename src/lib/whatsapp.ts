@@ -52,12 +52,25 @@ async function postMessage(body: Record<string, unknown>): Promise<SendResult> {
       body: JSON.stringify({ messaging_product: "whatsapp", ...body }),
     });
     if (res.ok) return { ok: true };
-    if (res.status === 401 || res.status === 403) return { ok: false, reason: "auth", detail: `WhatsApp refused our access (${res.status})` };
-    return { ok: false, reason: "rejected", detail: `WhatsApp rejected the message (${res.status})` };
+    const why = await metaError(res);
+    console.error(`WhatsApp send failed (${res.status}): ${why}`);
+    if (res.status === 401 || res.status === 403) return { ok: false, reason: "auth", detail: `WhatsApp refused our access (${res.status}): ${why}` };
+    return { ok: false, reason: "rejected", detail: `WhatsApp rejected the message (${res.status}): ${why}` };
   } catch {
+    console.error("WhatsApp send failed: could not reach WhatsApp");
     return { ok: false, reason: "network", detail: "Could not reach WhatsApp" };
   } finally {
     clearTimeout(timer);
+  }
+}
+
+/** What Meta says went wrong, e.g. "(#131030) Recipient phone number not in allowed list". No secrets in it. */
+async function metaError(res: Response): Promise<string> {
+  try {
+    const j = (await res.json()) as { error?: { message?: string; code?: number } };
+    return `${j.error?.code ? `#${j.error.code} ` : ""}${(j.error?.message ?? "no details").slice(0, 300)}`;
+  } catch {
+    return "no details";
   }
 }
 
