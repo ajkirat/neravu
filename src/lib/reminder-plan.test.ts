@@ -93,4 +93,11 @@ describe("whatsapp helpers", () => {
     expect(p.template.components[0].parameters).toHaveLength(4);
     expect(p.template.components[0].parameters[0]).toEqual({ type: "text", text: "Asha" });
   });
+  it("puts the receipt picture in the header, before the text", () => {
+    const p = buildTemplatePayload({ to: "919876543210", template: "payment_receipt", language: "en", params: ["a", "b", "c", "d", "e"], headerImageId: "MEDIA1" });
+    expect(p.template.components).toHaveLength(2);
+    expect(p.template.components[0]).toEqual({ type: "header", parameters: [{ type: "image", image: { id: "MEDIA1" } }] });
+    expect(p.template.components[1].type).toBe("body");
+    expect(buildTemplatePayload({ to: "1", template: "x", language: "en", params: ["a"] }).template.components).toHaveLength(1);
+  });
 });

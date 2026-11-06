@@ -4,7 +4,8 @@ import { summarizeLedger } from "./billing";
 import { fmtDate, methodText, rupees } from "./format";
 import { asLang, makeT } from "./i18n";
 import { today } from "./dates";
-import { sendTemplate, whatsappConfigured } from "./whatsapp";
+import { receiptImageData, renderReceiptPng } from "./receipt-image";
+import { sendTemplate, templateHasImageHeader, uploadMedia, whatsappConfigured, type SendResult } from "./whatsapp";
 
 export const receiptTemplate = () => process.env.WHATSAPP_TEMPLATE_RECEIPT ?? "payment_receipt";
 
@@ -50,7 +51,8 @@ export function explainSendError(detail: string): string {
   if (/#132001\b/.test(detail)) return `The "${receiptTemplate()}" message template is not set up or not approved in Meta yet (for this language).`;
   if (/#131030\b/.test(detail)) return "This tenant's number is not on the test number's allowed list (Meta → WhatsApp → API Setup → To).";
   if (/#131026\b/.test(detail)) return "This number does not seem to be on WhatsApp.";
-  if (/#132000\b/.test(detail)) return `The "${receiptTemplate()}" template in Meta needs exactly 5 blanks ({{1}} to {{5}}).`;
+  if (/#132000\b/.test(detail)) return `The "${receiptTemplate()}" template in Meta needs exactly 5 blanks ({{1}} to {{5}}) in the text.`;
+  if (/#132012\b/.test(detail)) return `The "${receiptTemplate()}" template in Meta does not match what Neravu sends (check the picture header and the 5 blanks).`;
   if (/#190\b/.test(detail)) return "Meta says our WhatsApp token has expired. Make a new one and put it in Vercel.";
   return detail;
 }
@@ -66,7 +68,24 @@ export async function sendPaymentReceipt(paymentId: number): Promise<{ ok: boole
   try {
     const r = await receiptParams(paymentId);
     if (!r || !r.auto) return null;
-    const res = await sendTemplate({ phone: r.phone, template: receiptTemplate(), language: r.lang, params: r.params });
+    const tpl = receiptTemplate();
+    // If the template has a picture on top, the receipt goes as a picture with the text as its caption.
+    const picture = async (): Promise<{ id?: string; error?: string }> => {
+      const d = await receiptImageData(paymentId);
+      if (!d) return { error: "Receipt not found" };
+      const up = await uploadMedia(await renderReceiptPng(d), "image/png", `receipt-${d.no}.png`);
+      return up.ok ? { id: up.id } : { error: up.detail };
+    };
+    const hasImage = await templateHasImageHeader(tpl, r.lang);
+    let img = hasImage ? await picture() : {};
+    let res: SendResult = img.error
+      ? { ok: false, reason: "rejected", detail: img.error }
+      : await sendTemplate({ phone: r.phone, template: tpl, language: r.lang, params: r.params, headerImageId: img.id });
+    // Meta could not tell us the template's shape: if it wants a picture, send again with one.
+    if (!res.ok && hasImage === null && /#132012\b|#132000\b/.test(res.detail)) {
+      img = await picture();
+      if (img.id) res = await sendTemplate({ phone: r.phone, template: tpl, language: r.lang, params: r.params, headerImageId: img.id });
+    }
     status = res.ok ? "SENT" : explainSendError(res.detail);
     if (!res.ok) console.error(`Receipt #${paymentId}: ${res.detail}`);
   } catch (e) {

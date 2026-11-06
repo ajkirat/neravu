@@ -26,6 +26,7 @@ export const payments = {
   stay: { en: "Stay", kn: "ವಾಸ", te: "నివాసం" },
   mode: { en: "Mode", kn: "ವಿಧಾನ", te: "పద్ధతి" },
   issuedBy: { en: "Issued by {name}. This is a computer-generated receipt.", kn: "{name} ನೀಡಿದ್ದು. ಇದು ಕಂಪ್ಯೂಟರ್ ರಸೀದಿ.", te: "{name} జారీ చేశారు. ఇది కంప్యూటర్ రసీదు." },
+  receiptPicture: { en: "Receipt picture", kn: "ರಸೀದಿ ಚಿತ್ರ", te: "రసీదు చిత్రం" },
   shareReceipt: { en: "Send on WhatsApp", kn: "ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಕಳುಹಿಸಿ", te: "వాట్సాప్‌లో పంపండి" },
   receiptMsg: {
     en: "Hi {name}, we received {amt} on {date} ({mode}). Receipt no. {no}. Thank you! – {pg}",
