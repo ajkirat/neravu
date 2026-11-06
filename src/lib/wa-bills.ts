@@ -28,10 +28,15 @@ async function step(id: string, text: string) {
 
 type Sender = { ownerId: string; staffId: string | null; name: string; lang: Lang; pg: string };
 
-/** Who sent this? A caretaker (phone is unique) or an owner whose profile phone matches. */
+/**
+ * Who sent this? The owner whose sign-in mobile it is, else an active caretaker. The owner comes first:
+ * while testing, one number can be both, and bills from the owner's phone should say "owner".
+ */
 async function findSender(from: string): Promise<Sender | "unknown" | "ambiguous"> {
   const key = phoneKey(from);
   if (key.length < 10) return "unknown";
+  const owner = await db.owner.findUnique({ where: { phoneKey: key }, select: { id: true, name: true, language: true, businessName: true } });
+  if (owner) return { ownerId: owner.id, staffId: null, name: owner.name, lang: asLang(owner.language), pg: owner.businessName ?? owner.name };
   const staff = await db.staff.findUnique({
     where: { phone: key },
     include: { owner: { select: { id: true, language: true, businessName: true, name: true } } },
@@ -39,9 +44,10 @@ async function findSender(from: string): Promise<Sender | "unknown" | "ambiguous
   if (staff?.active) {
     return { ownerId: staff.ownerId, staffId: staff.id, name: staff.name, lang: asLang(staff.owner.language), pg: staff.owner.businessName ?? staff.owner.name };
   }
+  // Owners from before sign-in by mobile, whose number could not be made their sign-in.
   const owners = (
     await db.owner.findMany({
-      where: { phone: { contains: key.slice(-4) } },
+      where: { phoneKey: null, phone: { contains: key.slice(-4) } },
       select: { id: true, name: true, phone: true, language: true, businessName: true },
     })
   ).filter((o) => o.phone && phoneKey(o.phone) === key);
