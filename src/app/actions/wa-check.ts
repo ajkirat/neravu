@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth";
-import { scanEnabled } from "@/lib/receipt-ai";
+import { checkProvider, scanEnabled } from "@/lib/receipt-ai";
 import { phoneKey } from "@/lib/join";
 import { tooMany } from "@/lib/throttle";
 import { checkConnection, sendText, whatsappConfigured } from "@/lib/whatsapp";
@@ -21,6 +21,8 @@ export async function checkWhatsApp(sendTest: boolean): Promise<CheckLine[]> {
     { label: "Verify token is set", ok: set("WHATSAPP_VERIFY_TOKEN") },
     { label: "Anthropic key is set (needed to read bills)", ok: scanEnabled() },
   ];
+  const ai = await checkProvider();
+  lines.push({ label: "Anthropic accepts our key, credit and model (needed to read bills)", ok: ai.ok, detail: ai.detail });
   const conn = await checkConnection();
   lines.push({ label: "Meta accepts our token and phone number id", ok: conn.ok, detail: conn.detail });
 
