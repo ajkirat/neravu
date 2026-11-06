@@ -4,7 +4,7 @@ import { PhotoThumb } from "@/components/photo-lightbox";
 import { db } from "@/lib/db";
 import { requireActor } from "@/lib/auth";
 import { monthRange, periodKey, toDateInput, today } from "@/lib/dates";
-import { EXPENSE_GROUPS, categoryText, fmtDate, rupees } from "@/lib/format";
+import { EXPENSE_GROUPS, addedByText, categoryText, fmtDate, rupees } from "@/lib/format";
 import { ActionForm } from "@/components/action-form";
 import { ExpenseForm } from "@/components/expense-form";
 import { scanEnabled } from "@/lib/receipt-ai";
@@ -105,8 +105,8 @@ export default async function ExpensesPage({
                         {e.mayBeDuplicate && <Badge tone="amber">{t("dupBadge")}</Badge>}{" "}
                         {e.source === "SCAN" && <Badge tone="green">{t("scannedBadge")}</Badge>}
                         {e.source === "WHATSAPP" && <Badge tone="green">{t("waBadge")}</Badge>}
-                        {e.addedByName && <span className="block text-xs font-normal text-muted">{t("sentBy", { name: e.addedByName })}</span>}
                       </p>
+                      <p className="text-xs text-muted">{t("addedByLine", { who: addedByText(t, e, owner.name) })}</p>
                       <p className="text-sm text-muted">
                         {fmtDate(e.spentOn, lang)} · {e.property?.name ?? t("allGeneral")}
                       </p>
@@ -117,7 +117,7 @@ export default async function ExpensesPage({
                   </div>
                   {e.items.length > 0 && (
                     <details className="mt-1">
-                      <summary className="cursor-pointer text-sm text-brand-600">{t("itemsN", { n: e.items.length })}</summary>
+                      <summary className="cursor-pointer text-sm text-brand-600">{e.items.length === 1 ? t("items1") : t("itemsN", { n: e.items.length })}</summary>
                       <ul className="mt-1 space-y-0.5 text-sm text-muted">
                         {e.items.map((i) => (
                           <li key={i.id} className="flex justify-between gap-3">
@@ -153,6 +153,7 @@ export default async function ExpensesPage({
                     <th>{t("date")}</th>
                     <th>{t("colCategory")}</th>
                     <th>{t("colProperty")}</th>
+                    <th>{t("colAddedBy")}</th>
                     <th className="text-right">{t("colAmount")}</th>
                     <th />
                   </tr>
@@ -167,12 +168,11 @@ export default async function ExpensesPage({
                         {e.mayBeDuplicate && <Badge tone="amber">{t("dupBadge")}</Badge>}{" "}
                         {e.source === "SCAN" && <Badge tone="green">{t("scannedBadge")}</Badge>}
                         {e.source === "WHATSAPP" && <Badge tone="green">{t("waBadge")}</Badge>}
-                        {e.addedByName && <span className="block text-xs font-normal text-muted">{t("sentBy", { name: e.addedByName })}</span>}
                         {e.vendor && <div className="text-xs font-medium text-brand-900">{e.vendor}</div>}
                         {e.note && <div className="text-xs text-muted">{e.note}</div>}
                         {e.items.length > 0 && (
                           <details className="mt-1">
-                            <summary className="cursor-pointer text-xs text-brand-600">{t("itemsN", { n: e.items.length })}</summary>
+                            <summary className="cursor-pointer text-xs text-brand-600">{e.items.length === 1 ? t("items1") : t("itemsN", { n: e.items.length })}</summary>
                             <ul className="mt-1 space-y-0.5 text-xs text-muted">
                               {e.items.map((i) => (
                                 <li key={i.id} className="flex justify-between gap-3">
@@ -188,6 +188,7 @@ export default async function ExpensesPage({
                         )}
                       </td>
                       <td className="text-sm">{e.property?.name ?? t("allGeneral")}</td>
+                      <td className="text-sm">{addedByText(t, e, owner.name)}</td>
                       <td className="text-right font-semibold">{rupees(e.amount)}</td>
                       <td className="text-right">
                         {isOwner && (

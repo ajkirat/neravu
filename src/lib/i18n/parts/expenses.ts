@@ -42,6 +42,11 @@ export const expenses = {
   totalAuto: { en: "Total (adds up by itself)", kn: "ಒಟ್ಟು (ತಾನಾಗಿ ಕೂಡುತ್ತದೆ)", te: "మొత్తం (ఆటోమేటిక్‌గా కూడుతుంది)" },
   billMismatch: { en: "The bill says {bill} but the items add up to {sum}. Please check the numbers.", kn: "ಬಿಲ್‌ನಲ್ಲಿ {bill} ಇದೆ, ಆದರೆ ವಸ್ತುಗಳ ಮೊತ್ತ {sum}. ಸಂಖ್ಯೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.", te: "బిల్లులో {bill} ఉంది, కానీ వస్తువుల మొత్తం {sum}. సంఖ్యలను సరిచూడండి." },
   itemsN: { en: "{n} items", kn: "{n} ವಸ್ತುಗಳು", te: "{n} వస్తువులు" },
+  items1: { en: "1 item", kn: "1 ವಸ್ತು", te: "1 వస్తువు" },
+  colAddedBy: { en: "Added by", kn: "ಸೇರಿಸಿದವರು", te: "చేర్చినవారు" },
+  addedByOwner: { en: "{name} (owner)", kn: "{name} (ಮಾಲೀಕರು)", te: "{name} (యజమాని)" },
+  addedByStaff: { en: "{name} (caretaker)", kn: "{name} (ಕೇರ್‌ಟೇಕರ್)", te: "{name} (కేర్‌టేకర్)" },
+  addedByLine: { en: "Added by {who}", kn: "ಸೇರಿಸಿದವರು: {who}", te: "చేర్చినవారు: {who}" },
   errItems: { en: "Check the items: each needs a name and an amount.", kn: "ವಸ್ತುಗಳನ್ನು ಪರಿಶೀಲಿಸಿ: ಪ್ರತಿಯೊಂದಕ್ಕೂ ಹೆಸರು ಮತ್ತು ಮೊತ್ತ ಬೇಕು.", te: "వస్తువులను సరిచూడండి: ప్రతిదానికి పేరు మరియు మొత్తం కావాలి." },
   // categories (stored in English; shown translated)
   cat_Electricity: { en: "Electricity bill", kn: "ವಿದ್ಯುತ್ ಬಿಲ್", te: "కరెంటు బిల్లు" },

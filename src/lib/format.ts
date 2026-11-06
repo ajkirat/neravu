@@ -129,3 +129,10 @@ export function receiptLink(opts: { phone: string; tenantName: string; amount: n
   });
   return `https://wa.me/${whatsappNumber(opts.phone)}?text=${encodeURIComponent(text)}`;
 }
+
+/**
+ * Who put this expense in. Only the owner or one of their caretakers can add one, so an expense with no
+ * caretaker on it was added by the owner. This covers old expenses too, which never stored the owner's name.
+ */
+export const addedByText = (t: TFn, e: { addedByStaffId: string | null; addedByName: string | null }, ownerName: string): string =>
+  e.addedByStaffId ? t("addedByStaff", { name: e.addedByName ?? "?" }) : t("addedByOwner", { name: ownerName });
