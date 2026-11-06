@@ -8,7 +8,10 @@ export function waNumber(phone: string): string | null {
 /** WhatsApp rejects template variables with newlines, tabs or long runs of spaces. */
 export const cleanParam = (s: string) => s.replace(/[\r\n\t]+/g, " ").replace(/ {2,}/g, " ").trim().slice(0, 1000) || "-";
 
-export function buildTemplatePayload(opts: { to: string; template: string; language: string; params: string[] }) {
+export function buildTemplatePayload(opts: { to: string; template: string; language: string; params: string[]; headerImageId?: string }) {
+  const body = { type: "body", parameters: opts.params.map((p) => ({ type: "text", text: cleanParam(p) })) };
+  // A template with a picture on top needs the picture with every message (an uploaded media id).
+  const header = opts.headerImageId ? [{ type: "header", parameters: [{ type: "image", image: { id: opts.headerImageId } }] }] : [];
   return {
     messaging_product: "whatsapp",
     to: opts.to,
@@ -16,7 +19,7 @@ export function buildTemplatePayload(opts: { to: string; template: string; langu
     template: {
       name: opts.template,
       language: { code: opts.language },
-      components: [{ type: "body", parameters: opts.params.map((p) => ({ type: "text", text: cleanParam(p) })) }],
+      components: [...header, body],
     },
   };
 }

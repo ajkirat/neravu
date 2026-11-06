@@ -50,6 +50,11 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
               {t("shareReceipt")}
             </a>
           )}
+          {!refund && (
+            <a className="btn-secondary btn-sm" target="_blank" rel="noreferrer" href={`/payments/${p.id}/receipt-image`}>
+              {t("receiptPicture")}
+            </a>
+          )}
           <PrintButton />
         </span>
       </div>

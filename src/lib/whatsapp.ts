@@ -13,7 +13,7 @@ export const templateNames = () => ({
 export type SendResult = { ok: true } | { ok: false; reason: "auth" | "rejected" | "number" | "network" | "off"; detail: string };
 
 /** Send one approved template message. Never throws; the result says what happened. */
-export async function sendTemplate(o: { phone: string; template: string; language: string; params: string[] }): Promise<SendResult> {
+export async function sendTemplate(o: { phone: string; template: string; language: string; params: string[]; headerImageId?: string }): Promise<SendResult> {
   if (!whatsappConfigured()) return { ok: false, reason: "off", detail: "WhatsApp is not connected" };
   const to = waNumber(o.phone);
   if (!to) return { ok: false, reason: "number", detail: "Phone number is not usable" };
@@ -25,7 +25,7 @@ export async function sendTemplate(o: { phone: string; template: string; languag
       method: "POST",
       signal: ctl.signal,
       headers: { Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`, "Content-Type": "application/json" },
-      body: JSON.stringify(buildTemplatePayload({ to, template: o.template, language: o.language, params: o.params })),
+      body: JSON.stringify(buildTemplatePayload({ to, template: o.template, language: o.language, params: o.params, headerImageId: o.headerImageId })),
     });
     if (res.ok) return { ok: true };
     const why = await metaError(res);
@@ -241,4 +241,56 @@ export async function checkTemplates(names: string[]): Promise<{ name: string; o
     });
   }
   return out;
+}
+
+/** Upload a picture to WhatsApp (kept by Meta for 30 days) and get its media id for a message. */
+export async function uploadMedia(bytes: Buffer, mime: string, filename: string): Promise<{ ok: true; id: string } | { ok: false; detail: string }> {
+  if (!whatsappConfigured()) return { ok: false, detail: "WhatsApp is not connected" };
+  try {
+    const form = new FormData();
+    form.append("messaging_product", "whatsapp");
+    form.append("type", mime);
+    form.append("file", new Blob([new Uint8Array(bytes)], { type: mime }), filename);
+    const res = await fetch(`${apiBase()}/${process.env.WHATSAPP_PHONE_NUMBER_ID}/media`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}` },
+      body: form,
+      signal: AbortSignal.timeout(20_000),
+    });
+    if (!res.ok) return { ok: false, detail: `Picture upload refused (${res.status}): ${await metaError(res)}` };
+    const j = (await res.json()) as { id?: string };
+    return j.id ? { ok: true, id: j.id } : { ok: false, detail: "Picture upload gave no id" };
+  } catch {
+    return { ok: false, detail: "Could not reach WhatsApp to upload the picture" };
+  }
+}
+
+// Which templates have a picture on top, by "name|language". Asked from Meta at most every 10 minutes.
+const headerCache = new Map<string, { image: boolean | null; at: number }>();
+
+/**
+ * Does this template (in this language) have an IMAGE header? null when Meta can't tell us (no account
+ * id): the caller then tries without a picture and, if Meta says the format is wrong, with one.
+ */
+export async function templateHasImageHeader(name: string, language: string): Promise<boolean | null> {
+  const key = `${name}|${language}`;
+  const hit = headerCache.get(key);
+  if (hit && Date.now() - hit.at < 10 * 60_000) return hit.image;
+  let image: boolean | null = null;
+  const t = await tokenInfo();
+  if (t.ok) {
+    for (const w of t.info.wabaIds) {
+      const r = await metaCall(`${w}/message_templates?name=${encodeURIComponent(name)}&fields=name,language,status,components&limit=50`);
+      if (!r.ok) continue;
+      const match = ((r.json.data ?? []) as { name?: string; language?: string; components?: { type?: string; format?: string }[] }[]).find(
+        (x) => x.name === name && x.language === language,
+      );
+      if (match) {
+        image = (match.components ?? []).some((c) => c.type === "HEADER" && c.format === "IMAGE");
+        break;
+      }
+    }
+  }
+  headerCache.set(key, { image, at: Date.now() });
+  return image;
 }
