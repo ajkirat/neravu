@@ -8,7 +8,7 @@ import { Field } from "@/components/ui";
 import { CategoryPicker } from "@/components/category-picker";
 import { useI18n } from "@/lib/i18n/client";
 import { shrinkImage } from "@/lib/image";
-import { fmtDate, rupees } from "@/lib/format";
+import { categoryNoteHint, fmtDate, rupees } from "@/lib/format";
 import type { DupInfo, ExpenseState } from "@/app/actions/expenses";
 import { totalsMismatch } from "@/lib/receipt";
 
@@ -232,7 +232,7 @@ export function ExpenseForm({
         </select>
       </Field>
       <Field label={t("note")} className="col-span-2">
-        <VoiceInput name="note" maxLength={500} placeholder={t("notePh")} />
+        <VoiceInput name="note" maxLength={500} placeholder={categoryNoteHint(t, category) ?? t("notePh")} />
       </Field>
 
       {state?.error && !state.duplicate && <p role="alert" className="col-span-full rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>}
