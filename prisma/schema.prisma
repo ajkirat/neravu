@@ -206,8 +206,9 @@ model Expense {
   vendor      String?
   // MANUAL | SCAN | WHATSAPP
   source      String          @default("MANUAL")
-  // Who sent it on WhatsApp (caretaker or owner name)
+  // Who added it when it was not the owner (caretaker name; kept if the caretaker is removed)
   addedByName String?
+  addedByStaffId String?
   // Grand total printed on the bill, kept to flag mismatches with the items
   billTotal   Int?
   createdAt   DateTime        @default(now())

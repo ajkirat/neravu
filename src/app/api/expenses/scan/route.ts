@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { currentOwner } from "@/lib/auth";
+import { currentActor } from "@/lib/auth";
 import { ScanError, extractReceipt, scanEnabled } from "@/lib/receipt-ai";
 import { tooMany } from "@/lib/throttle";
 
@@ -10,8 +10,9 @@ const MAX_BASE64 = 3_500_000; // ~2.6 MB of image; the browser shrinks photos we
 
 /** POST { image: base64, mediaType } -> the bill read into category, items and total. Owner only. */
 export async function POST(req: Request) {
-  const owner = await currentOwner();
-  if (!owner) return NextResponse.json({ error: "login" }, { status: 401 });
+  const actor = await currentActor();
+  if (!actor) return NextResponse.json({ error: "login" }, { status: 401 });
+  const owner = actor.owner;
   if (!scanEnabled()) return NextResponse.json({ error: "unavailable" }, { status: 503 });
   if (await tooMany(`scan:${owner.id}`, 30, 60 * 60 * 1000)) return NextResponse.json({ error: "rate" }, { status: 429 });
 

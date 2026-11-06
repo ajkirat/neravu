@@ -27,15 +27,17 @@ const ACTOR_FILES = new Set([
   "(app)/payments/[id]/receipt/page.tsx",
   "(app)/complaints/page.tsx",
   "(app)/leads/page.tsx",
+  "(app)/expenses/page.tsx",
   "(app)/reminders/page.tsx",
   "actions/payments.ts",
   "actions/reminders.ts",
   "actions/complaints.ts",
   "actions/leads.ts",
+  "actions/expenses.ts",
 ]);
 
 /** Actions a caretaker may call. Anything else that changes data must use requireOwner(). */
-const ACTOR_ACTIONS = new Set(["recordPayment", "collectFull", "markReminded", "createComplaint", "setComplaintStatus", "createLead", "setLeadStatus", "setLeadFollowUp"]);
+const ACTOR_ACTIONS = new Set(["recordPayment", "collectFull", "markReminded", "createComplaint", "setComplaintStatus", "createLead", "setLeadStatus", "setLeadFollowUp", "createExpense"]);
 
 /** Actions anyone may call without signing in (they protect themselves another way). */
 const PUBLIC_ACTIONS = new Set([
@@ -43,6 +45,9 @@ const PUBLIC_ACTIONS = new Set([
   "requestPasswordReset", "resetPassword", "resendVerification", "verifyEmailToken", "sendVerificationEmail",
   "setLanguage", "setTextSize",
 ]);
+
+/** API routes a signed-in caretaker may call. They return nothing stored in the database. */
+const CARETAKER_ROUTES = new Set(["api/expenses/scan/route.ts"]);
 
 /** Pages under (app) with no check of their own: they only show static help text. */
 const NO_CHECK_PAGES = new Set(["(app)/help/page.tsx"]);
@@ -66,7 +71,7 @@ describe("caretaker access", () => {
   });
 
   it("pages that caretakers may open hide their sensitive parts behind an owner check", () => {
-    for (const f of ["(app)/tenants/[id]/page.tsx", "(app)/dashboard/page.tsx", "(app)/tenants/page.tsx"]) {
+    for (const f of ["(app)/tenants/[id]/page.tsx", "(app)/dashboard/page.tsx", "(app)/tenants/page.tsx", "(app)/expenses/page.tsx"]) {
       expect(read(join(ROOT, f)), f).toMatch(/isOwner/);
     }
   });
@@ -94,6 +99,11 @@ describe("caretaker access", () => {
       const src = read(p);
       const f = rel(p);
       if (f.startsWith("api/webhooks/") || f.startsWith("api/cron/")) continue; // signature / secret protected
+      // Reading a bill photo returns only what is on the photo, so caretakers may use it.
+      if (CARETAKER_ROUTES.has(f)) {
+        expect(/currentActor\(/.test(src), f).toBe(true);
+        continue;
+      }
       expect(/currentOwner\(|requireOwner\(/.test(src), f).toBe(true);
     }
   });
