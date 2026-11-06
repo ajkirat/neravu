@@ -177,7 +177,7 @@ export async function checkInboundLink(): Promise<LinkState> {
   const t = await tokenInfo();
   if (!t.ok) return { ok: false, detail: t.detail, canFix: false };
   const { appId, appName, wabaIds } = t.info;
-  if (!wabaIds.length) return { ok: false, detail: "The token can't see any WhatsApp account. Give the system user the WhatsApp account with full control.", canFix: false };
+  if (!wabaIds.length) return { ok: false, detail: "Meta did not say which WhatsApp account this token is for. In Vercel add WHATSAPP_WABA_ID = your WhatsApp Business Account ID (Meta: WhatsApp > API Setup), then redeploy.", canFix: false };
   const parts: string[] = [];
   let allLinked = true;
   for (const w of wabaIds) {
@@ -200,7 +200,7 @@ export async function linkInbound(): Promise<{ ok: boolean; detail: string }> {
   if (!whatsappConfigured()) return { ok: false, detail: "WhatsApp is not connected" };
   const t = await tokenInfo();
   if (!t.ok) return t;
-  if (!t.info.wabaIds.length) return { ok: false, detail: "The token can't see any WhatsApp account" };
+  if (!t.info.wabaIds.length) return { ok: false, detail: "Add WHATSAPP_WABA_ID in Vercel first" };
   const out: string[] = [];
   let ok = true;
   for (const w of t.info.wabaIds) {

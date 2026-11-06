@@ -11,6 +11,7 @@ import { BulkRoomsForm } from "@/components/bulk-rooms-form";
 import { FoldCard, Field, PageHeader } from "@/components/ui";
 import { RoomCard } from "@/components/room-card";
 import { roomBoard } from "@/lib/rooms";
+import { roomFill } from "@/lib/room-status";
 import {
   createRoom,
   deleteProperty,
@@ -40,9 +41,10 @@ export default async function PropertyPage({
   const dues = new Map([...balances].map(([k, v]) => [k, v.outstanding]));
   const beds = rooms.flatMap((r) => r.beds);
   const filled = beds.filter((b) => b.filled).length;
-  const free = rooms.filter((r) => r.beds.some((b) => !b.filled));
-  const full = rooms.filter((r) => r.beds.length > 0 && r.beds.every((b) => b.filled));
-  const shown = show === "free" ? free : show === "full" ? full : rooms;
+  // Each room is in exactly one group, so every filter shows a different set of rooms.
+  const byFill = { PARTLY: rooms.filter((r) => roomFill(r.beds) === "PARTLY"), EMPTY: rooms.filter((r) => roomFill(r.beds) === "EMPTY"), FULL: rooms.filter((r) => roomFill(r.beds) === "FULL") };
+  const filter = show === "partly" ? "PARTLY" : show === "empty" ? "EMPTY" : show === "full" ? "FULL" : null;
+  const shown = filter ? byFill[filter] : rooms;
   const potential = rooms.reduce((sum, r) => sum + r.rent * r.beds.length, 0);
   const owed = [...balances.values()].reduce((sum, b) => sum + b.outstanding, 0);
   const pct = beds.length ? Math.round((filled / beds.length) * 100) : 0;
@@ -104,19 +106,23 @@ export default async function PropertyPage({
 
       {rooms.length > 0 && (
         <div className="mb-3 flex flex-wrap gap-2">
-          <Link href={`/properties/${id}`} className={chip(!show)}>
+          <Link href={`/properties/${id}`} scroll={false} className={chip(!filter)}>
             {t("showAllRooms", { n: rooms.length })}
           </Link>
-          <Link href={`/properties/${id}?show=free`} className={chip(show === "free")}>
-            {t("showFreeRooms", { n: free.length })}
+          <Link href={`/properties/${id}?show=partly`} scroll={false} className={chip(filter === "PARTLY")}>
+            {t("showPartlyRooms", { n: byFill.PARTLY.length })}
           </Link>
-          <Link href={`/properties/${id}?show=full`} className={chip(show === "full")}>
-            {t("showFullRooms", { n: full.length })}
+          <Link href={`/properties/${id}?show=empty`} scroll={false} className={chip(filter === "EMPTY")}>
+            {t("showEmptyRooms", { n: byFill.EMPTY.length })}
+          </Link>
+          <Link href={`/properties/${id}?show=full`} scroll={false} className={chip(filter === "FULL")}>
+            {t("showFullRooms", { n: byFill.FULL.length })}
           </Link>
         </div>
       )}
 
       {rooms.length === 0 && <p className="mb-3 rounded-xl bg-brand-50 px-4 py-3 text-base text-brand-700">{t("noRoomsYet")}</p>}
+      {rooms.length > 0 && shown.length === 0 && <p className="mb-3 rounded-xl bg-canvas px-4 py-3 text-base text-muted">{t("noRoomsInFilter")}</p>}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {shown.map((room) => {
