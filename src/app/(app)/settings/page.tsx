@@ -7,7 +7,8 @@ import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
 import { appOrigin } from "@/lib/url";
 import { saveSettings } from "@/app/actions/settings";
-import { savePayConfirm } from "@/app/actions/pay-confirm";
+import { savePayConfirm, simulateBankAlert, uploadBankEmail } from "@/app/actions/pay-confirm";
+import { ActionButton } from "@/components/today-actions";
 import { taggedRupees } from "@/lib/paycode";
 import type { MsgKey } from "@/lib/i18n";
 import { ActionForm } from "@/components/action-form";
@@ -127,6 +128,19 @@ export default async function SettingsPage() {
               ) : (
                 <p className="rounded-lg bg-marigold-100 px-3 py-2 text-marigold-700">{t("bankNotReady")}</p>
               )}
+              <div className="rounded-xl bg-canvas p-3">
+                <p className="font-semibold text-brand-900">{t("bankUploadTitle")}</p>
+                <p className="mb-2 text-muted">{t("bankUploadHint")}</p>
+                <ActionForm action={uploadBankEmail} submitLabel={t("bankUploadBtn")} submitClassName="btn-secondary btn-sm" className="flex flex-wrap items-center gap-2">
+                  <input name="eml" type="file" accept=".eml,message/rfc822" className="block text-sm" required />
+                </ActionForm>
+                {isDemoOwner(owner.email) && (
+                  <div className="mt-3 border-t border-line pt-3">
+                    <ActionButton action={simulateBankAlert} label={t("simBtn")} className="btn-accent btn-sm" />
+                    <p className="mt-1 text-xs text-muted">{t("simHint")}</p>
+                  </div>
+                )}
+              </div>
               {credits.length > 0 && (
                 <div>
                   <p className="font-semibold text-brand-900">{t("bankRecent")}</p>

@@ -16,6 +16,7 @@ import { requestLeave, submitTenantComplaint } from "@/app/actions/mypg";
 import { ActionForm } from "@/components/action-form";
 import { Card, Field } from "@/components/ui";
 import { PayOnlineButton } from "@/components/pay-online-button";
+import { PhotoInput } from "@/components/photo-input";
 import { LANG_COOKIE, asLang, isLang, makeT } from "@/lib/i18n";
 import { I18nProvider } from "@/lib/i18n/client";
 
@@ -164,7 +165,7 @@ export default async function MyPgPage({ params }: { params: Promise<{ token: st
                 <input name="details" className="input" maxLength={1000} />
               </Field>
               <Field label={t("mpPhoto")}>
-                <input name="photo" type="file" accept="image/*" capture="environment" className="block w-full text-sm" />
+                <PhotoInput name="photo" />
               </Field>
             </ActionForm>
           </Card>

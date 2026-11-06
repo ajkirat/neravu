@@ -23,6 +23,17 @@ export async function ownerForAddress(to: string) {
 export async function handleBankEmail(raw: string, to: string): Promise<{ result: InboxResult; paymentId?: number }> {
   const owner = await ownerForAddress(to);
   if (!owner) return { result: "no-owner" };
+  return handleBankEmailFor(owner, raw);
+}
+
+/**
+ * Same checks for an email the owner uploaded themselves (a .eml downloaded from Gmail). The bank's
+ * signature survives the download, so this is exactly as strict as automatic forwarding.
+ */
+export async function handleBankEmailFor(
+  owner: { id: string; payConfirm: string; bankLast4: string | null },
+  raw: string,
+): Promise<{ result: InboxResult; paymentId?: number }> {
   const mail = await checkEmail(raw);
 
   const forwarding = readGmailForwarding(mail.subject, mail.text);
