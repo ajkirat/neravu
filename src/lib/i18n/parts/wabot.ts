@@ -10,9 +10,9 @@ export const wabot = {
   waYes: { en: "Yes", kn: "ಹೌದು", te: "అవును" },
   waNo: { en: "No", kn: "ಇಲ್ಲ", te: "కాదు" },
   waBillAdded: {
-    en: "✅ Added {amt} ({cat}) to expenses. Nothing else to do.",
-    kn: "✅ {amt} ({cat}) ಖರ್ಚಿಗೆ ಸೇರಿಸಲಾಗಿದೆ. ಬೇರೇನೂ ಮಾಡಬೇಕಿಲ್ಲ.",
-    te: "✅ {amt} ({cat}) ఖర్చులలో చేర్చబడింది. ఇంకేమీ చేయనవసరం లేదు.",
+    en: "✅ Added {amt} ({cat}), dated {when}, to expenses. Nothing else to do.",
+    kn: "✅ {amt} ({cat}) ಖರ್ಚಿಗೆ ಸೇರಿಸಲಾಗಿದೆ, ದಿನಾಂಕ {when}. ಬೇರೇನೂ ಮಾಡಬೇಕಿಲ್ಲ.",
+    te: "✅ {amt} ({cat}) ఖర్చులలో చేర్చబడింది, తేదీ {when}. ఇంకేమీ చేయనవసరం లేదు.",
   },
   waBillCancelled: { en: "OK, not added.", kn: "ಸರಿ, ಸೇರಿಸಲಿಲ್ಲ.", te: "సరే, చేర్చలేదు." },
   waBillAlready: { en: "This bill was already answered.", kn: "ಈ ಬಿಲ್‌ಗೆ ಈಗಾಗಲೇ ಉತ್ತರಿಸಲಾಗಿದೆ.", te: "ఈ బిల్‌కు ఇప్పటికే సమాధానం ఇచ్చారు." },
