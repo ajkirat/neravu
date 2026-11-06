@@ -1,5 +1,5 @@
 import "server-only";
-import { buildTemplatePayload, waNumber } from "./whatsapp-utils";
+import { buildTemplatePayload, formatWaNumber, waNumber } from "./whatsapp-utils";
 
 // WhatsApp Business Cloud API. One platform account (whoever runs Neravu) sends to every owner's
 // tenants, using message templates that Meta has approved. See README for the template texts.
@@ -100,10 +100,9 @@ export async function fetchMedia(mediaId: string): Promise<{ bytes: Buffer; mime
   }
 }
 
-/** The number people send bill photos to, for display (e.g. "+91 63634 62003"). Needs WhatsApp connected. */
+/** The number people send bill photos to, for display (e.g. "+91 63634 62003" or "+1 555 147 2730"). Needs WhatsApp connected. */
 export function waBillNumber(): string | null {
   const raw = (process.env.WHATSAPP_DISPLAY_NUMBER ?? "").replace(/\D/g, "");
   if (!whatsappConfigured() || raw.length < 10) return null;
-  const d = raw.slice(-10);
-  return `+91 ${d.slice(0, 5)} ${d.slice(5)}`;
+  return formatWaNumber(raw);
 }
