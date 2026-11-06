@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { checkWhatsApp, type CheckLine } from "@/app/actions/wa-check";
+import { checkWhatsApp, linkWhatsApp, type CheckLine } from "@/app/actions/wa-check";
 
 export function WaCheck() {
   const [lines, setLines] = useState<CheckLine[]>();
   const [pending, start] = useTransition();
+  const [linked, setLinked] = useState<CheckLine>();
   const run = (send: boolean) => start(async () => setLines(await checkWhatsApp(send)));
+  const link = () => start(async () => setLinked(await linkWhatsApp()));
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
@@ -25,10 +27,21 @@ export function WaCheck() {
               <span>
                 {l.label}
                 {l.detail && <span className="block text-xs break-words text-muted">{l.detail}</span>}
+                {l.fix === "link" && (
+                  <button type="button" className="btn-primary mt-2" disabled={pending} onClick={link}>
+                    Link it now
+                  </button>
+                )}
               </span>
             </li>
           ))}
         </ul>
+      )}
+      {linked && (
+        <p role="status" className="text-sm">
+          {linked.ok ? "✅" : "❌"} {linked.label}
+          {linked.detail && <span className="block text-xs break-words text-muted">{linked.detail}</span>}
+        </p>
       )}
     </div>
   );

@@ -439,6 +439,13 @@ model PendingExpense {
 }
 
 // WhatsApp message ids already handled, so a webhook retry is not processed twice.
+// Every call Meta makes to the WhatsApp webhook, kept a few days, so the check can show whether Meta calls at all.
+model WaHook {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  result    String
+}
+
 model WaInbound {
   id        String   @id
   createdAt DateTime @default(now())

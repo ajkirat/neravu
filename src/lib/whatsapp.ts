@@ -135,3 +135,78 @@ export async function checkConnection(): Promise<{ ok: true; detail: string } | 
     return { ok: false, detail: "Could not reach Meta" };
   }
 }
+
+type MetaGet = { ok: true; json: Record<string, unknown> } | { ok: false; detail: string };
+
+async function metaCall(path: string, method: "GET" | "POST" = "GET"): Promise<MetaGet> {
+  try {
+    const res = await fetch(`${apiBase()}/${path}`, {
+      method,
+      headers: { Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}` },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) return { ok: false, detail: `Meta says (${res.status}): ${await metaError(res)}` };
+    return { ok: true, json: (await res.json()) as Record<string, unknown> };
+  } catch {
+    return { ok: false, detail: "Could not reach Meta" };
+  }
+}
+
+type TokenInfo = { appId: string | null; appName: string | null; wabaIds: string[] };
+
+/** Which Meta app the token belongs to and which WhatsApp Business Accounts it can manage. */
+async function tokenInfo(): Promise<{ ok: true; info: TokenInfo } | { ok: false; detail: string }> {
+  const token = process.env.WHATSAPP_TOKEN ?? "";
+  const r = await metaCall(`debug_token?input_token=${encodeURIComponent(token)}`);
+  if (!r.ok) return r;
+  const d = (r.json.data ?? {}) as { app_id?: string; application?: string; granular_scopes?: { scope: string; target_ids?: string[] }[] };
+  const ids = new Set<string>();
+  if (process.env.WHATSAPP_WABA_ID) ids.add(process.env.WHATSAPP_WABA_ID);
+  for (const s of d.granular_scopes ?? []) if (s.scope.startsWith("whatsapp_business") && s.target_ids) s.target_ids.forEach((x) => ids.add(x));
+  return { ok: true, info: { appId: d.app_id ?? null, appName: d.application ?? null, wabaIds: [...ids] } };
+}
+
+export type LinkState = { ok: boolean; detail: string; canFix: boolean };
+
+/**
+ * Incoming messages only reach Neravu if the WhatsApp Business Account is linked ("subscribed") to the
+ * Meta app the webhook is set on. Meta's dashboard "Test" button works without this link, real messages don't.
+ */
+export async function checkInboundLink(): Promise<LinkState> {
+  if (!whatsappConfigured()) return { ok: false, detail: "WhatsApp is not connected", canFix: false };
+  const t = await tokenInfo();
+  if (!t.ok) return { ok: false, detail: t.detail, canFix: false };
+  const { appId, appName, wabaIds } = t.info;
+  if (!wabaIds.length) return { ok: false, detail: "The token can't see any WhatsApp account. Give the system user the WhatsApp account with full control.", canFix: false };
+  const parts: string[] = [];
+  let allLinked = true;
+  for (const w of wabaIds) {
+    const r = await metaCall(`${w}/subscribed_apps`);
+    if (!r.ok) {
+      parts.push(`account ${w}: ${r.detail}`);
+      allLinked = false;
+      continue;
+    }
+    const apps = ((r.json.data ?? []) as { whatsapp_business_api_data?: { id?: string; name?: string } }[]).map((a) => a.whatsapp_business_api_data ?? {});
+    const linked = appId ? apps.some((a) => a.id === appId) : apps.length > 0;
+    if (!linked) allLinked = false;
+    parts.push(`account ${w}: ${linked ? "linked" : "NOT linked"}${apps.length ? ` (linked apps: ${apps.map((a) => a.name ?? a.id).join(", ")})` : ""}`);
+  }
+  return { ok: allLinked, detail: `Token is for app ${appName ?? "?"} (${appId ?? "?"}). ${parts.join("; ")}`, canFix: !allLinked };
+}
+
+/** Link the WhatsApp Business Account(s) to this app so Meta sends incoming messages to the webhook. */
+export async function linkInbound(): Promise<{ ok: boolean; detail: string }> {
+  if (!whatsappConfigured()) return { ok: false, detail: "WhatsApp is not connected" };
+  const t = await tokenInfo();
+  if (!t.ok) return t;
+  if (!t.info.wabaIds.length) return { ok: false, detail: "The token can't see any WhatsApp account" };
+  const out: string[] = [];
+  let ok = true;
+  for (const w of t.info.wabaIds) {
+    const r = await metaCall(`${w}/subscribed_apps`, "POST");
+    if (!r.ok) ok = false;
+    out.push(`account ${w}: ${r.ok ? "linked" : r.detail}`);
+  }
+  return { ok, detail: out.join("; ") };
+}
