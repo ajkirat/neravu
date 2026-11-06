@@ -5,7 +5,8 @@ import { requireOwner } from "@/lib/auth";
 import { checkProvider, scanEnabled } from "@/lib/receipt-ai";
 import { phoneKey } from "@/lib/join";
 import { tooMany } from "@/lib/throttle";
-import { checkConnection, checkInboundLink, linkInbound, sendText, whatsappConfigured } from "@/lib/whatsapp";
+import { checkConnection, checkInboundLink, checkTemplates, linkInbound, sendText, templateNames, whatsappConfigured } from "@/lib/whatsapp";
+import { receiptTemplate } from "@/lib/payment-receipt";
 import { waNumber } from "@/lib/whatsapp-utils";
 
 export type CheckLine = { label: string; ok: boolean; detail?: string; fix?: "link" };
@@ -28,6 +29,11 @@ export async function checkWhatsApp(sendTest: boolean): Promise<CheckLine[]> {
   if (conn.ok) {
     const link = await checkInboundLink();
     lines.push({ label: "WhatsApp account is linked to the app (needed to receive messages)", ok: link.ok, detail: link.detail, fix: link.canFix ? "link" : undefined });
+    const names = templateNames();
+    const purpose: Record<string, string> = { [receiptTemplate()]: "payment receipts", [names.dueSoon]: "rent due soon", [names.overdue]: "rent overdue" };
+    for (const tpl of await checkTemplates([receiptTemplate(), names.dueSoon, names.overdue])) {
+      lines.push({ label: `Message template "${tpl.name}" approved (for ${purpose[tpl.name]})`, ok: tpl.ok, detail: tpl.detail });
+    }
   }
 
   try {

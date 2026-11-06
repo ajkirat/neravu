@@ -100,7 +100,7 @@ export default async function TenantPage({
   // Merge charges and payments into one statement with a running balance.
   type Row =
     | { kind: "charge"; date: Date; id: string; label: string; type: string; amount: number; future: boolean }
-    | { kind: "payment"; date: Date; id: number; label: string; amount: number; method: string };
+    | { kind: "payment"; date: Date; id: number; label: string; amount: number; method: string; receiptStatus: string | null };
   const rows: Row[] = [
     ...t.charges.map((c) => ({
       kind: "charge" as const,
@@ -121,6 +121,7 @@ export default async function TenantPage({
           : `${tr("paymentLabel")} · ${methodText(tr, p.method)}${p.reference ? ` · ${p.reference}` : ""}`,
       amount: p.amount,
       method: p.method,
+      receiptStatus: p.receiptStatus,
     })),
   ].sort((a, b) => a.date.getTime() - b.date.getTime() || (a.kind === "charge" ? -1 : 1));
   let running = 0;
@@ -283,7 +284,12 @@ export default async function TenantPage({
                       </div>
                     </div>
                     {r.kind === "payment" ? (
-                      <div className="mt-1 flex items-center justify-end gap-4">
+                      <div className="mt-1 flex flex-wrap items-center justify-end gap-4">
+                        {r.receiptStatus && r.amount > 0 && (
+                          <Link href={`/payments/${r.id}/receipt`} className={`rounded-full px-2 py-0.5 text-xs font-semibold ${r.receiptStatus === "SENT" ? "bg-brand-50 text-brand-700" : "bg-red-50 text-red-700"}`} data-testid="receipt-badge">
+                            {r.receiptStatus === "SENT" ? tr("receiptBadgeSent") : tr("receiptBadgeFailed")}
+                          </Link>
+                        )}
                         <Link href={`/payments/${r.id}/receipt`} className="text-sm text-brand-600 underline">
                           {tr("receipt")}
                         </Link>
@@ -355,6 +361,11 @@ export default async function TenantPage({
                         <td className="text-right whitespace-nowrap">
                           {r.kind === "payment" ? (
                             <span className="inline-flex items-center gap-2">
+                              {r.receiptStatus && r.amount > 0 && (
+                                <Link href={`/payments/${r.id}/receipt`} className={`rounded-full px-2 py-0.5 text-xs font-semibold ${r.receiptStatus === "SENT" ? "bg-brand-50 text-brand-700" : "bg-red-50 text-red-700"}`} data-testid="receipt-badge">
+                                  {r.receiptStatus === "SENT" ? tr("receiptBadgeSent") : tr("receiptBadgeFailed")}
+                                </Link>
+                              )}
                               <Link href={`/payments/${r.id}/receipt`} className="text-xs text-brand-600 hover:underline">
                                 {tr("receipt")}
                               </Link>

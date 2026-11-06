@@ -44,7 +44,7 @@ const ACTOR_FILES = new Set([
 ]);
 
 /** Actions a caretaker may call. Anything else that changes data must use requireOwner(). */
-const ACTOR_ACTIONS = new Set(["recordPayment", "collectFull", "markReminded", "createComplaint", "setComplaintStatus", "createLead", "setLeadStatus", "setLeadFollowUp", "createExpense", "jobDone", "jobLater"]);
+const ACTOR_ACTIONS = new Set(["recordPayment", "collectFull", "markReminded", "createComplaint", "setComplaintStatus", "createLead", "setLeadStatus", "setLeadFollowUp", "createExpense", "jobDone", "jobLater", "resendReceipt"]);
 
 /** Actions anyone may call without signing in (they protect themselves another way). */
 const PUBLIC_ACTIONS = new Set([

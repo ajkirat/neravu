@@ -209,6 +209,9 @@ model Payment {
   method            String
   reference         String?
   note              String?
+  // WhatsApp receipt: "SENT", or why it was not sent (shown to the owner); null = not tried
+  receiptStatus     String?
+  receiptAt         DateTime?
   createdAt         DateTime  @default(now())
 
   @@index([tenantId, paidOn])

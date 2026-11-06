@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { after } from "next/server";
 import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth";
 import { today } from "@/lib/dates";
@@ -27,7 +26,7 @@ export async function confirmClaim(id: string): Promise<{ ok?: string; error?: s
     },
   });
   await closePendingClaims(c.tenantId, payment.id, "owner");
-  after(() => sendPaymentReceipt(payment.id));
+  await sendPaymentReceipt(payment.id);
   revalidatePath("/", "layout");
   return { ok: t("claimConfirmed", { amt: rupees(c.amount), name: c.tenant.name.split(" ")[0] }) };
 }

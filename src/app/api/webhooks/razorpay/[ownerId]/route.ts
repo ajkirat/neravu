@@ -1,4 +1,3 @@
-import { after } from "next/server";
 import { sendPaymentReceipt } from "@/lib/payment-receipt";
 import { closePendingClaims } from "@/lib/claims";
 import { NextResponse } from "next/server";
@@ -52,7 +51,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ ownerId
       },
     });
     await closePendingClaims(tenant.id, created.id, "razorpay");
-    after(() => sendPaymentReceipt(created.id));
+    await sendPaymentReceipt(created.id);
   } catch (e) {
     // A replayed webhook hits the unique externalId: that is fine, it was already recorded.
     if ((e as { code?: string }).code !== "P2002") throw e;
