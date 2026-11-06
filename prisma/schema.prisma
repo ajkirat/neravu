@@ -407,4 +407,6 @@ model PendingExpense {
 model WaInbound {
   id        String   @id
   createdAt DateTime @default(now())
+  // What Neravu did with the message, step by step (shown in the WhatsApp check)
+  trace     String?
 }
