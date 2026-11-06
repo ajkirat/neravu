@@ -226,6 +226,9 @@ model Expense {
   // Who added it when it was not the owner (caretaker name; kept if the caretaker is removed)
   addedByName    String?
   addedByStaffId String?
+  // Saved even though it looked like an expense already added (the person chose "save anyway")
+  mayBeDuplicate Boolean         @default(false)
+  duplicateOfId  String?
   // Grand total printed on the bill, kept to flag mismatches with the items
   billTotal      Int?
   createdAt      DateTime        @default(now())
@@ -400,7 +403,12 @@ model ExpenseReceipt {
   expense   Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
   mime      String
   data      Bytes
+  // sha256 of the stored image (exact copies) and a 64-bit difference hash (near-identical photos)
+  sha256    String?
+  phash     String?
   createdAt DateTime @default(now())
+
+  @@index([sha256])
 }
 
 // A bill photo sent to the WhatsApp number, waiting for the sender to reply Yes or No.

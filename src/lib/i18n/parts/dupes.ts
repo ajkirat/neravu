@@ -1,0 +1,36 @@
+import type { Part } from "./types";
+
+// Bill photos on expenses, and the duplicate warning.
+export const dupes = {
+  takePhoto: { en: "Take photo", kn: "ಫೋಟೋ ತೆಗೆಯಿರಿ", te: "ఫోటో తీయండి" },
+  choosePhoto: { en: "Choose from gallery", kn: "ಗ್ಯಾಲರಿಯಿಂದ ಆರಿಸಿ", te: "గ్యాలరీ నుండి ఎంచుకోండి" },
+  photoOnlyHint: { en: "The bill photo is saved with the expense. Type the amount below.", kn: "ಬಿಲ್ ಫೋಟೋ ಖರ್ಚಿನ ಜೊತೆ ಉಳಿಯುತ್ತದೆ. ಕೆಳಗೆ ಮೊತ್ತ ಟೈಪ್ ಮಾಡಿ.", te: "బిల్ ఫోటో ఖర్చుతో సేవ్ అవుతుంది. కింద మొత్తం టైప్ చేయండి." },
+  photoAttached: { en: "Photo attached.", kn: "ಫೋಟೋ ಸೇರಿಸಲಾಗಿದೆ.", te: "ఫోటో జోడించబడింది." },
+  billPhoto: { en: "Bill photo", kn: "ಬಿಲ್ ಫೋಟೋ", te: "బిల్ ఫోటో" },
+  removePhoto: { en: "Remove photo", kn: "ಫೋಟೋ ತೆಗೆಯಿರಿ", te: "ఫోటో తీసివేయండి" },
+  dupTitle: { en: "This may be a duplicate.", kn: "ಇದು ನಕಲು ಇರಬಹುದು.", te: "ఇది నకలు కావచ్చు." },
+  dupWarn: {
+    en: "Looks like a bill already added on {date} ({amt}{vendor}).",
+    kn: "{date} ರಂದು ಈಗಾಗಲೇ ಸೇರಿಸಿದ ಬಿಲ್‌ನಂತೆ ಕಾಣುತ್ತದೆ ({amt}{vendor}).",
+    te: "{date} న ఇప్పటికే జోడించిన బిల్ లాగా ఉంది ({amt}{vendor}).",
+  },
+  dup_SAME_PHOTO: { en: "It is the same photo.", kn: "ಇದು ಅದೇ ಫೋಟೋ.", te: "ఇది అదే ఫోటో." },
+  dup_SIMILAR_PHOTO: { en: "The photo is almost the same.", kn: "ಫೋಟೋ ಬಹುತೇಕ ಅದೇ.", te: "ఫోటో దాదాపు అదే." },
+  dup_SAME_DETAILS: { en: "Same shop, same amount, same day.", kn: "ಅದೇ ಅಂಗಡಿ, ಅದೇ ಮೊತ್ತ, ಅದೇ ದಿನ.", te: "అదే షాపు, అదే మొత్తం, అదే రోజు." },
+  dupSee: { en: "See it", kn: "ನೋಡಿ", te: "చూడండి" },
+  dupSaveAnyway: { en: "Save anyway", kn: "ಆದರೂ ಉಳಿಸಿ", te: "అయినా సేవ్ చేయండి" },
+  dupBadge: { en: "May be a duplicate", kn: "ನಕಲು ಇರಬಹುದು", te: "నకలు కావచ్చు" },
+  notDuplicate: { en: "Not a duplicate", kn: "ನಕಲು ಅಲ್ಲ", te: "నకలు కాదు" },
+  dupOf: { en: "Looks like the expense from {date}", kn: "{date} ರ ಖರ್ಚಿನಂತೆ ಕಾಣುತ್ತದೆ", te: "{date} ఖర్చు లాగా ఉంది" },
+  expenseTitle: { en: "Expense", kn: "ಖರ್ಚು", te: "ఖర్చు" },
+  openFull: { en: "Open full size", kn: "ಪೂರ್ಣ ಗಾತ್ರದಲ್ಲಿ ತೆರೆಯಿರಿ", te: "పూర్తి పరిమాణంలో తెరవండి" },
+  tapToEnlarge: { en: "Tap the photo to enlarge", kn: "ದೊಡ್ಡದಾಗಿಸಲು ಫೋಟೋ ಒತ್ತಿ", te: "పెద్దదిగా చూడటానికి ఫోటో నొక్కండి" },
+  close: { en: "Close", kn: "ಮುಚ್ಚಿ", te: "మూసివేయండి" },
+  noPhoto: { en: "No bill photo", kn: "ಬಿಲ್ ಫೋಟೋ ಇಲ್ಲ", te: "బిల్ ఫోటో లేదు" },
+  waDupAsk: {
+    en: "⚠️ This looks like a bill already added on {date} ({amt}{vendor}). {why}\\nAdd it anyway?",
+    kn: "⚠️ ಇದು {date} ರಂದು ಈಗಾಗಲೇ ಸೇರಿಸಿದ ಬಿಲ್‌ನಂತೆ ಕಾಣುತ್ತದೆ ({amt}{vendor}). {why}\\nಆದರೂ ಸೇರಿಸಬೇಕೇ?",
+    te: "⚠️ ఇది {date} న ఇప్పటికే జోడించిన బిల్ లాగా ఉంది ({amt}{vendor}). {why}\\nఅయినా జోడించాలా?",
+  },
+  waAddAnyway: { en: "Add anyway", kn: "ಆದರೂ ಸೇರಿಸಿ", te: "అయినా జోడించండి" },
+} satisfies Part;
