@@ -1,6 +1,9 @@
 import { isDemoOwner } from "@/lib/demo";
 import { DEMO_STAFF_PASSWORD, DEMO_STAFF_PHONE } from "@/lib/demo-seed";
 import { resetDemo } from "@/app/actions/demo";
+import { addTestDataAction, removeTestDataAction } from "@/app/actions/test-data";
+import { hasTestData } from "@/lib/test-data";
+import { TESTING_PHASE } from "@/lib/testing";
 import { cookies } from "next/headers";
 import { requireOwner } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -34,6 +37,7 @@ export default async function SettingsPage() {
   const credits = full?.payConfirm === "BANK"
     ? await db.bankCredit.findMany({ where: { ownerId: owner.id }, orderBy: { createdAt: "desc" }, take: 5 })
     : [];
+  const hasTest = TESTING_PHASE ? await hasTestData(owner.id) : false;
   const mode = (["NONE", "UPI", "RAZORPAY"].includes(owner.paymentMode) ? owner.paymentMode : "UPI") as "NONE" | "UPI" | "RAZORPAY";
   return (
     <>
@@ -44,6 +48,18 @@ export default async function SettingsPage() {
             <p className="mb-3 text-sm text-muted">{t("demoBody")}</p>
             <ActionForm action={resetDemo} submitLabel={t("demoBtn")} confirm={t("demoConfirm")} />
             <p className="mt-3 text-xs text-muted">{t("demoStaff", { phone: DEMO_STAFF_PHONE, pw: DEMO_STAFF_PASSWORD })}</p>
+          </Card>
+        )}
+        {TESTING_PHASE && !isDemoOwner(owner.email) && (
+          <Card title={t("testDataTitle")}>
+            <p className="mb-3 text-sm text-muted">{t("testDataBody")}</p>
+            {hasTest && <p className="mb-3 rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-700">{t("testDataHas")}</p>}
+            <div className="flex flex-wrap gap-3">
+              <ActionForm action={addTestDataAction} submitLabel={t("testDataAdd")} confirm={t("testDataConfirm")} />
+              {/* Always shown, so its "removed" message stays on screen after the sample PG is gone. */}
+              <ActionForm action={removeTestDataAction} submitLabel={t("testDataRemove")} submitClassName="btn-danger" confirm={t("testDataRemoveConfirm")} />
+            </div>
+            <p className="mt-3 text-xs text-muted">{t("testDataSamePhone")}</p>
           </Card>
         )}
         <Card title={t("appLanguage")}>

@@ -340,6 +340,11 @@ export default async function TenantPage({
                         <td className="text-sm whitespace-nowrap text-muted">{fmtDate(r.date, lang)}</td>
                         <td className="text-sm">
                           {r.label}
+                          {r.kind === "payment" && r.receiptStatus && r.amount > 0 && (
+                            <Link href={`/payments/${r.id}/receipt`} className={`mt-1 block w-fit rounded-full px-2 py-0.5 text-xs font-semibold ${r.receiptStatus === "SENT" ? "bg-brand-50 text-brand-700" : "bg-red-50 text-red-700"}`} data-testid="receipt-badge">
+                              {r.receiptStatus === "SENT" ? tr("receiptBadgeSent") : tr("receiptBadgeFailed")}
+                            </Link>
+                          )}
                           {r.kind === "charge" && r.type !== "RENT" && r.label !== chargeText(tr, r.type) && (
                             <span className="ml-2">
                               <Badge>{chargeText(tr, r.type)}</Badge>
@@ -361,11 +366,6 @@ export default async function TenantPage({
                         <td className="text-right whitespace-nowrap">
                           {r.kind === "payment" ? (
                             <span className="inline-flex items-center gap-2">
-                              {r.receiptStatus && r.amount > 0 && (
-                                <Link href={`/payments/${r.id}/receipt`} className={`rounded-full px-2 py-0.5 text-xs font-semibold ${r.receiptStatus === "SENT" ? "bg-brand-50 text-brand-700" : "bg-red-50 text-red-700"}`} data-testid="receipt-badge">
-                                  {r.receiptStatus === "SENT" ? tr("receiptBadgeSent") : tr("receiptBadgeFailed")}
-                                </Link>
-                              )}
                               <Link href={`/payments/${r.id}/receipt`} className="text-xs text-brand-600 hover:underline">
                                 {tr("receipt")}
                               </Link>

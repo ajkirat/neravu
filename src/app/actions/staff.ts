@@ -21,7 +21,7 @@ export async function addStaff(_: FormState, fd: FormData): Promise<FormState> {
   if (name.length < 2) return { error: t("errStaffName") };
   if (!phone) return { error: t("errStaffPhone") };
   if (password.length < MIN_PW) return { error: t("errStaffPassword") };
-  if (await phoneTaken(phone)) return { error: t("errStaffPhoneTaken") };
+  if (await phoneTaken(phone, {}, "staff")) return { error: t("errStaffPhoneTaken") };
   await db.staff.create({ data: { ownerId: owner.id, name, phone, passwordHash: await bcrypt.hash(password, 10) } });
   revalidatePath("/staff");
   return { ok: t("staffAdded"), at: Date.now() };
