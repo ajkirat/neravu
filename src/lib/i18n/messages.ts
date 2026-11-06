@@ -13,6 +13,7 @@ import { register } from "./parts/register";
 import { settleMsgs } from "./parts/settle";
 import { landing } from "./parts/landing";
 import { flows } from "./parts/flows";
+import { dupes } from "./parts/dupes";
 import { leads } from "./parts/leads";
 import { misc } from "./parts/misc";
 import { nav } from "./parts/nav";
@@ -40,6 +41,7 @@ export const messages = {
   ...settleMsgs,
   ...landing,
   ...flows,
+  ...dupes,
   ...leads,
   ...settings,
   ...publicPages,

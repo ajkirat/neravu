@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { waBillNumber } from "@/lib/whatsapp";
+import { PhotoThumb } from "@/components/photo-lightbox";
 import { db } from "@/lib/db";
 import { requireActor } from "@/lib/auth";
 import { monthRange, periodKey, toDateInput, today } from "@/lib/dates";
@@ -96,16 +98,14 @@ export default async function ExpensesPage({
               {expenses.map((e) => (
                 <li key={e.id} className="card p-3.5">
                   <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
+                    {e.receipt && <PhotoThumb src={`/expenses/${e.id}/bill`} alt={t("billPhoto")} className="h-14 w-14" />}
+                    <div className="min-w-0 flex-1">
                       <p className="text-base font-semibold text-brand-900">
-                        {categoryText(t, e.category)} {e.source === "SCAN" && <Badge tone="green">{t("scannedBadge")}</Badge>}
+                        <Link href={`/expenses/${e.id}`} className="hover:underline">{categoryText(t, e.category)}</Link>{" "}
+                        {e.mayBeDuplicate && <Badge tone="amber">{t("dupBadge")}</Badge>}{" "}
+                        {e.source === "SCAN" && <Badge tone="green">{t("scannedBadge")}</Badge>}
                         {e.source === "WHATSAPP" && <Badge tone="green">{t("waBadge")}</Badge>}
                         {e.addedByName && <span className="block text-xs font-normal text-muted">{t("sentBy", { name: e.addedByName })}</span>}
-                        {e.receipt && (
-                          <a href={`/expenses/${e.id}/bill`} target="_blank" rel="noreferrer" className="block text-sm font-normal text-brand-600 underline">
-                            {t("viewBill")}
-                          </a>
-                        )}
                       </p>
                       <p className="text-sm text-muted">
                         {fmtDate(e.spentOn, lang)} · {e.property?.name ?? t("allGeneral")}
@@ -149,6 +149,7 @@ export default async function ExpensesPage({
               <table className="table">
                 <thead>
                   <tr>
+                    <th className="w-16">{t("billPhoto")}</th>
                     <th>{t("date")}</th>
                     <th>{t("colCategory")}</th>
                     <th>{t("colProperty")}</th>
@@ -159,16 +160,14 @@ export default async function ExpensesPage({
                 <tbody>
                   {expenses.map((e) => (
                     <tr key={e.id}>
+                      <td>{e.receipt ? <PhotoThumb src={`/expenses/${e.id}/bill`} alt={t("billPhoto")} /> : <span className="text-xs text-muted">—</span>}</td>
                       <td className="text-sm whitespace-nowrap text-muted">{fmtDate(e.spentOn, lang)}</td>
                       <td className="text-sm">
-                        {categoryText(t, e.category)} {e.source === "SCAN" && <Badge tone="green">{t("scannedBadge")}</Badge>}
+                        <Link href={`/expenses/${e.id}`} className="font-medium text-brand-900 hover:underline">{categoryText(t, e.category)}</Link>{" "}
+                        {e.mayBeDuplicate && <Badge tone="amber">{t("dupBadge")}</Badge>}{" "}
+                        {e.source === "SCAN" && <Badge tone="green">{t("scannedBadge")}</Badge>}
                         {e.source === "WHATSAPP" && <Badge tone="green">{t("waBadge")}</Badge>}
                         {e.addedByName && <span className="block text-xs font-normal text-muted">{t("sentBy", { name: e.addedByName })}</span>}
-                        {e.receipt && (
-                          <a href={`/expenses/${e.id}/bill`} target="_blank" rel="noreferrer" className="block text-sm font-normal text-brand-600 underline">
-                            {t("viewBill")}
-                          </a>
-                        )}
                         {e.vendor && <div className="text-xs font-medium text-brand-900">{e.vendor}</div>}
                         {e.note && <div className="text-xs text-muted">{e.note}</div>}
                         {e.items.length > 0 && (

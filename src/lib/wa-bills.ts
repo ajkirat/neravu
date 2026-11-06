@@ -9,6 +9,8 @@ import { extractReceipt, scanEnabled } from "./receipt-ai";
 import { parseReceipt, type ReceiptData } from "./receipt";
 import { billAmount, parseButton, replyIntent, type Inbound } from "./wa-inbound";
 import { fetchMedia, sendButtons, sendText } from "./whatsapp";
+import { findDuplicate } from "./duplicates";
+import { SIMILAR_BITS, hamming, normalizeBill } from "./image-hash";
 
 const DAILY_LIMIT = 60; // bill photos per PG per day, to cap reading costs
 const KEEP_DAYS = 7;
@@ -47,17 +49,6 @@ async function findSender(from: string): Promise<Sender | "unknown" | "ambiguous
   if (owners.length === 0) return "unknown";
   const o = owners[0];
   return { ownerId: o.id, staffId: null, name: o.name, lang: asLang(o.language), pg: o.businessName ?? o.name };
-}
-
-/** Make the photo small enough to store and read: max 1600px, JPEG. */
-async function shrink(bytes: Buffer): Promise<{ data: Buffer; mime: string } | null> {
-  try {
-    const sharp = (await import("sharp")).default;
-    const data = await sharp(bytes).rotate().resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true }).jpeg({ quality: 72 }).toBuffer();
-    return { data, mime: "image/jpeg" };
-  } catch {
-    return null;
-  }
 }
 
 function summary(t: ReturnType<typeof makeT>, r: ReceiptData, lang: Lang) {
@@ -125,7 +116,7 @@ async function onPhoto(m: Inbound, sender: Sender, t: ReturnType<typeof makeT>) 
   await step(m.id, media ? `downloaded ${Math.round(media.bytes.length / 1024)}KB` : "DOWNLOAD FAILED");
   if (!media) console.error("WhatsApp bill: could not download the photo");
   if (!media || !media.mime.startsWith("image/")) return void (await sendText(m.from, media ? t("waBillPhotoOnly") : t("waBillFailed")));
-  const img = await shrink(media.bytes);
+  const img = await normalizeBill(media.bytes);
   await step(m.id, img ? "resized" : "RESIZE FAILED");
   const bytes = img ? new Uint8Array(img.data) : null;
   if (!img) return void (await sendText(m.from, t("waBillFailed")));
@@ -141,19 +132,36 @@ async function onPhoto(m: Inbound, sender: Sender, t: ReturnType<typeof makeT>) 
   await step(m.id, data.isReceipt ? `read ${billAmount(data)}` : "read: not a bill");
   if (!data.isReceipt || billAmount(data) <= 0) return void (await sendText(m.from, t("waBillNotBill")));
 
+  // Strict duplicate check: against saved expenses, and against a copy of this photo still waiting for Yes/No.
+  const spentOn = data.date ? parseDateInput(data.date) : null;
+  let dup = await findDuplicate(sender.ownerId, { sha256: img.sha256, phash: img.phash, amount: billAmount(data), vendor: data.vendor, spentOn });
+  if (!dup) {
+    const waiting = await db.pendingExpense.findMany({
+      where: { ownerId: sender.ownerId, status: "PENDING", createdAt: { gte: new Date(Date.now() - 86400_000) } },
+      select: { data: true, createdAt: true },
+    });
+    const twin = waiting.find((w) => {
+      const d = w.data as { sha256?: string; phash?: string };
+      return d.sha256 === img.sha256 || (d.phash && hamming(d.phash, img.phash) <= SIMILAR_BITS);
+    });
+    if (twin) dup = { expenseId: "", spentOn: spentOn ?? today(), amount: billAmount(data), vendor: data.vendor, reason: "SAME_PHOTO" };
+  }
   const pending = await db.pendingExpense.create({
     data: {
       ownerId: sender.ownerId,
       staffId: sender.staffId,
       senderName: sender.name,
       waFrom: m.from,
-      data: data as unknown as Prisma.InputJsonValue,
+      data: { ...data, sha256: img.sha256, phash: img.phash, dup: dup ? { expenseId: dup.expenseId, reason: dup.reason } : null } as unknown as Prisma.InputJsonValue,
       mime: img.mime,
       image: bytes!,
     },
   });
-  const res = await sendButtons(m.from, summary(t, data, sender.lang), [
-    { id: `exp_yes_${pending.id}`, title: t("waYes") },
+  const ask = dup
+    ? `${summary(t, data, sender.lang)}\n\n${t("waDupAsk", { date: fmtDate(dup.spentOn, sender.lang), amt: rupees(dup.amount), vendor: dup.vendor ? ` · ${dup.vendor}` : "", why: t(`dup_${dup.reason}`) })}`
+    : summary(t, data, sender.lang);
+  const res = await sendButtons(m.from, ask, [
+    { id: `exp_yes_${pending.id}`, title: dup ? t("waAddAnyway") : t("waYes") },
     { id: `exp_no_${pending.id}`, title: t("waNo") },
   ]);
   await step(m.id, res.ok ? "asked OK" : `ASK FAILED (${res.detail.slice(0, 160)})`);
@@ -173,6 +181,7 @@ async function onAnswer(from: string, sender: Sender, t: ReturnType<typeof makeT
   }
 
   // Re-check what we stored, the same way as a fresh reading.
+  const extra = pending.data as unknown as { sha256?: string; phash?: string; dup?: { expenseId: string } | null };
   const r = parseReceipt(
     (() => {
       const d = pending.data as unknown as ReceiptData;
@@ -199,7 +208,9 @@ async function onAnswer(from: string, sender: Sender, t: ReturnType<typeof makeT
         addedByStaffId: pending.staffId,
         billTotal: r.total && r.total > 0 ? r.total : null,
         items: r.items.length ? { create: r.items.map((i) => ({ name: i.name, quantity: i.quantity, amount: i.amount })) } : undefined,
-        receipt: pending.image.length ? { create: { mime: pending.mime, data: pending.image } } : undefined,
+        mayBeDuplicate: !!extra.dup,
+        duplicateOfId: extra.dup?.expenseId || null,
+        receipt: pending.image.length ? { create: { mime: pending.mime, data: pending.image, sha256: extra.sha256 ?? null, phash: extra.phash ?? null } } : undefined,
       },
     });
     await tx.pendingExpense.update({ where: { id: pending.id }, data: { expenseId: exp.id, image: new Uint8Array(0) } });
