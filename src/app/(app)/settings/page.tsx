@@ -55,11 +55,11 @@ export default async function SettingsPage() {
         </Card>
         <Card>
           <ActionForm action={saveSettings} submitLabel={t("saveSettings")}>
-            <Field label={t("yourName")}>
+            <Field label={t("yourName")} hint={t("settingsLoginHint")}>
               <input name="name" className="input" required defaultValue={owner.name} />
             </Field>
-            <Field label={t("mobileNumber")}>
-              <input name="phone" type="tel" className="input" defaultValue={owner.phone ?? ""} />
+            <Field label={t("mobileNumber")} hint={t("settingsLoginHint")}>
+              <input name="phone" type="tel" inputMode="numeric" className="input" required defaultValue={owner.phone ?? ""} />
             </Field>
             <Field label={t("businessName")} hint={t("businessNameHint")}>
               <input name="businessName" className="input" defaultValue={owner.businessName ?? ""} />

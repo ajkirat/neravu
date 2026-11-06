@@ -16,11 +16,11 @@ export default async function SignupPage() {
         <Field label={t("yourName")}>
           <input className="input" name="name" autoComplete="name" required />
         </Field>
-        <Field label={t("email")}>
-          <input className="input" name="email" type="email" autoComplete="email" required />
+        <Field label={t("loginMobile")} hint={t("signupMobileHint")}>
+          <input className="input" name="phone" type="tel" inputMode="numeric" autoComplete="tel" required />
         </Field>
-        <Field label={t("mobileOptional")}>
-          <input className="input" name="phone" type="tel" autoComplete="tel" />
+        <Field label={t("emailOptional")}>
+          <input className="input" name="email" type="email" autoComplete="email" />
         </Field>
         <Field label={t("password")} hint={t("passwordHint")}>
           <input className="input" name="password" type="password" autoComplete="new-password" minLength={8} required />

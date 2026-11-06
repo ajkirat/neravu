@@ -13,7 +13,8 @@ import { tooMany } from "@/lib/throttle";
 import { appOrigin } from "@/lib/url";
 import type { FormState } from "@/components/action-form";
 
-async function sendVerification(owner: { id: string; name: string; email: string; language: string }) {
+async function sendVerification(owner: { id: string; name: string; email: string | null; language: string }) {
+  if (!owner.email) return false;
   const t = makeT(asLang(owner.language) as Lang);
   const raw = await createToken(owner.id, "VERIFY");
   const url = `${await appOrigin()}/verify-email/${raw}`;
@@ -37,7 +38,7 @@ export async function requestPasswordReset(_: FormState, fd: FormData): Promise<
   if (!emailEnabled()) return { error: t("forgotNoEmail") };
   const email = str(fd, "email").toLowerCase();
   const owner = email ? await db.owner.findUnique({ where: { email } }) : null;
-  if (owner) {
+  if (owner?.email) {
     // At most one fresh link per minute per account.
     const recent = await db.authToken.findFirst({
       where: { ownerId: owner.id, kind: "RESET", createdAt: { gt: new Date(Date.now() - 60_000) } },

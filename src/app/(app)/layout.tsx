@@ -27,7 +27,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <LanguageSwitcher className="w-full justify-between" />
           <div className="rounded-xl bg-brand-900/40 p-3">
             <p className="truncate text-sm font-medium text-white">{isOwner ? owner.name : staff?.name}</p>
-            <p className="truncate text-xs text-brand-200">{isOwner ? owner.email : `${t("roleStaff")} · ${owner.businessName ?? owner.name}`}</p>
+            <p className="truncate text-xs text-brand-200">{isOwner ? (owner.phone ?? owner.email) : `${t("roleStaff")} · ${owner.businessName ?? owner.name}`}</p>
             <div className="mt-2 flex items-center gap-3">
               {isOwner && (
                 <Link href="/settings" className="text-xs font-medium text-brand-100 hover:underline">
@@ -56,7 +56,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="no-print mb-4 hidden justify-end lg:flex">
           <TextSizeToggle large={large} />
         </div>
-        {isOwner && emailEnabled() && !owner.emailVerifiedAt && <VerifyBanner email={owner.email} />}
+        {isOwner && !owner.phoneKey && (
+          <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-marigold-400 bg-marigold-100 px-4 py-3 text-sm text-brand-900">
+            <span>{t("needMobileBanner")}</span>
+            <Link href="/settings" className="btn-primary">
+              {t("needMobileBtn")}
+            </Link>
+          </div>
+        )}
+        {isOwner && emailEnabled() && owner.email && !owner.emailVerifiedAt && <VerifyBanner email={owner.email} />}
         {children}
       </main>
       <BottomNav items={isOwner ? BOTTOM : STAFF_BOTTOM} />

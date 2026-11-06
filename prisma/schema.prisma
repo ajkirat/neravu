@@ -12,8 +12,11 @@ datasource db {
 model Owner {
   id                       String            @id @default(cuid())
   name                     String
-  email                    String            @unique
+  // Optional since login moved to mobile + name + password; kept for emails and a future forgot-password
+  email                    String?           @unique
   phone                    String?
+  // Last 10 digits of phone: what the owner signs in with. Unique, and never the same as a caretaker's.
+  phoneKey                 String?           @unique
   passwordHash             String
   // Shown on tenant messages and pay pages; optional
   businessName             String?

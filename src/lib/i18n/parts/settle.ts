@@ -61,6 +61,6 @@ export const settleMsgs = {
   demoBtn: { en: "Reset demo data", kn: "ಡೆಮೊ ಡೇಟಾ ಹೊಸದಾಗಿಸಿ", te: "డెమో డేటా కొత్తగా చేయండి" },
   demoConfirm: { en: "Replace everything in this account with fresh demo data?", kn: "ಈ ಖಾತೆಯ ಎಲ್ಲವನ್ನೂ ಹೊಸ ಡೆಮೊ ಡೇಟಾದಿಂದ ಬದಲಿಸಬೇಕೇ?", te: "ఈ ఖాతాలోని అన్నింటినీ కొత్త డెమో డేటాతో మార్చాలా?" },
   demoDone: { en: "Demo data is ready. Open Home to start.", kn: "ಡೆಮೊ ಡೇಟಾ ಸಿದ್ಧ. ಪ್ರಾರಂಭಿಸಲು ಮುಖಪುಟ ತೆರೆಯಿರಿ.", te: "డెమో డేటా సిద్ధం. ప్రారంభించడానికి హోమ్ తెరవండి." },
-  demoStaff: { en: "Demo caretaker login: {phone} / {pw}", kn: "ಡೆಮೊ ಕೇರ್‌ಟೇಕರ್ ಲಾಗಿನ್: {phone} / {pw}", te: "డెమో కేర్‌టేకర్ లాగిన్: {phone} / {pw}" },
+  demoStaff: { en: "Demo caretaker login: {phone} / Ramesh / {pw}", kn: "ಡೆಮೊ ಕೇರ್‌ಟೇಕರ್ ಲಾಗಿನ್: {phone} / Ramesh / {pw}", te: "డెమో కేర్‌టేకర్ లాగిన్: {phone} / Ramesh / {pw}" },
   demoOnly: { en: "Only the demo account can do this.", kn: "ಇದನ್ನು ಡೆಮೊ ಖಾತೆ ಮಾತ್ರ ಮಾಡಬಹುದು.", te: "ఇది డెమో ఖాతా మాత్రమే చేయగలదు." },
 } satisfies Part;

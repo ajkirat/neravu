@@ -24,13 +24,13 @@ const num = (s: string) => {
 
 export function ExpenseForm({
   properties,
-  categories,
+  groups,
   defaultDate,
   scanEnabled,
   currentMonth,
 }: {
   properties: { id: string; name: string }[];
-  categories: { value: string; label: string }[];
+  groups: { label: string; options: { value: string; label: string }[] }[];
   defaultDate: string;
   scanEnabled: boolean;
   /** The month the list below is showing (YYYY-MM). */
@@ -170,10 +170,14 @@ export function ExpenseForm({
         </Field>
         <Field label={t("categoryLabel")}>
           <select className="input" name="category" value={category} onChange={(e) => setCategory(e.target.value)}>
-            {categories.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label}
-              </option>
+            {groups.map((g) => (
+              <optgroup key={g.label} label={g.label}>
+                {g.options.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </Field>
