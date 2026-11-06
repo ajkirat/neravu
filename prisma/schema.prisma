@@ -21,6 +21,14 @@ model Owner {
   houseRules               String?
   // Send a WhatsApp receipt to the tenant after every payment (when WhatsApp is connected)
   autoReceipts             Boolean           @default(true)
+  // How tenants' own UPI payments are confirmed: OWNER (tenant says paid, owner taps OK) | BANK (bank alert emails)
+  payConfirm               String            @default("OWNER")
+  // Secret part of this owner's bank-alert inbox address (Option C)
+  bankInbox                String?           @unique
+  // Last 4 digits of the account the alerts are for: alerts for any other account are ignored
+  bankLast4                String?
+  // Gmail's "confirm forwarding" message, shown to the owner once
+  bankForwardNote          String?
   // UPI ID (e.g. name@bank) rent is paid to; enables tenant pay links
   upiId                    String?
   // en | kn | te: the language the app opens in
@@ -53,6 +61,9 @@ model Owner {
   leads                    Lead[]
   joinRequests             JoinRequest[]
   pendingExpenses          PendingExpense[]
+  payClaims                PaymentClaim[]
+  bankCredits              BankCredit[]
+  tenantRequests           TenantRequest[]
   complaints               Complaint[]
 }
 
@@ -102,47 +113,53 @@ model Bed {
 }
 
 model Tenant {
-  id               String        @id @default(cuid())
-  ownerId          String
-  owner            Owner         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  propertyId       String
-  property         Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  bedId            String?
-  bed              Bed?          @relation(fields: [bedId], references: [id], onDelete: SetNull)
-  name             String
-  phone            String
-  email            String?
-  occupation       String?
-  idType           String?
-  idNumber         String?
-  emergencyName    String?
-  emergencyPhone   String?
+  id                   String          @id @default(cuid())
+  ownerId              String
+  owner                Owner           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  propertyId           String
+  property             Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  bedId                String?
+  bed                  Bed?            @relation(fields: [bedId], references: [id], onDelete: SetNull)
+  name                 String
+  phone                String
+  email                String?
+  occupation           String?
+  idType               String?
+  idNumber             String?
+  emergencyName        String?
+  emergencyPhone       String?
   // Home address, for the police tenant register
-  permanentAddress String?
-  monthlyRent      Int
-  deposit          Int           @default(0)
+  permanentAddress     String?
+  monthlyRent          Int
+  deposit              Int             @default(0)
   // Day of month rent falls due (1-28)
-  rentDueDay       Int
-  moveInDate       DateTime
+  rentDueDay           Int
+  moveInDate           DateTime
   // Imported tenants: rent is billed from this date (older dues come in as an opening balance)
-  billFrom         DateTime?
-  noticeDate       DateTime?
-  moveOutDate      DateTime?
+  billFrom             DateTime?
+  // 1-99: the paise added to this tenant's UPI amount (e.g. Rs 8500.37) so a payment can be matched to them
+  payCode              Int?
+  // No reminders (automatic or in the Today list) until this date
+  remindersPausedUntil DateTime?
+  noticeDate           DateTime?
+  moveOutDate          DateTime?
   // ACTIVE | NOTICE | MOVED_OUT
-  status           String        @default("ACTIVE")
-  notes            String?
+  status               String          @default("ACTIVE")
+  notes                String?
   // Unguessable token for the public /pay/<token> page
-  payToken         String?       @unique
+  payToken             String?         @unique
   // Set when the tenant taps "I've paid"; cleared when the owner records a payment
-  payClaimedAt     DateTime?
-  lastRemindedAt   DateTime?
+  payClaimedAt         DateTime?
+  lastRemindedAt       DateTime?
   // en | kn | te: language of messages and the pay page for this tenant
-  language         String?
-  complaints       Complaint[]
-  reminderLogs     ReminderLog[]
-  createdAt        DateTime      @default(now())
-  charges          Charge[]
-  payments         Payment[]
+  language             String?
+  complaints           Complaint[]
+  reminderLogs         ReminderLog[]
+  payClaims            PaymentClaim[]
+  requests             TenantRequest[]
+  createdAt            DateTime        @default(now())
+  charges              Charge[]
+  payments             Payment[]
 
   @@index([ownerId, status])
   @@index([bedId])
@@ -193,27 +210,27 @@ model Payment {
 }
 
 model Expense {
-  id          String          @id @default(cuid())
-  ownerId     String
-  owner       Owner           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  propertyId  String?
-  property    Property?       @relation(fields: [propertyId], references: [id], onDelete: SetNull)
-  category    String
-  amount      Int
-  spentOn     DateTime
-  note        String?
+  id             String          @id @default(cuid())
+  ownerId        String
+  owner          Owner           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  propertyId     String?
+  property       Property?       @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  category       String
+  amount         Int
+  spentOn        DateTime
+  note           String?
   // Shop or supplier name, usually read from a bill photo
-  vendor      String?
+  vendor         String?
   // MANUAL | SCAN | WHATSAPP
-  source      String          @default("MANUAL")
+  source         String          @default("MANUAL")
   // Who added it when it was not the owner (caretaker name; kept if the caretaker is removed)
-  addedByName String?
+  addedByName    String?
   addedByStaffId String?
   // Grand total printed on the bill, kept to flag mismatches with the items
-  billTotal   Int?
-  createdAt   DateTime        @default(now())
-  items       ExpenseItem[]
-  receipt     ExpenseReceipt?
+  billTotal      Int?
+  createdAt      DateTime        @default(now())
+  items          ExpenseItem[]
+  receipt        ExpenseReceipt?
 
   @@index([ownerId, spentOn])
 }
@@ -277,6 +294,10 @@ model Complaint {
   details    String?
   // OPEN | IN_PROGRESS | RESOLVED
   status     String    @default("OPEN")
+  // OWNER (typed in the app) | TENANT (sent from the tenant's My PG link)
+  source     String    @default("OWNER")
+  photoMime  String?
+  photo      Bytes?
   createdAt  DateTime  @default(now())
 
   @@index([ownerId, status])
@@ -410,4 +431,64 @@ model WaInbound {
   createdAt DateTime @default(now())
   // What Neravu did with the message, step by step (shown in the WhatsApp check)
   trace     String?
+}
+
+// A tenant says "I've paid" (Option A). It never counts as payment: only the owner's OK records one.
+model PaymentClaim {
+  id         String    @id @default(cuid())
+  ownerId    String
+  owner      Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  tenantId   String
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  // Whole rupees they say they paid, and the paise tag shown to them
+  amount     Int
+  paise      Int       @default(0)
+  utr        String?
+  // PENDING | CONFIRMED | REJECTED
+  status     String    @default("PENDING")
+  paymentId  Int?
+  resolvedBy String?
+  resolvedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([ownerId, status])
+  @@index([tenantId, status])
+}
+
+// A credit read from the owner's bank alert email (Option C).
+model BankCredit {
+  id          String   @id @default(cuid())
+  ownerId     String
+  owner       Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  amountPaise Int
+  utr         String?
+  payer       String?
+  bank        String?
+  // MATCHED | UNMATCHED | IGNORED
+  status      String
+  tenantId    String?
+  paymentId   Int?
+  // One row per alert email, so a re-sent email is not counted twice
+  msgHash     String   @unique
+  createdAt   DateTime @default(now())
+
+  @@index([ownerId, status])
+}
+
+// Something a tenant asked for from their My PG link that the owner must decide on (e.g. notice to leave).
+model TenantRequest {
+  id        String    @id @default(cuid())
+  ownerId   String
+  owner     Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  tenantId  String
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  // NOTICE
+  kind      String
+  date      DateTime?
+  note      String?
+  // PENDING | DONE | DISMISSED
+  status    String    @default("PENDING")
+  createdAt DateTime  @default(now())
+
+  @@index([ownerId, status])
 }

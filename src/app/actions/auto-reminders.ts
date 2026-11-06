@@ -8,6 +8,7 @@ import { rupees } from "@/lib/format";
 import { asLang } from "@/lib/i18n";
 import { getT } from "@/lib/i18n/server";
 import { tooMany } from "@/lib/throttle";
+import { isQuietHours } from "@/lib/dates";
 import { sendTemplate, templateNames, whatsappConfigured } from "@/lib/whatsapp";
 import type { FormState } from "@/components/action-form";
 
@@ -32,6 +33,7 @@ export async function sendRemindersNow(): Promise<{ ok?: string; error?: string 
   const owner = await requireOwner();
   const { t } = await getT();
   if (!whatsappConfigured()) return { error: t("autoNeedWhatsapp") };
+  if (isQuietHours()) return { error: t("quietHours") };
   if (await tooMany(`rem-now:${owner.id}`, 5, 60 * 60 * 1000)) return { error: t("tryAgainLater") };
   const row = await db.owner.findUnique({ where: { id: owner.id }, select: ownerSelect });
   if (!row) return { error: "?" };

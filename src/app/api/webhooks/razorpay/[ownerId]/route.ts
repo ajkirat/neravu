@@ -1,5 +1,6 @@
 import { after } from "next/server";
 import { sendPaymentReceipt } from "@/lib/payment-receipt";
+import { closePendingClaims } from "@/lib/claims";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { parsePaidEvent, verifySignature } from "@/lib/razorpay-utils";
@@ -50,7 +51,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ ownerId
         externalId: `rzp:${paid.paymentId}`,
       },
     });
-    await db.tenant.update({ where: { id: tenant.id }, data: { payClaimedAt: null } });
+    await closePendingClaims(tenant.id, created.id, "razorpay");
     after(() => sendPaymentReceipt(created.id));
   } catch (e) {
     // A replayed webhook hits the unique externalId: that is fine, it was already recorded.

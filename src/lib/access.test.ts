@@ -28,6 +28,8 @@ const ACTOR_FILES = new Set([
   "(app)/complaints/page.tsx",
   "(app)/leads/page.tsx",
   "(app)/expenses/page.tsx",
+  "(app)/complaints/[id]/photo/route.ts",
+  "(app)/send/route.ts",
   "(app)/reminders/page.tsx",
   "actions/payments.ts",
   "actions/reminders.ts",
@@ -41,7 +43,7 @@ const ACTOR_ACTIONS = new Set(["recordPayment", "collectFull", "markReminded", "
 
 /** Actions anyone may call without signing in (they protect themselves another way). */
 const PUBLIC_ACTIONS = new Set([
-  "signup", "login", "logout", "staffLogin", "claimPayment", "startRazorpayPayment", "submitEnquiry", "submitJoin",
+  "signup", "login", "logout", "staffLogin", "claimPayment", "startRazorpayPayment", "submitEnquiry", "submitJoin", "submitTenantComplaint", "requestLeave",
   "requestPasswordReset", "resetPassword", "resendVerification", "verifyEmailToken", "sendVerificationEmail",
   "setLanguage", "setTextSize",
 ]);
@@ -98,7 +100,7 @@ describe("caretaker access", () => {
     for (const p of files.filter((x) => /\/route\.ts$/.test(rel(x)) && !rel(x).startsWith("(app)/"))) {
       const src = read(p);
       const f = rel(p);
-      if (f.startsWith("api/webhooks/") || f.startsWith("api/cron/")) continue; // signature / secret protected
+      if (f.startsWith("api/webhooks/") || f.startsWith("api/cron/") || f.startsWith("api/inbound/")) continue; // signature / secret protected
       // Reading a bill photo returns only what is on the photo, so caretakers may use it.
       if (CARETAKER_ROUTES.has(f)) {
         expect(/currentActor\(/.test(src), f).toBe(true);

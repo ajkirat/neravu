@@ -42,7 +42,7 @@ export const tenants = {
     kn: "{name} {date} ರಂದು ಪಾವತಿಸಿದ್ದೇನೆ ಎಂದಿದ್ದಾರೆ. ನಿಮ್ಮ UPI ಆ್ಯಪ್ ನೋಡಿ, ನಂತರ ಕೆಳಗೆ ಪಾವತಿಯನ್ನು ದಾಖಲಿಸಿ ಖಚಿತಪಡಿಸಿ.",
     te: "{name} {date} న చెల్లించామన్నారు. మీ UPI యాప్ చూడండి, తర్వాత కింద చెల్లింపు నమోదు చేసి నిర్ధారించండి.",
   },
-  payLinkTitle: { en: "Online pay link", kn: "ಆನ್‌ಲೈನ್ ಪಾವತಿ ಲಿಂಕ್", te: "ఆన్‌లైన్ చెల్లింపు లింక్" },
+  payLinkTitle: { en: "Tenant's My PG link (rent, receipts, complaints)", kn: "ಬಾಡಿಗೆದಾರರ My PG ಲಿಂಕ್ (ಬಾಡಿಗೆ, ರಸೀದಿ, ದೂರು)", te: "అద్దెదారు My PG లింక్ (అద్దె, రసీదులు, ఫిర్యాదులు)" },
   payLinkSetup: { en: "Want tenants to pay by UPI from a link? Add your UPI ID in", kn: "ಬಾಡಿಗೆದಾರರು ಲಿಂಕ್‌ನಿಂದ UPI ಮೂಲಕ ಪಾವತಿಸಬೇಕೇ? ನಿಮ್ಮ UPI ID ಸೇರಿಸಿ:", te: "అద్దెదారులు లింక్ ద్వారా UPI తో చెల్లించాలా? మీ UPI ID జోడించండి:" },
   rentForMonth: { en: "Rent for {month}", kn: "{month} ರ ಬಾಡಿಗೆ", te: "{month} అద్దె" },
   statement: { en: "Statement", kn: "ಲೆಕ್ಕಪತ್ರ", te: "స్టేట్‌మెంట్" },

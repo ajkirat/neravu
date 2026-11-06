@@ -13,6 +13,9 @@ export const DEMO_STAFF_PASSWORD = "ramesh123";
 export async function clearOwnerData(db: PrismaClient, ownerId: string) {
   const where = { ownerId };
   await db.pendingExpense.deleteMany({ where });
+  await db.paymentClaim.deleteMany({ where });
+  await db.bankCredit.deleteMany({ where });
+  await db.tenantRequest.deleteMany({ where });
   await db.joinRequest.deleteMany({ where });
   await db.lead.deleteMany({ where });
   await db.complaint.deleteMany({ where });
@@ -188,6 +191,13 @@ export async function fillDemo(db: PrismaClient, ownerId: string) {
     await db.payment.create({
       data: { tenantId: someone.id, amount: 1500, paidOn: now, method: "CASH", note: "Part payment", recordedByStaffId: staff.id, recordedByName: staff.name },
     });
+  }
+  // A UPI ID so My PG links show the Pay button, and one tenant who says they paid (Option A).
+  await db.owner.update({ where: { id: ownerId }, data: { upiId: "lakshmi.demo@okhdfc", paymentMode: "UPI", payConfirm: "OWNER" } });
+  const late = await db.tenant.findFirst({ where: { ownerId, name: "Sneha Patil" } });
+  if (late) {
+    await db.tenant.update({ where: { id: late.id }, data: { payCode: 7, payClaimedAt: now } });
+    await db.paymentClaim.create({ data: { ownerId, tenantId: late.id, amount: 8500, paise: 7, utr: "412398765432" } });
   }
   // Enquiries from the QR code, a complaint and a new joiner waiting for approval.
   const firstProperty = propertyIds[0];

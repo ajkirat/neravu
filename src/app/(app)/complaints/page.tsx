@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { requireActor } from "@/lib/auth";
-import { fmtDate } from "@/lib/format";
+import { fmtDate, whatsappNumber } from "@/lib/format";
+import { asLang, makeT } from "@/lib/i18n";
 import { getT } from "@/lib/i18n/server";
 import type { MsgKey } from "@/lib/i18n";
 import { createComplaint } from "@/app/actions/complaints";
@@ -17,7 +18,18 @@ export default async function ComplaintsPage() {
   const [complaints, tenants] = await Promise.all([
     db.complaint.findMany({
       where: { ownerId: owner.id },
-      include: { tenant: { select: { name: true } }, property: { select: { name: true } } },
+      // Not the photo itself: that is loaded only when someone opens it.
+      select: {
+        id: true,
+        title: true,
+        details: true,
+        status: true,
+        source: true,
+        photoMime: true,
+        createdAt: true,
+        tenant: { select: { name: true, phone: true, language: true } },
+        property: { select: { name: true } },
+      },
       orderBy: { createdAt: "desc" },
     }),
     db.tenant.findMany({
@@ -71,6 +83,26 @@ export default async function ComplaintsPage() {
                       {[c.tenant?.name, c.property?.name, fmtDate(c.createdAt, lang)].filter(Boolean).join(" · ")}
                     </p>
                     {c.details && <p className="mt-1 text-sm">{c.details}</p>}
+                    <p className="mt-1 flex flex-wrap items-center gap-3 text-sm">
+                      {c.source === "TENANT" && <Badge tone="green">{t("cmpFromTenant")}</Badge>}
+                      {c.photoMime && (
+                        <a href={`/complaints/${c.id}/photo`} target="_blank" rel="noreferrer" className="text-brand-600 underline">
+                          {t("cmpPhoto")}
+                        </a>
+                      )}
+                      {c.status === "RESOLVED" && c.tenant?.phone && (
+                        <a
+                          className="text-brand-600 underline"
+                          target="_blank"
+                          rel="noreferrer"
+                          href={`https://wa.me/${whatsappNumber(c.tenant.phone)}?text=${encodeURIComponent(
+                            makeT(asLang(c.tenant.language ?? lang))("cmpFixedMsg", { name: c.tenant.name.split(" ")[0], what: c.title }),
+                          )}`}
+                        >
+                          {t("cmpTellFixed")}
+                        </a>
+                      )}
+                    </p>
                   </div>
                   <ComplaintControls id={c.id} status={c.status} canDelete={role === "OWNER"} />
                 </div>

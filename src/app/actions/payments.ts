@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { sendPaymentReceipt } from "@/lib/payment-receipt";
+import { closePendingClaims } from "@/lib/claims";
 import { db } from "@/lib/db";
 import { requireActor, requireOwner } from "@/lib/auth";
 import { parseDateInput, today } from "@/lib/dates";
@@ -38,7 +39,7 @@ export async function recordPayment(_: FormState, fd: FormData): Promise<FormSta
     },
   });
   // A recorded payment resolves any "I've paid" claim from the tenant.
-  await db.tenant.update({ where: { id: tenantId }, data: { payClaimedAt: null } });
+  await closePendingClaims(tenantId, created.id, staff ? `caretaker ${staff.name}` : "owner");
   after(() => sendPaymentReceipt(created.id));
   revalidatePath("/", "layout");
   return { ok: tr("paidRecorded", { amt: rupees(amount), name: tenant.name }), at: Date.now() };
@@ -98,7 +99,7 @@ export async function collectFull(tenantId: string, method: string): Promise<{ e
     data: { tenantId, amount: s.outstanding, paidOn: today(), method, recordedByStaffId: staff?.id ?? null, recordedByName: staff?.name ?? null },
   });
   after(() => sendPaymentReceipt(created.id));
-  await db.tenant.update({ where: { id: tenantId }, data: { payClaimedAt: null } });
+  await closePendingClaims(tenantId, created.id, staff ? `caretaker ${staff.name}` : "owner");
   revalidatePath("/", "layout");
   void lang;
   return { ok: t("paidRecorded", { amt: rupees(s.outstanding), name: tenant.name }) };

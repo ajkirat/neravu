@@ -112,6 +112,8 @@ or create your own owner account.
 | `WHATSAPP_DISPLAY_NUMBER` | Optional. The business number shown in the app ("send bills to +91 63634 62003"), e.g. `916363462003`. |
 | `WHATSAPP_TEMPLATE_RECEIPT` | Optional. Template name for payment receipts (default `payment_receipt`). |
 | `DEMO_OWNER_EMAILS` | Optional. Comma-separated emails of demo accounts that may wipe and refill themselves with sample data from Settings (default `demo@neravu.app`). Never put a real owner here. |
+| `INBOUND_EMAIL_DOMAIN` / `INBOUND_EMAIL_SECRET` | Optional. Turn on **automatic payment confirmation from bank alert emails** (see *Confirming rent payments* below). The domain is the one whose email you route to Neravu (e.g. `in.yourdomain.com`); the secret is any long random string shared with the email worker. |
+| `BANK_EMAIL_DOMAINS` | Optional. Extra bank email domains to accept, comma-separated, if an owner's bank is not in the built-in list. |
 | `CRON_SECRET` | Required for the daily reminder job. Any long random string; Vercel sends it to the job automatically. Without it the job refuses to run. |
 | `APP_URL` | Optional. Public address used in links sent to tenants, e.g. `https://neravu.example.com`. Detected from the request when unset. |
 | `APP_TIMEZONE` | Optional. Timezone used for "today" when billing rent. Defaults to `Asia/Kolkata`. |
@@ -158,6 +160,23 @@ Owners switch the feature on in the app. Sending uses **one WhatsApp Business ac
    Receipts go out after every payment (cash, UPI, Razorpay) while the owner keeps "Send a WhatsApp receipt" ticked on the Auto reminders page.
 
 Meta charges per conversation after a free monthly allowance; check their current pricing.
+
+## Confirming rent payments
+
+Only three things ever mark rent as paid; nothing a tenant sends (screenshot, UTR, "I've paid") counts by itself.
+
+- **B – recorded by the person who saw it.** Cash or UPI paid at the desk, recorded by the owner or a caretaker. Always on.
+- **A – the owner checks and taps OK** (default). The tenant pays from their My PG link: the UPI app opens with an exact amount (e.g. ₹8,500.**37** – the paise are unique per tenant) and a note. The tenant taps "I've paid" (optionally with the UTR); reminders stop; the owner sees it in the **Today** list, finds that exact amount in their UPI app and taps ✓ Received (or ✗ Not received). The receipt goes out automatically.
+- **C – automatic from bank alert emails.** The owner forwards their bank's credit alerts to a private Neravu address once (a Gmail filter). Neravu checks the email's DKIM signature belongs to a known bank, that the alert is for the owner's account (last 4 digits), and that the paise match exactly one tenant – then records the payment and sends the receipt. Anything it cannot match appears in **Today** as "₹X came into your bank – whose is it?".
+- With **Razorpay** connected, payments are confirmed by Razorpay's signed webhook and the unverifiable paths (direct UPI, "I've paid") are hidden.
+
+The owner picks A or C in **Settings → How rent payments are confirmed**.
+
+Setting up C (once, by whoever runs Neravu):
+1. Use a domain (or sub-domain) on Cloudflare and turn on **Email Routing**.
+2. Create an **Email Worker** from `docs/bank-email-worker.js`, set its variables `NERAVU_URL` and `INBOUND_EMAIL_SECRET`, and route `pay-*@<domain>` (or catch-all) to it.
+3. In Vercel set `INBOUND_EMAIL_DOMAIN=<domain>` and the same `INBOUND_EMAIL_SECRET`, then redeploy.
+4. Each owner then sees their own `pay-<code>@<domain>` address and the Gmail steps in Settings. Gmail's forwarding confirmation link shows up on that page automatically.
 
 ## Bills over WhatsApp
 

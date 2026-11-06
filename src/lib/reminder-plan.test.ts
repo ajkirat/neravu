@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { planReminders, type PlanLog, type PlanTenant } from "./reminder-plan";
+import { needsCall, planReminders, type PlanLog, type PlanTenant } from "./reminder-plan";
 import { buildTemplatePayload, cleanParam, waNumber } from "./whatsapp-utils";
 
 const d = (s: string) => new Date(`${s}T00:00:00Z`);
@@ -47,10 +47,10 @@ describe("planReminders: timezone", () => {
     expect(planReminders([owing], [justSent], cfg, d("2026-11-12"))).toEqual([]);
     expect(planReminders([owing], [justSent], cfg, d("2026-11-14"))).toHaveLength(1);
   });
-  it("measures the I've-paid grace in Indian days", () => {
-    const claimed = new Date("2026-11-10T19:00:00Z"); // 11 Nov in India
+  it("stays quiet while an I've-paid waits for the owner, however long", () => {
+    const claimed = new Date("2026-11-10T19:00:00Z");
     expect(planReminders([{ ...owing, payClaimedAt: claimed }], [], cfg, d("2026-11-13"))).toEqual([]);
-    expect(planReminders([{ ...owing, payClaimedAt: claimed }], [], cfg, d("2026-11-14"))).toHaveLength(1);
+    expect(planReminders([{ ...owing, payClaimedAt: claimed }], [], cfg, d("2026-11-30"))).toEqual([]);
   });
 });
 
@@ -59,9 +59,19 @@ describe("planReminders: guard rails", () => {
   it("never sends twice in a day", () => {
     expect(planReminders([owing], [{ tenantId: "t1", kind: "DUE_SOON", sentAt: d("2026-11-10") }], cfg, asOf)).toEqual([]);
   });
-  it("leaves alone a tenant who just said they paid, then resumes", () => {
+  it("resumes once the owner has decided (claim cleared)", () => {
     expect(planReminders([{ ...owing, payClaimedAt: d("2026-11-09") }], [], cfg, asOf)).toEqual([]);
-    expect(planReminders([{ ...owing, payClaimedAt: d("2026-11-05") }], [], cfg, asOf)).toHaveLength(1);
+    expect(planReminders([{ ...owing, payClaimedAt: null }], [], cfg, asOf)).toHaveLength(1);
+  });
+  it("respects a pause set by the owner", () => {
+    expect(planReminders([{ ...owing, pausedUntil: d("2026-11-20") }], [], cfg, asOf)).toEqual([]);
+    expect(planReminders([{ ...owing, pausedUntil: d("2026-11-10") }], [], cfg, asOf)).toHaveLength(1);
+  });
+  it("asks the owner to call after the last reminder", () => {
+    const logs: PlanLog[] = ["2026-11-02", "2026-11-05", "2026-11-08"].map((x) => ({ tenantId: "t1", kind: "OVERDUE", sentAt: d(x) }));
+    expect(needsCall(owing, logs)).toBe(true);
+    expect(needsCall(owing, logs.slice(0, 2))).toBe(false);
+    expect(needsCall({ ...owing, outstanding: 0 }, logs)).toBe(false);
   });
   it("skips numbers that cannot be messaged", () => {
     expect(planReminders([{ ...owing, phone: "12345" }], [], cfg, asOf)).toEqual([]);

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { cashWithStaff } from "@/lib/cash";
+import { TodayList } from "@/components/today-list";
 import { requireActor } from "@/lib/auth";
 import { nextDueDate } from "@/lib/billing";
 import { addDays, diffDays, monthRange, periodKey, today } from "@/lib/dates";
@@ -80,9 +80,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const bedText = (t: (typeof tenants)[number]) =>
     `${t.property.name}${t.bed ? ` · ${t.bed.room.number}${t.bed.label}` : ""}`;
 
-  const cash = await cashWithStaff(owner.id, isOwner ? undefined : (staff?.id ?? "-"));
-  const cashTotal = cash.reduce((n, c) => n + c.amount, 0);
-  const joining = isOwner ? await db.joinRequest.count({ where: { ownerId: owner.id, status: "PENDING" } }) : 0;
 
   if (properties.length === 0) {
     return (
@@ -114,31 +111,11 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           {t("deniedBanner")}
         </p>
       )}
-      {cashTotal > 0 &&
-        (isOwner ? (
-          <Link
-            href="/staff"
-            className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-brand-50 px-4 py-3 text-base font-semibold text-brand-900 hover:bg-brand-100"
-          >
-            <span>{t("cashBanner", { amt: rupees(cashTotal) })}</span>
-            <span aria-hidden>→</span>
-          </Link>
-        ) : (
-          <p className="mb-4 rounded-xl bg-brand-50 px-4 py-3 text-base font-semibold text-brand-900">{t("cashMine", { amt: rupees(cashTotal) })}</p>
-        ))}
-      {joining > 0 && (
-        <Link
-          href="/tenants/joining"
-          className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-marigold-100 px-4 py-3 text-base font-semibold text-marigold-700 hover:bg-marigold-400/30"
-        >
-          <span>{t("joiningBanner", { n: joining })}</span>
-          <span aria-hidden>→</span>
-        </Link>
-      )}
       <PageHeader
         title={t("greeting", { name: (isOwner ? owner.name : (staff?.name ?? owner.name)).split(" ")[0] })}
         subtitle={t("howLook", { date: fmtDate(asOf, lang) })}
       />
+      <TodayList ownerId={owner.id} isOwner={isOwner} staffId={staff?.id ?? null} autoReminders={owner.autoReminders} />
 
       <div className="mb-4 grid grid-cols-2 gap-2 sm:mb-6 sm:gap-3 lg:grid-cols-4">
         <Stat label={t("occupancy")} value={`${occupancy}%`} hint={t("bedsFilled", { occ: occupied, beds: totalBeds })} tone="brand" />

@@ -90,7 +90,7 @@ export const join = {
     kn: "{pg} ಗೆ ಸ್ವಾಗತ, {name}! ನಿಮ್ಮನ್ನು ಸ್ವಾಗತಿಸಲು ಸಂತೋಷ.",
     te: "{pg} కు స్వాగతం, {name}! మిమ్మల్ని స్వాగతించడం సంతోషంగా ఉంది.",
   },
-  welPay: { en: " You can pay your rent here: {url}", kn: " ನಿಮ್ಮ ಬಾಡಿಗೆಯನ್ನು ಇಲ್ಲಿ ಪಾವತಿಸಿ: {url}", te: " మీ అద్దెను ఇక్కడ చెల్లించండి: {url}" },
+  welPay: { en: " Your page for rent, receipts and complaints: {url}", kn: " ಬಾಡಿಗೆ, ರಸೀದಿ ಮತ್ತು ದೂರುಗಳಿಗೆ ನಿಮ್ಮ ಪುಟ: {url}", te: " అద్దె, రసీదులు, ఫిర్యాదుల కోసం మీ పేజీ: {url}" },
   welCall: { en: " For any help, call the manager: {phone}.", kn: " ಸಹಾಯಕ್ಕಾಗಿ ಮ್ಯಾನೇಜರ್‌ಗೆ ಕರೆ ಮಾಡಿ: {phone}.", te: " సహాయం కోసం మేనేజర్‌కు కాల్ చేయండి: {phone}." },
   welRules: { en: "\n\nHouse rules:\n{rules}", kn: "\n\nಮನೆ ನಿಯಮಗಳು:\n{rules}", te: "\n\nఇంటి నియమాలు:\n{rules}" },
 } satisfies Part;
