@@ -65,7 +65,10 @@ export async function handleInbound(m: Inbound): Promise<void> {
   try {
     await db.waInbound.create({ data: { id: m.id } });
   } catch (e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") return;
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      console.log(`WhatsApp inbound: ${m.kind} already handled, skipped`);
+      return;
+    }
     throw e;
   }
   const cutoff = new Date(Date.now() - KEEP_DAYS * 86400_000);
