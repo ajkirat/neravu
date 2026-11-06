@@ -8,6 +8,7 @@ import { elec } from "./parts/elec";
 import { expenses } from "./parts/expenses";
 import { exportmsgs } from "./parts/exportmsgs";
 import { join } from "./parts/join";
+import { wabot } from "./parts/wabot";
 import { leads } from "./parts/leads";
 import { misc } from "./parts/misc";
 import { nav } from "./parts/nav";
@@ -30,6 +31,7 @@ export const messages = {
   ...tenantforms,
   ...payments,
   ...join,
+  ...wabot,
   ...leads,
   ...settings,
   ...publicPages,

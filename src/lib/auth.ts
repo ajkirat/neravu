@@ -67,6 +67,7 @@ const OWNER_FIELDS = {
   razorpayKeyId: true,
   razorpayEnabled: true,
   autoReminders: true,
+  autoReceipts: true,
   remindBefore: true,
   remindOverdueEvery: true,
 } as const;

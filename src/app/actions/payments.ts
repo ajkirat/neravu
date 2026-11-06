@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { sendPaymentReceipt } from "@/lib/payment-receipt";
 import { db } from "@/lib/db";
 import { requireActor, requireOwner } from "@/lib/auth";
 import { parseDateInput, today } from "@/lib/dates";
@@ -23,7 +25,7 @@ export async function recordPayment(_: FormState, fd: FormData): Promise<FormSta
   if (!PAYMENT_METHODS.includes(method as never)) return { error: tr("errPickMethod") };
   const paidOn = parseDateInput(str(fd, "paidOn")) ?? today();
   if (paidOn > today()) return { error: tr("errFutureDate") };
-  await db.payment.create({
+  const created = await db.payment.create({
     data: {
       tenantId,
       amount,
@@ -37,6 +39,7 @@ export async function recordPayment(_: FormState, fd: FormData): Promise<FormSta
   });
   // A recorded payment resolves any "I've paid" claim from the tenant.
   await db.tenant.update({ where: { id: tenantId }, data: { payClaimedAt: null } });
+  after(() => sendPaymentReceipt(created.id));
   revalidatePath("/", "layout");
   return { ok: tr("paidRecorded", { amt: rupees(amount), name: tenant.name }), at: Date.now() };
 }
@@ -91,9 +94,10 @@ export async function collectFull(tenantId: string, method: string): Promise<{ e
   });
   const s = summarizeLedger(fresh?.charges ?? [], fresh?.payments ?? [], today());
   if (s.outstanding <= 0) return { error: tr("errNothingPending") };
-  await db.payment.create({
+  const created = await db.payment.create({
     data: { tenantId, amount: s.outstanding, paidOn: today(), method, recordedByStaffId: staff?.id ?? null, recordedByName: staff?.name ?? null },
   });
+  after(() => sendPaymentReceipt(created.id));
   await db.tenant.update({ where: { id: tenantId }, data: { payClaimedAt: null } });
   revalidatePath("/", "layout");
   void lang;

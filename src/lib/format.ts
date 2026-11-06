@@ -114,3 +114,16 @@ export function welcomeLink(opts: {
     (opts.rules ? t("welRules", { rules: opts.rules }) : "");
   return `https://wa.me/${whatsappNumber(opts.phone)}?text=${encodeURIComponent(text)}`;
 }
+
+/** WhatsApp click-to-chat receipt, for when automatic receipts are not connected. */
+export function receiptLink(opts: { phone: string; tenantName: string; amount: number; propertyName: string; paidOn: Date; method: string; no: number; outstanding: number; lang?: Lang }): string {
+  const t = makeT(opts.lang ?? "en");
+  const text = t("rcptWaText", {
+    pg: opts.propertyName,
+    amt: rupees(opts.amount),
+    name: opts.tenantName,
+    when: `${fmtDate(opts.paidOn, opts.lang)} (${methodText(t, opts.method)}, #${opts.no})`,
+    balance: opts.outstanding > 0 ? t("rcptStillDue", { amt: rupees(opts.outstanding) }) : t("rcptAllClear"),
+  });
+  return `https://wa.me/${whatsappNumber(opts.phone)}?text=${encodeURIComponent(text)}`;
+}

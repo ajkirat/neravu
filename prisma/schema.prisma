@@ -19,6 +19,8 @@ model Owner {
   businessName             String?
   // Shown to new tenants in the welcome WhatsApp message (wifi, timings, rules)
   houseRules               String?
+  // Send a WhatsApp receipt to the tenant after every payment (when WhatsApp is connected)
+  autoReceipts             Boolean           @default(true)
   // UPI ID (e.g. name@bank) rent is paid to; enables tenant pay links
   upiId                    String?
   // en | kn | te: the language the app opens in
@@ -50,6 +52,7 @@ model Owner {
   expenses                 Expense[]
   leads                    Lead[]
   joinRequests             JoinRequest[]
+  pendingExpenses          PendingExpense[]
   complaints               Complaint[]
 }
 
@@ -99,43 +102,47 @@ model Bed {
 }
 
 model Tenant {
-  id             String        @id @default(cuid())
-  ownerId        String
-  owner          Owner         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  propertyId     String
-  property       Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  bedId          String?
-  bed            Bed?          @relation(fields: [bedId], references: [id], onDelete: SetNull)
-  name           String
-  phone          String
-  email          String?
-  occupation     String?
-  idType         String?
-  idNumber       String?
-  emergencyName  String?
-  emergencyPhone String?
-  monthlyRent    Int
-  deposit        Int           @default(0)
+  id               String        @id @default(cuid())
+  ownerId          String
+  owner            Owner         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  propertyId       String
+  property         Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  bedId            String?
+  bed              Bed?          @relation(fields: [bedId], references: [id], onDelete: SetNull)
+  name             String
+  phone            String
+  email            String?
+  occupation       String?
+  idType           String?
+  idNumber         String?
+  emergencyName    String?
+  emergencyPhone   String?
+  // Home address, for the police tenant register
+  permanentAddress String?
+  monthlyRent      Int
+  deposit          Int           @default(0)
   // Day of month rent falls due (1-28)
-  rentDueDay     Int
-  moveInDate     DateTime
-  noticeDate     DateTime?
-  moveOutDate    DateTime?
+  rentDueDay       Int
+  moveInDate       DateTime
+  // Imported tenants: rent is billed from this date (older dues come in as an opening balance)
+  billFrom         DateTime?
+  noticeDate       DateTime?
+  moveOutDate      DateTime?
   // ACTIVE | NOTICE | MOVED_OUT
-  status         String        @default("ACTIVE")
-  notes          String?
+  status           String        @default("ACTIVE")
+  notes            String?
   // Unguessable token for the public /pay/<token> page
-  payToken       String?       @unique
+  payToken         String?       @unique
   // Set when the tenant taps "I've paid"; cleared when the owner records a payment
-  payClaimedAt   DateTime?
-  lastRemindedAt DateTime?
+  payClaimedAt     DateTime?
+  lastRemindedAt   DateTime?
   // en | kn | te: language of messages and the pay page for this tenant
-  language       String?
-  complaints     Complaint[]
-  reminderLogs   ReminderLog[]
-  createdAt      DateTime      @default(now())
-  charges        Charge[]
-  payments       Payment[]
+  language         String?
+  complaints       Complaint[]
+  reminderLogs     ReminderLog[]
+  createdAt        DateTime      @default(now())
+  charges          Charge[]
+  payments         Payment[]
 
   @@index([ownerId, status])
   @@index([bedId])
@@ -163,44 +170,49 @@ model Charge {
 
 model Payment {
   // Integer id doubles as the receipt number
-  id                Int      @id @default(autoincrement())
+  id                Int       @id @default(autoincrement())
   tenantId          String
-  tenant            Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant            Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   amount            Int
   // Id from the payment provider (e.g. Razorpay pay_xxx); unique so a webhook replay cannot double-count
-  externalId        String?  @unique
+  externalId        String?   @unique
   // Which caretaker recorded it (kept as a name too, so it survives the caretaker being removed)
   recordedByStaffId String?
-  recordedBy        Staff?   @relation(fields: [recordedByStaffId], references: [id], onDelete: SetNull)
+  recordedBy        Staff?    @relation(fields: [recordedByStaffId], references: [id], onDelete: SetNull)
   recordedByName    String?
+  // Cash a caretaker collected: set when the owner confirms they received it
+  handedOverAt      DateTime?
   paidOn            DateTime
   // CASH | UPI | BANK | CARD | OTHER
   method            String
   reference         String?
   note              String?
-  createdAt         DateTime @default(now())
+  createdAt         DateTime  @default(now())
 
   @@index([tenantId, paidOn])
 }
 
 model Expense {
-  id         String        @id @default(cuid())
-  ownerId    String
-  owner      Owner         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  propertyId String?
-  property   Property?     @relation(fields: [propertyId], references: [id], onDelete: SetNull)
-  category   String
-  amount     Int
-  spentOn    DateTime
-  note       String?
+  id          String          @id @default(cuid())
+  ownerId     String
+  owner       Owner           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  propertyId  String?
+  property    Property?       @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  category    String
+  amount      Int
+  spentOn     DateTime
+  note        String?
   // Shop or supplier name, usually read from a bill photo
-  vendor     String?
-  // MANUAL | SCAN
-  source     String        @default("MANUAL")
+  vendor      String?
+  // MANUAL | SCAN | WHATSAPP
+  source      String          @default("MANUAL")
+  // Who sent it on WhatsApp (caretaker or owner name)
+  addedByName String?
   // Grand total printed on the bill, kept to flag mismatches with the items
-  billTotal  Int?
-  createdAt  DateTime      @default(now())
-  items      ExpenseItem[]
+  billTotal   Int?
+  createdAt   DateTime        @default(now())
+  items       ExpenseItem[]
+  receipt     ExpenseReceipt?
 
   @@index([ownerId, spentOn])
 }
@@ -229,24 +241,25 @@ model Lead {
 // A prospective tenant who filled the Join form (QR or WhatsApp link). Not billed
 // and holds no bed until the owner approves it, which creates the Tenant.
 model JoinRequest {
-  id             String   @id @default(cuid())
-  ownerId        String
-  owner          Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  propertyId     String
-  property       Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  name           String
-  phone          String
-  email          String?
-  occupation     String?
-  idType         String?
-  idNumber       String?
-  emergencyName  String?
-  emergencyPhone String?
-  language       String?
+  id               String   @id @default(cuid())
+  ownerId          String
+  owner            Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  propertyId       String
+  property         Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  name             String
+  phone            String
+  email            String?
+  occupation       String?
+  idType           String?
+  idNumber         String?
+  emergencyName    String?
+  emergencyPhone   String?
+  permanentAddress String?
+  language         String?
   // PENDING | APPROVED | REJECTED
-  status         String   @default("PENDING")
-  tenantId       String?
-  createdAt      DateTime @default(now())
+  status           String   @default("PENDING")
+  tenantId         String?
+  createdAt        DateTime @default(now())
 
   @@index([ownerId, status])
 }
@@ -357,4 +370,41 @@ model Staff {
   payments          Payment[]
 
   @@index([ownerId])
+}
+
+// The bill photo behind an expense (sent on WhatsApp). Shrunk before storing.
+model ExpenseReceipt {
+  expenseId String   @id
+  expense   Expense  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  mime      String
+  data      Bytes
+  createdAt DateTime @default(now())
+}
+
+// A bill photo sent to the WhatsApp number, waiting for the sender to reply Yes or No.
+model PendingExpense {
+  id         String   @id @default(cuid())
+  ownerId    String
+  owner      Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  staffId    String?
+  senderName String
+  // Sender's WhatsApp number (digits)
+  waFrom     String
+  // What the bill reader found: vendor, date, category, items, total
+  data       Json
+  mime       String
+  image      Bytes
+  // PENDING | ADDED | CANCELLED
+  status     String   @default("PENDING")
+  expenseId  String?
+  createdAt  DateTime @default(now())
+
+  @@index([waFrom, status])
+  @@index([ownerId, createdAt])
+}
+
+// WhatsApp message ids already handled, so a webhook retry is not processed twice.
+model WaInbound {
+  id        String   @id
+  createdAt DateTime @default(now())
 }

@@ -2,6 +2,8 @@
 
 import { isLang } from "@/lib/i18n";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { sendPaymentReceipt } from "@/lib/payment-receipt";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getT } from "@/lib/i18n/server";
@@ -112,7 +114,7 @@ export async function createTenant(_: FormState, fd: FormData): Promise<FormStat
 
   const paidNow = int(fd, "paidNow") ?? 0;
   if (paidNow > 0) {
-    await db.payment.create({
+    const created = await db.payment.create({
       data: {
         tenantId: tenant.id,
         amount: paidNow,
@@ -121,6 +123,7 @@ export async function createTenant(_: FormState, fd: FormData): Promise<FormStat
         note: "Collected at move-in",
       },
     });
+    after(() => sendPaymentReceipt(created.id));
   }
   await syncRentCharges(owner.id, tenant.id);
   redirect(`/tenants/${tenant.id}?welcome=1`);

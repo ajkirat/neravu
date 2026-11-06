@@ -14,6 +14,7 @@ import {
   methodText,
   reminderLink,
   welcomeLink,
+  receiptLink,
   rupees,
 } from "@/lib/format";
 import { syncRentCharges } from "@/lib/ledger";
@@ -74,6 +75,18 @@ export default async function TenantPage({
     payUrl,
     lang: asLang(t.language ?? lang),
   });
+  const rcpt = (r: { id: string | number; amount: number; date: Date; method?: string }) =>
+    receiptLink({
+      phone: t.phone,
+      tenantName: t.name,
+      amount: r.amount,
+      propertyName: owner.businessName ?? t.property.name,
+      paidOn: r.date,
+      method: r.method ?? "OTHER",
+      no: Number(r.id),
+      outstanding: s.outstanding,
+      lang: asLang(t.language ?? lang),
+    });
   const asOf = today();
   const s = summarizeLedger(t.charges, t.payments, asOf);
   const beds = t.status === "MOVED_OUT" ? [] : await vacantBeds(owner.id);
@@ -83,7 +96,7 @@ export default async function TenantPage({
   // Merge charges and payments into one statement with a running balance.
   type Row =
     | { kind: "charge"; date: Date; id: string; label: string; type: string; amount: number; future: boolean }
-    | { kind: "payment"; date: Date; id: number; label: string; amount: number };
+    | { kind: "payment"; date: Date; id: number; label: string; amount: number; method: string };
   const rows: Row[] = [
     ...t.charges.map((c) => ({
       kind: "charge" as const,
@@ -103,6 +116,7 @@ export default async function TenantPage({
           ? `${tr("refundLabel")}${p.note ? ` · ${p.note}` : ""}`
           : `${tr("paymentLabel")} · ${methodText(tr, p.method)}${p.reference ? ` · ${p.reference}` : ""}`,
       amount: p.amount,
+      method: p.method,
     })),
   ].sort((a, b) => a.date.getTime() - b.date.getTime() || (a.kind === "charge" ? -1 : 1));
   let running = 0;
@@ -254,6 +268,11 @@ export default async function TenantPage({
                         <Link href={`/payments/${r.id}/receipt`} className="text-sm text-brand-600 underline">
                           {tr("receipt")}
                         </Link>
+                        {r.amount > 0 && (
+                          <a href={rcpt(r)} target="_blank" rel="noreferrer" className="text-sm text-brand-600 underline">
+                            {tr("rcptSendWa")}
+                          </a>
+                        )}
                         {isOwner && (
                           <ActionForm
                             action={deletePayment.bind(null, r.id)}
@@ -320,6 +339,11 @@ export default async function TenantPage({
                               <Link href={`/payments/${r.id}/receipt`} className="text-xs text-brand-600 hover:underline">
                                 {tr("receipt")}
                               </Link>
+                              {r.amount > 0 && (
+                                <a href={rcpt(r)} target="_blank" rel="noreferrer" className="text-xs text-brand-600 hover:underline">
+                                  {tr("rcptSendWa")}
+                                </a>
+                              )}
 {isOwner && (
                               <ActionForm
                                 action={deletePayment.bind(null, r.id)}
