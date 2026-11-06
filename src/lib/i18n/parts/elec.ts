@@ -3,7 +3,7 @@ import type { Part } from "./types";
 export const elec = {
   navElectricity: { en: "Electricity", kn: "ವಿದ್ಯುತ್ ಬಿಲ್", te: "కరెంటు బిల్లు" },
   elecTitle: { en: "Electricity bills", kn: "ವಿದ್ಯುತ್ ಬಿಲ್‌ಗಳು", te: "కరెంటు బిల్లులు" },
-  elecSub: { en: "Enter each room's bill. Neravu splits it by the days each person stayed.", kn: "ಪ್ರತಿ ಕೋಣೆಯ ಬಿಲ್ ಬರೆಯಿರಿ. ಪ್ರತಿಯೊಬ್ಬರೂ ಇದ್ದ ದಿನಗಳ ಪ್ರಕಾರ ನೆರವು ಹಂಚುತ್ತದೆ.", te: "ప్రతి గది బిల్లు రాయండి. ప్రతి ఒక్కరు ఉన్న రోజుల ప్రకారం నేరవు పంచుతుంది." },
+  elecSub: { en: "Enter each room's bill. It is split by the days each person stayed.", kn: "ಪ್ರತಿ ಕೋಣೆಯ ಬಿಲ್ ಬರೆಯಿರಿ. ಪ್ರತಿಯೊಬ್ಬರೂ ಇದ್ದ ದಿನಗಳ ಪ್ರಕಾರ ನೆರವು ಹಂಚುತ್ತದೆ.", te: "ప్రతి గది బిల్లు రాయండి. ప్రతి ఒక్కరు ఉన్న రోజుల ప్రకారం నేరవు పంచుతుంది." },
   elecPrev: { en: "Previous reading", kn: "ಹಿಂದಿನ ರೀಡಿಂಗ್", te: "మునుపటి రీడింగ్" },
   elecCurr: { en: "Current reading", kn: "ಈಗಿನ ರೀಡಿಂಗ್", te: "ప్రస్తుత రీడింగ్" },
   elecRate: { en: "Rate per unit (₹)", kn: "ಯೂನಿಟ್ ದರ (₹)", te: "యూనిట్ ధర (₹)" },
@@ -18,8 +18,8 @@ export const elec = {
   elecApplyConfirm: { en: "Add this bill to {n} tenants' dues?", kn: "ಈ ಬಿಲ್ ಅನ್ನು {n} ಬಾಡಿಗೆದಾರರ ಬಾಕಿಗೆ ಸೇರಿಸಬೇಕೇ?", te: "ఈ బిల్లును {n} అద్దెదారుల బకాయిలకు జోడించాలా?" },
   elecUndoConfirm: { en: "Remove this bill from the tenants' dues?", kn: "ಈ ಬಿಲ್ ಅನ್ನು ಬಾಡಿಗೆದಾರರ ಬಾಕಿಯಿಂದ ತೆಗೆಯಬೇಕೇ?", te: "ఈ బిల్లును అద్దెదారుల బకాయిల నుండి తొలగించాలా?" },
   elecSaved: { en: "Bill saved.", kn: "ಬಿಲ್ ಉಳಿಸಲಾಗಿದೆ.", te: "బిల్లు సేవ్ అయింది." },
-  elecAlreadyApplied: { en: "Already added to rent. Undo it first to change the bill.", kn: "ಈಗಾಗಲೇ ಬಾಡಿಗೆಗೆ ಸೇರಿಸಲಾಗಿದೆ. ಬಿಲ್ ಬದಲಿಸಲು ಮೊದಲು ರದ್ದುಮಾಡಿ.", te: "ఇప్పటికే అద్దెకు జోడించబడింది. బిల్లు మార్చడానికి ముందు రద్దు చేయండి." },
-  elecNoStayers: { en: "Nobody stayed in this room that month, so there is no one to charge.", kn: "ಆ ತಿಂಗಳು ಈ ಕೋಣೆಯಲ್ಲಿ ಯಾರೂ ಇರಲಿಲ್ಲ, ಹಾಗಾಗಿ ಯಾರಿಗೂ ಶುಲ್ಕ ಹಾಕಲಾಗದು.", te: "ఆ నెల ఈ గదిలో ఎవరూ లేరు, కాబట్టి ఎవరికీ ఛార్జ్ చేయలేము." },
+  elecAlreadyApplied: { en: "Already added to rent. Undo first to change it.", kn: "ಈಗಾಗಲೇ ಬಾಡಿಗೆಗೆ ಸೇರಿಸಲಾಗಿದೆ. ಬಿಲ್ ಬದಲಿಸಲು ಮೊದಲು ರದ್ದುಮಾಡಿ.", te: "ఇప్పటికే అద్దెకు జోడించబడింది. బిల్లు మార్చడానికి ముందు రద్దు చేయండి." },
+  elecNoStayers: { en: "Nobody stayed in this room that month.", kn: "ಆ ತಿಂಗಳು ಈ ಕೋಣೆಯಲ್ಲಿ ಯಾರೂ ಇರಲಿಲ್ಲ, ಹಾಗಾಗಿ ಯಾರಿಗೂ ಶುಲ್ಕ ಹಾಕಲಾಗದು.", te: "ఆ నెల ఈ గదిలో ఎవరూ లేరు, కాబట్టి ఎవరికీ ఛార్జ్ చేయలేము." },
   elecNeedAmount: { en: "Enter the total bill, or the readings and the rate.", kn: "ಒಟ್ಟು ಬಿಲ್ ಬರೆಯಿರಿ, ಅಥವಾ ರೀಡಿಂಗ್ ಮತ್ತು ದರ ಬರೆಯಿರಿ.", te: "మొత్తం బిల్లు రాయండి, లేదా రీడింగ్లు మరియు ధర రాయండి." },
   elecBadReadings: { en: "The current reading cannot be less than the previous reading.", kn: "ಈಗಿನ ರೀಡಿಂಗ್ ಹಿಂದಿನದಕ್ಕಿಂತ ಕಡಿಮೆ ಇರಬಾರದು.", te: "ప్రస్తుత రీడింగ్ మునుపటి దానికంటే తక్కువ ఉండకూడదు." },
   elecApplied: { en: "Added to the dues of {n} people.", kn: "{n} ಜನರ ಬಾಕಿಗೆ ಸೇರಿಸಲಾಗಿದೆ.", te: "{n} మంది బకాయిలకు జోడించబడింది." },
@@ -34,6 +34,6 @@ export const elec = {
   elecAppliedBadge: { en: "Added to rent", kn: "ಬಾಡಿಗೆಗೆ ಸೇರಿಸಲಾಗಿದೆ", te: "అద్దెకు జోడించబడింది" },
   elecDraftBadge: { en: "Saved, not added yet", kn: "ಉಳಿಸಲಾಗಿದೆ, ಇನ್ನೂ ಸೇರಿಸಿಲ್ಲ", te: "సేవ్ అయింది, ఇంకా జోడించలేదు" },
   elecSummary: { en: "{saved} of {rooms} rooms have a bill · {applied} added to rent", kn: "{rooms} ಕೋಣೆಗಳಲ್ಲಿ {saved} ಕ್ಕೆ ಬಿಲ್ ಇದೆ · {applied} ಬಾಡಿಗೆಗೆ ಸೇರಿಸಲಾಗಿದೆ", te: "{rooms} గదులలో {saved} కి బిల్లు ఉంది · {applied} అద్దెకు జోడించబడ్డాయి" },
-  elecNote: { en: "Shares come from move-in and move-out dates. Someone who changed beds is counted in their current room.", kn: "ಸೇರಿದ ಮತ್ತು ಖಾಲಿ ಮಾಡಿದ ದಿನಾಂಕಗಳಿಂದ ಪಾಲು ಲೆಕ್ಕ. ಹಾಸಿಗೆ ಬದಲಿಸಿದವರು ಈಗಿನ ಕೋಣೆಯಲ್ಲಿ ಲೆಕ್ಕ.", te: "చేరిన మరియు ఖాళీ చేసిన తేదీల నుండి వాటా లెక్క. మంచం మార్చినవారు ప్రస్తుత గదిలో లెక్కించబడతారు." },
+  elecNote: { en: "Split by move-in and move-out dates.", kn: "ಸೇರಿದ ಮತ್ತು ಖಾಲಿ ಮಾಡಿದ ದಿನಾಂಕಗಳಿಂದ ಪಾಲು ಲೆಕ್ಕ. ಹಾಸಿಗೆ ಬದಲಿಸಿದವರು ಈಗಿನ ಕೋಣೆಯಲ್ಲಿ ಲೆಕ್ಕ.", te: "చేరిన మరియు ఖాళీ చేసిన తేదీల నుండి వాటా లెక్క. మంచం మార్చినవారు ప్రస్తుత గదిలో లెక్కించబడతారు." },
   elecChargeLabel: { en: "Electricity {month} · Room {room} ({days}/{total} days)", kn: "ವಿದ್ಯುತ್ {month} · ಕೋಣೆ {room} ({days}/{total} ದಿನ)", te: "కరెంటు {month} · గది {room} ({days}/{total} రోజులు)" },
 } satisfies Part;

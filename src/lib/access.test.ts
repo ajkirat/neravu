@@ -30,6 +30,7 @@ const ACTOR_FILES = new Set([
   "(app)/leads/page.tsx",
   "(app)/expenses/page.tsx",
   "(app)/complaints/[id]/photo/route.ts",
+  "(app)/complaints/[id]/video/route.ts",
   "(app)/send/route.ts",
   "(app)/announce/page.tsx",
   "(app)/jobs/page.tsx",

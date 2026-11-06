@@ -13,10 +13,10 @@ import { qrDataUrl } from "@/lib/qr";
 import { upiLink } from "@/lib/upi";
 import { claimPayment } from "@/app/actions/paylink";
 import { requestLeave, submitTenantComplaint } from "@/app/actions/mypg";
+import { ComplaintMedia } from "@/components/complaint-media";
 import { ActionForm } from "@/components/action-form";
 import { Card, Field } from "@/components/ui";
 import { PayOnlineButton } from "@/components/pay-online-button";
-import { PhotoInput } from "@/components/photo-input";
 import { LANG_COOKIE, asLang, isLang, makeT } from "@/lib/i18n";
 import { I18nProvider } from "@/lib/i18n/client";
 
@@ -164,9 +164,11 @@ export default async function MyPgPage({ params }: { params: Promise<{ token: st
               <Field label={t("complaintDetails")}>
                 <input name="details" className="input" maxLength={1000} />
               </Field>
-              <Field label={t("mpPhoto")}>
-                <PhotoInput name="photo" />
-              </Field>
+              {/* Not a <label>: it holds several buttons of its own. */}
+              <div>
+                <span className="label">{t("mpPhoto")}</span>
+                <ComplaintMedia />
+              </div>
             </ActionForm>
           </Card>
         )}

@@ -4,7 +4,7 @@ import type { Part } from "./types";
 export const dupes = {
   takePhoto: { en: "Take photo", kn: "ಫೋಟೋ ತೆಗೆಯಿರಿ", te: "ఫోటో తీయండి" },
   choosePhoto: { en: "Choose from gallery", kn: "ಗ್ಯಾಲರಿಯಿಂದ ಆರಿಸಿ", te: "గ్యాలరీ నుండి ఎంచుకోండి" },
-  photoOnlyHint: { en: "The bill photo is saved with the expense. Type the amount below.", kn: "ಬಿಲ್ ಫೋಟೋ ಖರ್ಚಿನ ಜೊತೆ ಉಳಿಯುತ್ತದೆ. ಕೆಳಗೆ ಮೊತ್ತ ಟೈಪ್ ಮಾಡಿ.", te: "బిల్ ఫోటో ఖర్చుతో సేవ్ అవుతుంది. కింద మొత్తం టైప్ చేయండి." },
+  photoOnlyHint: { en: "Photo saved. Type the amount below.", kn: "ಬಿಲ್ ಫೋಟೋ ಖರ್ಚಿನ ಜೊತೆ ಉಳಿಯುತ್ತದೆ. ಕೆಳಗೆ ಮೊತ್ತ ಟೈಪ್ ಮಾಡಿ.", te: "బిల్ ఫోటో ఖర్చుతో సేవ్ అవుతుంది. కింద మొత్తం టైప్ చేయండి." },
   photoAttached: { en: "Photo attached.", kn: "ಫೋಟೋ ಸೇರಿಸಲಾಗಿದೆ.", te: "ఫోటో జోడించబడింది." },
   billPhoto: { en: "Bill photo", kn: "ಬಿಲ್ ಫೋಟೋ", te: "బిల్ ఫోటో" },
   removePhoto: { en: "Remove photo", kn: "ಫೋಟೋ ತೆಗೆಯಿರಿ", te: "ఫోటో తీసివేయండి" },

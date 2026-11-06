@@ -22,7 +22,9 @@ export async function savePayConfirm(_: FormState, fd: FormData): Promise<FormSt
   const mode = str(fd, "payConfirm") === "BANK" ? "BANK" : "OWNER";
   const last4 = str(fd, "bankLast4").replace(/\D/g, "");
   if (mode === "BANK" && last4.length !== 4) return { error: t("errLast4") };
-  const row = await db.owner.findUnique({ where: { id: owner.id }, select: { bankInbox: true } });
+  const row = await db.owner.findUnique({ where: { id: owner.id }, select: { bankInbox: true, payConfirm: true } });
+  // Bank alerts need the server's inbound email; until then the choice is "Coming soon".
+  if (mode === "BANK" && !process.env.INBOUND_EMAIL_DOMAIN && !isDemoOwner(owner.email) && row?.payConfirm !== "BANK") return { error: t("comingSoon") };
   await db.owner.update({
     where: { id: owner.id },
     data: {

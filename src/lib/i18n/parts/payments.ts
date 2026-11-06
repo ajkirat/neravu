@@ -36,7 +36,7 @@ export const payments = {
   // reminders page
   remindTitle: { en: "Remind overdue", kn: "ಬಾಕಿ ನೆನಪಿಸಿ", te: "బకాయిలు గుర్తు చేయండి" },
   remindSub: { en: "{n} tenants owe {amt}", kn: "{n} ಬಾಡಿಗೆದಾರರಿಂದ {amt} ಬಾಕಿ", te: "{n} అద్దెదారుల నుండి {amt} బకాయి" },
-  addUpiTip: { en: "Add your UPI ID in Settings to include a pay link in every reminder.", kn: "ಪ್ರತಿ ನೆನಪೋಲೆಯಲ್ಲಿ ಪಾವತಿ ಲಿಂಕ್ ಸೇರಿಸಲು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ UPI ID ಸೇರಿಸಿ.", te: "ప్రతి రిమైండర్‌లో చెల్లింపు లింక్ ఉండటానికి సెట్టింగులలో UPI ID జోడించండి." },
+  addUpiTip: { en: "Add your UPI ID in Settings to put a pay link in reminders.", kn: "ಪ್ರತಿ ನೆನಪೋಲೆಯಲ್ಲಿ ಪಾವತಿ ಲಿಂಕ್ ಸೇರಿಸಲು ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ UPI ID ಸೇರಿಸಿ.", te: "ప్రతి రిమైండర్‌లో చెల్లింపు లింక్ ఉండటానికి సెట్టింగులలో UPI ID జోడించండి." },
   nobodyOwes: { en: "Nobody owes you anything 🎉", kn: "ಯಾರಿಗೂ ಬಾಕಿ ಇಲ್ಲ 🎉", te: "ఎవరికీ బకాయి లేదు 🎉" },
   nobodyOwesBody: { en: "Tenants with pending dues will show up here.", kn: "ಬಾಕಿ ಇರುವವರು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತಾರೆ.", te: "బకాయి ఉన్నవారు ఇక్కడ కనిపిస్తారు." },
   daysOverdueRow: { en: "{n} days overdue", kn: "{n} ದಿನ ತಡ", te: "{n} రోజులు ఆలస్యం" },

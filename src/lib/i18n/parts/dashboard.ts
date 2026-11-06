@@ -8,7 +8,7 @@ export const dashboard = {
   step2Title: { en: "Add rooms and beds", kn: "ಕೋಣೆ ಮತ್ತು ಹಾಸಿಗೆ ಸೇರಿಸಿ", te: "గదులు మరియు మంచాలు జోడించండి" },
   step2Body: { en: "Pick the sharing type and rent per bed.", kn: "ಹಂಚಿಕೆ ಪ್ರಕಾರ ಮತ್ತು ಪ್ರತಿ ಹಾಸಿಗೆಯ ಬಾಡಿಗೆ ಆರಿಸಿ.", te: "షేరింగ్ రకం మరియు ప్రతి మంచం అద్దెను ఎంచుకోండి." },
   step3Title: { en: "Onboard tenants", kn: "ಬಾಡಿಗೆದಾರರನ್ನು ಸೇರಿಸಿ", te: "అద్దెదారులను చేర్చండి" },
-  step3Body: { en: "Assign beds; rent starts billing automatically.", kn: "ಹಾಸಿಗೆ ಕೊಡಿ; ಬಾಡಿಗೆ ತಾನಾಗಿ ಲೆಕ್ಕವಾಗುತ್ತದೆ.", te: "మంచం కేటాయించండి; అద్దె ఆటోమేటిక్‌గా లెక్కవుతుంది." },
+  step3Body: { en: "Put tenants in beds. Rent is billed every month.", kn: "ಹಾಸಿಗೆ ಕೊಡಿ; ಬಾಡಿಗೆ ತಾನಾಗಿ ಲೆಕ್ಕವಾಗುತ್ತದೆ.", te: "మంచం కేటాయించండి; అద్దె ఆటోమేటిక్‌గా లెక్కవుతుంది." },
   howLook: { en: "Here is how your PGs look on {date}.", kn: "{date} ರಂದು ನಿಮ್ಮ PG ಗಳ ಸ್ಥಿತಿ ಇದು.", te: "{date} నాటికి మీ PG ల పరిస్థితి ఇది." },
   recordPayment: { en: "Record payment", kn: "ಪಾವತಿ ದಾಖಲಿಸಿ", te: "చెల్లింపు నమోదు చేయండి" },
   occupancy: { en: "Occupancy", kn: "ಭರ್ತಿ", te: "నిండిన శాతం" },
