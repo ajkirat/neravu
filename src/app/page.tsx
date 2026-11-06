@@ -1,85 +1,86 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/logo";
-import { currentOwner } from "@/lib/auth";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { currentActor } from "@/lib/auth";
+import { getT } from "@/lib/i18n/server";
+import type { MsgKey } from "@/lib/i18n";
 
-const features = [
-  {
-    title: "Beds at a glance",
-    body: "Map every property, room and bed. See what is occupied, on notice or free to let.",
-  },
-  {
-    title: "Rent that bills itself",
-    body: "Monthly rent is raised automatically on each tenant's due day, so dues are always current.",
-  },
-  {
-    title: "Dues you can chase",
-    body: "One list of who owes what and since when, with a WhatsApp reminder a tap away.",
-  },
-  {
-    title: "Payments and receipts",
-    body: "Record UPI, cash or bank payments in seconds and share a printable receipt.",
-  },
-  {
-    title: "Expenses and profit",
-    body: "Log groceries, salaries and bills per property, then see collections against spend.",
-  },
-  {
-    title: "Smooth move-ins and move-outs",
-    body: "Capture KYC and emergency contacts, track notice periods and free up beds on exit.",
-  },
+// The one-page "what Neravu does", in the visitor's language. Also what you show an owner on your phone.
+const FEATURES: [string, MsgKey, MsgKey][] = [
+  ["🔔", "lpF1t", "lpF1b"],
+  ["🧾", "lpF2t", "lpF2b"],
+  ["📷", "lpF3t", "lpF3b"],
+  ["⚡", "lpF4t", "lpF4b"],
+  ["📱", "lpF5t", "lpF5b"],
+  ["🧑‍🔧", "lpF6t", "lpF6b"],
+  ["👮", "lpF7t", "lpF7b"],
+  ["🤝", "lpF8t", "lpF8b"],
 ];
 
 export default async function Home() {
-  if (await currentOwner()) redirect("/dashboard");
+  if (await currentActor()) redirect("/dashboard");
+  const { t } = await getT();
   return (
     <div className="min-h-screen">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
+      <header className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-5">
         <Logo />
-        <nav className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <LanguageSwitcher />
           <Link href="/login" className="btn-secondary">
-            Log in
+            {t("lpLogin")}
           </Link>
-          <Link href="/signup" className="btn-primary">
-            Get started
-          </Link>
-        </nav>
+        </div>
       </header>
       <main>
-        <section className="mx-auto max-w-6xl px-5 pt-10 pb-16 md:pt-20">
-          <p className="mb-4 inline-block rounded-full bg-marigold-100 px-3 py-1 text-xs font-semibold text-marigold-700">
-            For PG and hostel owners
-          </p>
-          <h1 className="max-w-3xl text-4xl leading-tight font-bold tracking-tight text-brand-900 md:text-6xl">
-            Run your PG like it runs itself.
-          </h1>
-          <p className="mt-5 max-w-xl text-lg text-muted">
-            Neravu keeps your beds, tenants, rent and dues in one calm place, so month-end is a
-            glance instead of a hunt through notebooks and chats.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+        <section className="mx-auto max-w-6xl px-4 pt-6 pb-10 sm:px-5 md:pt-16 md:pb-16">
+          <p className="mb-3 inline-block rounded-full bg-marigold-100 px-3 py-1 text-sm font-semibold text-marigold-700">{t("lpTag")}</p>
+          <h1 className="max-w-3xl text-3xl leading-tight font-bold tracking-tight text-brand-900 md:text-6xl">{t("lpTitle")}</h1>
+          <p className="mt-4 max-w-xl text-lg text-muted">{t("lpSub")}</p>
+          <div className="mt-6 flex flex-wrap gap-3">
             <Link href="/signup" className="btn-primary px-6 py-3 text-base">
-              Create free account
-            </Link>
-            <Link href="/login" className="btn-secondary px-6 py-3 text-base">
-              I already have one
+              {t("lpStart")}
             </Link>
           </div>
         </section>
         <section className="border-t border-line bg-white">
-          <div className="mx-auto grid max-w-6xl gap-6 px-5 py-14 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f) => (
-              <div key={f.title} className="rounded-2xl border border-line p-6">
-                <div className="mb-3 h-1.5 w-10 rounded-full bg-marigold-400" />
-                <h2 className="font-semibold text-brand-900">{f.title}</h2>
-                <p className="mt-1.5 text-sm text-muted">{f.body}</p>
-              </div>
+          <div className="mx-auto max-w-6xl px-4 py-10 sm:px-5 md:py-14">
+            <h2 className="mb-5 text-xl font-bold text-brand-900 md:text-2xl">{t("lpWhat")}</h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {FEATURES.map(([icon, title, body]) => (
+                <div key={title} className="rounded-2xl border border-line p-4 sm:p-5">
+                  <p className="text-3xl" aria-hidden>
+                    {icon}
+                  </p>
+                  <h3 className="mt-2 text-base font-semibold text-brand-900">{t(title)}</h3>
+                  <p className="mt-1 text-sm text-muted">{t(body)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section className="mx-auto max-w-6xl px-4 py-10 sm:px-5 md:py-14">
+          <h2 className="mb-5 text-xl font-bold text-brand-900 md:text-2xl">{t("lpHow")}</h2>
+          <ol className="grid gap-3 md:grid-cols-3">
+            {(["lpS1", "lpS2", "lpS3"] as MsgKey[]).map((k, i) => (
+              <li key={k} className="card flex items-start gap-3 p-4">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-marigold-100 text-base font-bold text-marigold-700">{i + 1}</span>
+                <span className="text-base">{t(k)}</span>
+              </li>
             ))}
+          </ol>
+          <div className="mt-6">
+            <Link href="/signup" className="btn-primary px-6 py-3 text-base">
+              {t("lpStart")}
+            </Link>
           </div>
         </section>
       </main>
-      <footer className="mx-auto max-w-6xl px-5 py-8 text-xs text-muted">
-        © {new Date().getFullYear()} Neravu
+      <footer className="mx-auto flex max-w-6xl flex-wrap gap-4 px-4 py-8 text-sm text-muted sm:px-5">
+        <span>© {new Date().getFullYear()} Neravu</span>
+        <Link href="/privacy" className="underline">
+          {t("lpPrivacy")}
+        </Link>
       </footer>
     </div>
   );

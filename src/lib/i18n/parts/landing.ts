@@ -1,0 +1,36 @@
+import type { Part } from "./types";
+
+// Public front page: the one-page "what Neravu does" for PG owners.
+export const landing = {
+  lpTag: { en: "For PG and hostel owners", kn: "ಪಿಜಿ ಮತ್ತು ಹಾಸ್ಟೆಲ್ ಮಾಲೀಕರಿಗೆ", te: "పిజి మరియు హాస్టల్ యజమానులకు" },
+  lpTitle: { en: "Run your PG from your phone.", kn: "ನಿಮ್ಮ ಪಿಜಿಯನ್ನು ಫೋನ್‌ನಿಂದಲೇ ನಡೆಸಿ.", te: "మీ పిజిని ఫోన్ నుండే నడపండి." },
+  lpSub: {
+    en: "Rent, dues, bills, tenants and caretakers in one simple place. In English, ಕನ್ನಡ and తెలుగు.",
+    kn: "ಬಾಡಿಗೆ, ಬಾಕಿ, ಬಿಲ್‌ಗಳು, ಬಾಡಿಗೆದಾರರು ಮತ್ತು ಕೇರ್‌ಟೇಕರ್‌ಗಳು ಒಂದೇ ಸುಲಭ ಜಾಗದಲ್ಲಿ. English, ಕನ್ನಡ ಮತ್ತು తెలుగుನಲ್ಲಿ.",
+    te: "అద్దె, బకాయిలు, బిల్లులు, అద్దెదారులు మరియు కేర్‌టేకర్లు ఒకే సులభమైన చోట. English, ಕನ್ನಡ మరియు తెలుగులో.",
+  },
+  lpStart: { en: "Create free account", kn: "ಉಚಿತ ಖಾತೆ ತೆರೆಯಿರಿ", te: "ఉచిత ఖాతా తెరవండి" },
+  lpLogin: { en: "Log in", kn: "ಲಾಗಿನ್", te: "లాగిన్" },
+  lpWhat: { en: "What Neravu does for you", kn: "ನೆರವು ನಿಮಗೆ ಏನು ಮಾಡುತ್ತದೆ", te: "నెరవు మీకు ఏమి చేస్తుంది" },
+  lpF1t: { en: "Rent reminders", kn: "ಬಾಡಿಗೆ ನೆನಪೋಲೆ", te: "అద్దె రిమైండర్లు" },
+  lpF1b: { en: "See who owes what. Send a polite WhatsApp reminder in one tap, in the tenant's language.", kn: "ಯಾರು ಎಷ್ಟು ಬಾಕಿ ಎಂದು ನೋಡಿ. ಒಂದೇ ಒತ್ತಿನಲ್ಲಿ ಬಾಡಿಗೆದಾರರ ಭಾಷೆಯಲ್ಲಿ ವಾಟ್ಸಾಪ್ ನೆನಪೋಲೆ ಕಳುಹಿಸಿ.", te: "ఎవరు ఎంత బకాయి ఉన్నారో చూడండి. ఒక్క నొక్కుతో అద్దెదారు భాషలో వాట్సాప్ రిమైండర్ పంపండి." },
+  lpF2t: { en: "Receipts for every payment", kn: "ಪ್ರತಿ ಪಾವತಿಗೆ ರಸೀದಿ", te: "ప్రతి చెల్లింపుకు రసీదు" },
+  lpF2b: { en: "Cash or UPI, every payment gets a receipt the tenant can see on WhatsApp. No more “I already paid”.", kn: "ನಗದು ಅಥವಾ UPI, ಪ್ರತಿ ಪಾವತಿಗೆ ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ರಸೀದಿ. “ನಾನು ಈಗಾಗಲೇ ಕೊಟ್ಟಿದ್ದೇನೆ” ಜಗಳ ಇಲ್ಲ.", te: "నగదు లేదా UPI, ప్రతి చెల్లింపుకు వాట్సాప్‌లో రసీదు. “నేను ఇప్పటికే ఇచ్చాను” గొడవ ఉండదు." },
+  lpF3t: { en: "Scan bills with the camera", kn: "ಕ್ಯಾಮೆರಾದಿಂದ ಬಿಲ್ ಸ್ಕ್ಯಾನ್", te: "కెమెరాతో బిల్ స్కాన్" },
+  lpF3b: { en: "Take a photo of any bill. Neravu reads the shop, items and total. Caretakers can add bills too.", kn: "ಯಾವುದೇ ಬಿಲ್‌ನ ಫೋಟೋ ತೆಗೆಯಿರಿ. ಅಂಗಡಿ, ವಸ್ತುಗಳು ಮತ್ತು ಒಟ್ಟು ಮೊತ್ತವನ್ನು ನೆರವು ಓದುತ್ತದೆ. ಕೇರ್‌ಟೇಕರ್‌ಗಳೂ ಬಿಲ್ ಸೇರಿಸಬಹುದು.", te: "ఏ బిల్ ఫోటో అయినా తీయండి. షాపు, వస్తువులు, మొత్తాన్ని నెరవు చదువుతుంది. కేర్‌టేకర్లు కూడా బిల్లులు జోడించవచ్చు." },
+  lpF4t: { en: "Electricity split fairly", kn: "ವಿದ್ಯುತ್ ಬಿಲ್ ನ್ಯಾಯವಾಗಿ ಹಂಚಿಕೆ", te: "కరెంటు బిల్ న్యాయంగా పంపకం" },
+  lpF4b: { en: "Enter each room's meter reading. Neravu splits the bill by the days each person stayed.", kn: "ಪ್ರತಿ ಕೋಣೆಯ ಮೀಟರ್ ರೀಡಿಂಗ್ ನಮೂದಿಸಿ. ಪ್ರತಿಯೊಬ್ಬರು ಇದ್ದ ದಿನಗಳ ಪ್ರಕಾರ ನೆರವು ಬಿಲ್ ಹಂಚುತ್ತದೆ.", te: "ప్రతి గది మీటర్ రీడింగ్ నమోదు చేయండి. ఒక్కొక్కరు ఉన్న రోజుల ప్రకారం నెరవు బిల్ పంచుతుంది." },
+  lpF5t: { en: "New tenants with a QR code", kn: "QR ಕೋಡ್‌ನಿಂದ ಹೊಸ ಬಾಡಿಗೆದಾರರು", te: "QR కోడ్‌తో కొత్త అద్దెదారులు" },
+  lpF5b: { en: "Stick a QR at the gate. Visitors leave their number; new tenants fill their own ID details. You just approve.", kn: "ಗೇಟ್ ಬಳಿ QR ಅಂಟಿಸಿ. ಬಂದವರು ಸಂಖ್ಯೆ ಬಿಡುತ್ತಾರೆ; ಹೊಸ ಬಾಡಿಗೆದಾರರು ತಮ್ಮ ಗುರುತಿನ ವಿವರ ತಾವೇ ತುಂಬುತ್ತಾರೆ. ನೀವು ಒಪ್ಪಿದರೆ ಸಾಕು.", te: "గేటు వద్ద QR అంటించండి. వచ్చినవారు నంబర్ ఇస్తారు; కొత్త అద్దెదారులు తమ ID వివరాలు తామే నింపుతారు. మీరు ఆమోదిస్తే చాలు." },
+  lpF6t: { en: "Caretakers you can trust", kn: "ನಂಬಬಹುದಾದ ಕೇರ್‌ಟೇಕರ್", te: "నమ్మదగిన కేర్‌టేకర్" },
+  lpF6b: { en: "Caretakers record rent and bills under their own name. You see the cash they hold and confirm when you get it.", kn: "ಕೇರ್‌ಟೇಕರ್‌ಗಳು ಬಾಡಿಗೆ ಮತ್ತು ಬಿಲ್‌ಗಳನ್ನು ತಮ್ಮ ಹೆಸರಿನಲ್ಲಿ ದಾಖಲಿಸುತ್ತಾರೆ. ಅವರ ಬಳಿ ಇರುವ ನಗದು ನಿಮಗೆ ಕಾಣುತ್ತದೆ, ಸಿಕ್ಕಾಗ ನೀವು ಖಚಿತಪಡಿಸುತ್ತೀರಿ.", te: "కేర్‌టేకర్లు అద్దె, బిల్లులను తమ పేరుతో నమోదు చేస్తారు. వారి దగ్గర ఉన్న నగదు మీకు కనిపిస్తుంది, అందినప్పుడు మీరు ధృవీకరిస్తారు." },
+  lpF7t: { en: "Police register in one tap", kn: "ಒಂದೇ ಒತ್ತಿನಲ್ಲಿ ಪೊಲೀಸ್ ನೋಂದಣಿ", te: "ఒక్క నొక్కుతో పోలీస్ రిజిస్టర్" },
+  lpF7b: { en: "Everyone's ID and address, ready to print for police verification.", kn: "ಎಲ್ಲರ ಗುರುತು ಮತ್ತು ವಿಳಾಸ, ಪೊಲೀಸ್ ಪರಿಶೀಲನೆಗೆ ಪ್ರಿಂಟ್ ಮಾಡಲು ಸಿದ್ಧ.", te: "అందరి ID మరియు చిరునామా, పోలీస్ ధృవీకరణకు ప్రింట్ చేయడానికి సిద్ధం." },
+  lpF8t: { en: "Fair move-outs", kn: "ನ್ಯಾಯವಾದ ಬಿಡುಗಡೆ ಲೆಕ್ಕ", te: "న్యాయమైన ఖాళీ లెక్క" },
+  lpF8b: { en: "Deposit, deductions and refund on one sheet, sent to the tenant. No arguments.", kn: "ಠೇವಣಿ, ಕಡಿತ ಮತ್ತು ಹಿಂತಿರುಗಿಸುವ ಹಣ ಒಂದೇ ಹಾಳೆಯಲ್ಲಿ, ಬಾಡಿಗೆದಾರರಿಗೆ ಕಳುಹಿಸಿ. ಜಗಳ ಇಲ್ಲ.", te: "డిపాజిట్, తగ్గింపులు, తిరిగి ఇచ్చేది ఒకే షీట్‌లో, అద్దెదారుకు పంపండి. గొడవ ఉండదు." },
+  lpHow: { en: "Start in three steps", kn: "ಮೂರು ಹೆಜ್ಜೆಯಲ್ಲಿ ಪ್ರಾರಂಭಿಸಿ", te: "మూడు అడుగుల్లో ప్రారంభించండి" },
+  lpS1: { en: "Add your PG and rooms. Add many rooms at once.", kn: "ನಿಮ್ಮ ಪಿಜಿ ಮತ್ತು ಕೋಣೆಗಳನ್ನು ಸೇರಿಸಿ. ಒಮ್ಮೆಗೇ ಹಲವು ಕೋಣೆಗಳು.", te: "మీ పిజి మరియు గదులను జోడించండి. ఒకేసారి చాలా గదులు." },
+  lpS2: { en: "Take a photo of your register book. Your tenants appear; check and save.", kn: "ನಿಮ್ಮ ರಿಜಿಸ್ಟರ್ ಪುಸ್ತಕದ ಫೋಟೋ ತೆಗೆಯಿರಿ. ಬಾಡಿಗೆದಾರರು ಕಾಣುತ್ತಾರೆ; ನೋಡಿ ಉಳಿಸಿ.", te: "మీ రిజిస్టర్ పుస్తకం ఫోటో తీయండి. అద్దెదారులు కనిపిస్తారు; చూసి సేవ్ చేయండి." },
+  lpS3: { en: "Neravu bills rent every month and shows who to remind.", kn: "ಪ್ರತಿ ತಿಂಗಳು ನೆರವು ಬಾಡಿಗೆ ಲೆಕ್ಕ ಹಾಕಿ ಯಾರಿಗೆ ನೆನಪಿಸಬೇಕೆಂದು ತೋರಿಸುತ್ತದೆ.", te: "ప్రతి నెల నెరవు అద్దె లెక్కించి ఎవరికి గుర్తు చేయాలో చూపిస్తుంది." },
+  lpPrivacy: { en: "Privacy", kn: "ಗೌಪ್ಯತೆ", te: "గోప్యత" },
+} satisfies Part;

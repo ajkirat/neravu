@@ -1,3 +1,6 @@
+import { isDemoOwner } from "@/lib/demo";
+import { DEMO_STAFF_PASSWORD, DEMO_STAFF_PHONE } from "@/lib/demo-seed";
+import { resetDemo } from "@/app/actions/demo";
 import { cookies } from "next/headers";
 import { requireOwner } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -9,6 +12,8 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { PaymentSettingsForm } from "@/components/payment-settings-form";
 import { TextSizeToggle } from "@/components/text-size-toggle";
 import { Card, Field, PageHeader } from "@/components/ui";
+
+export const maxDuration = 60;
 
 export const metadata = { title: "Settings" };
 
@@ -22,6 +27,13 @@ export default async function SettingsPage() {
     <>
       <PageHeader title={t("settingsTitle")} subtitle={t("settingsSub")} />
       <div className="max-w-xl space-y-6">
+        {isDemoOwner(owner.email) && (
+          <Card title={t("demoTitle")}>
+            <p className="mb-3 text-sm text-muted">{t("demoBody")}</p>
+            <ActionForm action={resetDemo} submitLabel={t("demoBtn")} confirm={t("demoConfirm")} />
+            <p className="mt-3 text-xs text-muted">{t("demoStaff", { phone: DEMO_STAFF_PHONE, pw: DEMO_STAFF_PASSWORD })}</p>
+          </Card>
+        )}
         <Card title={t("appLanguage")}>
           <p className="mb-3 text-sm text-muted">{t("appLanguageHint")}</p>
           <div className="flex flex-wrap items-center gap-3">
