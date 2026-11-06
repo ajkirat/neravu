@@ -119,3 +119,19 @@ export function waBillNumber(): string | null {
   if (!whatsappConfigured() || raw.length < 10) return null;
   return formatWaNumber(raw);
 }
+
+/** Ask Meta about our phone number id with our token: proves both are right, and shows the number's status. */
+export async function checkConnection(): Promise<{ ok: true; detail: string } | { ok: false; detail: string }> {
+  if (!whatsappConfigured()) return { ok: false, detail: "WHATSAPP_TOKEN or WHATSAPP_PHONE_NUMBER_ID is not set" };
+  try {
+    const res = await fetch(`${apiBase()}/${process.env.WHATSAPP_PHONE_NUMBER_ID}?fields=display_phone_number,verified_name,quality_rating`, {
+      headers: { Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}` },
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!res.ok) return { ok: false, detail: `Meta says (${res.status}): ${await metaError(res)}` };
+    const j = (await res.json()) as { display_phone_number?: string; verified_name?: string };
+    return { ok: true, detail: `${j.display_phone_number ?? "?"} (${j.verified_name ?? "no name"})` };
+  } catch {
+    return { ok: false, detail: "Could not reach Meta" };
+  }
+}

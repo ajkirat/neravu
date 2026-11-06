@@ -8,6 +8,7 @@ import { saveAutoReminders } from "@/app/actions/auto-reminders";
 import { ActionForm } from "@/components/action-form";
 import { AutoReminderButtons } from "@/components/auto-reminder-buttons";
 import { Badge, Card, EmptyState, Field, PageHeader } from "@/components/ui";
+import { WaCheck } from "@/components/wa-check";
 
 export const metadata = { title: "Automatic reminders" };
 
@@ -29,6 +30,11 @@ export default async function AutoRemindersPage() {
   return (
     <>
       <PageHeader title={t("autoTitle")} subtitle={t("autoSub")} back={{ href: "/reminders", label: t("navReminders") }} />
+      <div className="mb-6">
+        <Card title="WhatsApp check">
+          <WaCheck />
+        </Card>
+      </div>
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-6">
           <Card>
