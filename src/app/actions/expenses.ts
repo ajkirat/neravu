@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { requireOwner } from "@/lib/auth";
+import { requireActor, requireOwner } from "@/lib/auth";
 import { parseDateInput, today } from "@/lib/dates";
 import { int, optStr, str } from "@/lib/forms";
 import { EXPENSE_CATEGORIES } from "@/lib/format";
@@ -23,7 +23,8 @@ const itemsSchema = z
 
 export async function createExpense(_: FormState, fd: FormData): Promise<FormState> {
   const { t: tr } = await getT();
-  const owner = await requireOwner();
+  // Caretakers may add bills too; they only ever see their own, and cannot delete.
+  const { owner, staff } = await requireActor();
   const { t } = await getT();
 
   // Optional line items (typed in, or read from a bill photo). When present the amount is their sum.
@@ -61,6 +62,8 @@ export async function createExpense(_: FormState, fd: FormData): Promise<FormSta
       vendor: optStr(fd, "vendor")?.slice(0, 120) ?? null,
       source: items.length && str(fd, "source") === "SCAN" ? "SCAN" : "MANUAL",
       billTotal: billTotal && billTotal > 0 ? billTotal : null,
+      addedByName: staff?.name ?? null,
+      addedByStaffId: staff?.id ?? null,
       items: items.length ? { create: items.map((i) => ({ name: i.name, quantity: i.quantity, amount: i.amount })) } : undefined,
     },
   });

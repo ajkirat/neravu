@@ -56,6 +56,6 @@ export const navIcon = (href: string): string => MORE.find((n) => n.href === hre
 const pick = (hrefs: string[]) => hrefs.map((h) => MORE.find((n) => n.href === h)!).filter(Boolean);
 
 /** What a caretaker sees in the sidebar, on the phone bottom bar, and on the More screen. */
-export const STAFF_NAV: NavItem[] = pick(["/dashboard", "/tenants", "/payments", "/complaints", "/leads"]);
-export const STAFF_BOTTOM: NavItem[] = [...pick(["/dashboard", "/tenants", "/payments", "/leads"]), { href: "/more", key: "navMore", icon: I.grid }];
-export const STAFF_MORE: NavItem[] = pick(["/dashboard", "/tenants", "/payments", "/complaints", "/leads", "/reminders", "/help"]);
+export const STAFF_NAV: NavItem[] = pick(["/dashboard", "/tenants", "/payments", "/expenses", "/complaints", "/leads"]);
+export const STAFF_BOTTOM: NavItem[] = [...pick(["/dashboard", "/tenants", "/payments", "/expenses"]), { href: "/more", key: "navMore", icon: I.grid }];
+export const STAFF_MORE: NavItem[] = pick(["/dashboard", "/tenants", "/payments", "/expenses", "/complaints", "/leads", "/reminders", "/help"]);

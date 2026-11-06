@@ -1,6 +1,6 @@
 import { waBillNumber } from "@/lib/whatsapp";
 import { db } from "@/lib/db";
-import { requireOwner } from "@/lib/auth";
+import { requireActor } from "@/lib/auth";
 import { monthRange, periodKey, toDateInput, today } from "@/lib/dates";
 import { EXPENSE_CATEGORIES, categoryText, fmtDate, rupees } from "@/lib/format";
 import { ActionForm } from "@/components/action-form";
@@ -20,13 +20,15 @@ export default async function ExpensesPage({
   searchParams: Promise<{ month?: string }>;
 }) {
   const sp = await searchParams;
-  const owner = await requireOwner();
+  const { owner, role, staff } = await requireActor();
+  const isOwner = role === "OWNER";
   const { t, lang } = await getT();
   const month = sp.month && monthRange(sp.month) ? sp.month : periodKey(today());
   const range = monthRange(month)!;
   const [expenses, properties] = await Promise.all([
     db.expense.findMany({
-      where: { ownerId: owner.id, spentOn: { gte: range.start, lt: range.end } },
+      // A caretaker sees only the bills they added, never the PG's spending.
+      where: { ownerId: owner.id, spentOn: { gte: range.start, lt: range.end }, ...(isOwner ? {} : { addedByStaffId: staff?.id ?? "-" }) },
       include: { property: true, items: { orderBy: { id: "asc" } }, receipt: { select: { expenseId: true } } },
       orderBy: [{ spentOn: "desc" }, { createdAt: "desc" }],
     }),
@@ -42,7 +44,7 @@ export default async function ExpensesPage({
       <PageHeader
         title={t("expensesTitle")}
         subtitle={
-          waBillNumber() ? (
+          isOwner && waBillNumber() ? (
             <>
               {t("expensesSub")}{" "}
               <span className="mt-1 block font-medium text-brand-700">{t("waBillsHint", { num: waBillNumber()! })}</span>
@@ -64,6 +66,7 @@ export default async function ExpensesPage({
           />
         </Card>
         <div className="space-y-4">
+          {isOwner && (
           <div className="card p-4">
             <p className="text-xs text-muted uppercase">{t("spentThisMonth")}</p>
             <p className="text-2xl font-bold text-brand-900">{rupees(total)}</p>
@@ -84,6 +87,7 @@ export default async function ExpensesPage({
               </div>
             )}
           </div>
+          )}
           {expenses.length === 0 ? (
             <EmptyState title={t("noExpenses")} body={t("noExpensesBody")} />
           ) : (
@@ -127,6 +131,7 @@ export default async function ExpensesPage({
                       </ul>
                     </details>
                   )}
+                  {isOwner && (
                   <div className="mt-1 text-right">
                     <ActionForm
                       action={deleteExpense.bind(null, e.id)}
@@ -136,6 +141,7 @@ export default async function ExpensesPage({
                       confirm={t("deleteExpenseConfirm")}
                     />
                   </div>
+                  )}
                 </li>
               ))}
             </ul>
@@ -185,6 +191,7 @@ export default async function ExpensesPage({
                       <td className="text-sm">{e.property?.name ?? t("allGeneral")}</td>
                       <td className="text-right font-semibold">{rupees(e.amount)}</td>
                       <td className="text-right">
+                        {isOwner && (
                         <ActionForm
                           action={deleteExpense.bind(null, e.id)}
                           submitLabel={t("delete")}
@@ -192,6 +199,7 @@ export default async function ExpensesPage({
                           className="inline"
                           confirm={t("deleteExpenseConfirm")}
                         />
+                        )}
                       </td>
                     </tr>
                   ))}
