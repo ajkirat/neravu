@@ -264,7 +264,7 @@ export default async function TenantPage({
                       </div>
                     </div>
                     {r.kind === "payment" ? (
-                      <p className="mt-1 flex items-center justify-end gap-4">
+                      <div className="mt-1 flex items-center justify-end gap-4">
                         <Link href={`/payments/${r.id}/receipt`} className="text-sm text-brand-600 underline">
                           {tr("receipt")}
                         </Link>
@@ -282,9 +282,9 @@ export default async function TenantPage({
                             confirm={tr("deletePaymentConfirm")}
                           />
                         )}
-                      </p>
+                      </div>
                     ) : isOwner && r.amount > 0 ? (
-                      <p className="mt-1 text-right">
+                      <div className="mt-1 text-right">
                         <ActionForm
                           action={deleteCharge.bind(null, r.id)}
                           submitLabel={r.type === "RENT" ? tr("waive") : tr("remove")}
@@ -292,7 +292,7 @@ export default async function TenantPage({
                           className="inline"
                           confirm={r.type === "RENT" ? tr("waiveConfirm") : tr("removeChargeConfirm")}
                         />
-                      </p>
+                      </div>
                     ) : null}
                   </li>
                 ))}
@@ -405,6 +405,9 @@ export default async function TenantPage({
                 </Field>
                 <Field label={tr("emergencyPhone")}>
                   <input className="input" name="emergencyPhone" defaultValue={t.emergencyPhone ?? ""} />
+                </Field>
+                <Field label={tr("permanentAddress")} className="sm:col-span-2">
+                  <input className="input" name="permanentAddress" defaultValue={t.permanentAddress ?? ""} maxLength={300} />
                 </Field>
                 <Field label={tr("monthlyRentRs")}>
                   <input className="input" name="monthlyRent" inputMode="numeric" defaultValue={t.monthlyRent} required />

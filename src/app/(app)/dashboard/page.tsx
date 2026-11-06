@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { cashWithStaff } from "@/lib/cash";
 import { requireActor } from "@/lib/auth";
 import { nextDueDate } from "@/lib/billing";
 import { addDays, diffDays, monthRange, periodKey, today } from "@/lib/dates";
@@ -79,6 +80,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
   const bedText = (t: (typeof tenants)[number]) =>
     `${t.property.name}${t.bed ? ` · ${t.bed.room.number}${t.bed.label}` : ""}`;
 
+  const cash = await cashWithStaff(owner.id, isOwner ? undefined : (staff?.id ?? "-"));
+  const cashTotal = cash.reduce((n, c) => n + c.amount, 0);
   const joining = isOwner ? await db.joinRequest.count({ where: { ownerId: owner.id, status: "PENDING" } }) : 0;
 
   if (properties.length === 0) {
@@ -111,6 +114,18 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
           {t("deniedBanner")}
         </p>
       )}
+      {cashTotal > 0 &&
+        (isOwner ? (
+          <Link
+            href="/staff"
+            className="mb-4 flex items-center justify-between gap-3 rounded-xl bg-brand-50 px-4 py-3 text-base font-semibold text-brand-900 hover:bg-brand-100"
+          >
+            <span>{t("cashBanner", { amt: rupees(cashTotal) })}</span>
+            <span aria-hidden>→</span>
+          </Link>
+        ) : (
+          <p className="mb-4 rounded-xl bg-brand-50 px-4 py-3 text-base font-semibold text-brand-900">{t("cashMine", { amt: rupees(cashTotal) })}</p>
+        ))}
       {joining > 0 && (
         <Link
           href="/tenants/joining"

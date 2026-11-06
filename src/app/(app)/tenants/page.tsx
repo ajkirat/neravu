@@ -55,9 +55,17 @@ export default async function TenantsPage({
         subtitle={t("tenantsSub")}
         actions={
           isOwner ? (
-            <Link href="/tenants/new" className="btn-primary">
-              {t("addTenant")}
-            </Link>
+            <>
+              <Link href="/tenants/new" className="btn-primary">
+                {t("addTenant")}
+              </Link>
+              <Link href="/tenants/import" className="btn-secondary">
+                {t("impBtn")}
+              </Link>
+              <Link href="/tenants/register" className="btn-secondary">
+                {t("regBtn")}
+              </Link>
+            </>
           ) : undefined
         }
       />

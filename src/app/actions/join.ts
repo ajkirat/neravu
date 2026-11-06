@@ -24,6 +24,7 @@ export async function submitJoin(propertyId: string, _: FormState, fd: FormData)
     idNumber: str(fd, "idNumber"),
     emergencyName: str(fd, "emergencyName"),
     emergencyPhone: str(fd, "emergencyPhone"),
+    permanentAddress: str(fd, "permanentAddress"),
     language: str(fd, "language"),
   });
   if ("error" in c) return { error: t(c.error) };

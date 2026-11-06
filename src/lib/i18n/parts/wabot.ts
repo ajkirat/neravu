@@ -83,4 +83,11 @@ export const wabot = {
     kn: "ಪ್ರತಿ ಪಾವತಿಯ ನಂತರ ಬಾಡಿಗೆದಾರರಿಗೆ ವಾಟ್ಸಾಪ್ ರಸೀದಿ ಕಳುಹಿಸಿ (ನಗದು ಸಹ)",
     te: "ప్రతి చెల్లింపు తర్వాత అద్దెదారుకు వాట్సాప్ రసీదు పంపండి (నగదు కూడా)",
   },
+  cashTitle: { en: "Cash with caretakers", kn: "ಕೇರ್‌ಟೇಕರ್‌ಗಳ ಬಳಿ ಇರುವ ನಗದು", te: "కేర్‌టేకర్ల దగ్గర ఉన్న నగదు" },
+  cashWith: { en: "{name} has {amt} cash ({n} payments)", kn: "{name} ಬಳಿ {amt} ನಗದು ಇದೆ ({n} ಪಾವತಿಗಳು)", te: "{name} దగ్గర {amt} నగదు ఉంది ({n} చెల్లింపులు)" },
+  cashReceivedBtn: { en: "I received {amt}", kn: "ನಾನು {amt} ಪಡೆದಿದ್ದೇನೆ", te: "నేను {amt} తీసుకున్నాను" },
+  cashReceivedConfirm: { en: "Did you receive {amt} cash from {name}?", kn: "{name} ಅವರಿಂದ {amt} ನಗದು ಪಡೆದಿರಾ?", te: "{name} నుండి {amt} నగదు తీసుకున్నారా?" },
+  cashNone: { en: "No cash is waiting with caretakers.", kn: "ಕೇರ್‌ಟೇಕರ್‌ಗಳ ಬಳಿ ಯಾವುದೇ ನಗದು ಬಾಕಿ ಇಲ್ಲ.", te: "కేర్‌టేకర్ల దగ్గర ఏ నగదు బాకీ లేదు." },
+  cashBanner: { en: "{amt} cash is with your caretakers. Tap to check.", kn: "{amt} ನಗದು ನಿಮ್ಮ ಕೇರ್‌ಟೇಕರ್‌ಗಳ ಬಳಿ ಇದೆ. ನೋಡಲು ಒತ್ತಿ.", te: "{amt} నగదు మీ కేర్‌టేకర్ల దగ్గర ఉంది. చూడటానికి నొక్కండి." },
+  cashMine: { en: "You have collected {amt} in cash. Please give it to the owner.", kn: "ನೀವು {amt} ನಗದು ಸಂಗ್ರಹಿಸಿದ್ದೀರಿ. ದಯವಿಟ್ಟು ಮಾಲೀಕರಿಗೆ ಕೊಡಿ.", te: "మీరు {amt} నగదు వసూలు చేశారు. దయచేసి యజమానికి ఇవ్వండి." },
 } satisfies Part;

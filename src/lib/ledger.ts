@@ -17,6 +17,7 @@ export async function syncRentCharges(ownerId: string, tenantId?: string) {
     select: {
       id: true,
       moveInDate: true,
+      billFrom: true,
       moveOutDate: true,
       rentDueDay: true,
       monthlyRent: true,
@@ -34,7 +35,8 @@ export async function syncRentCharges(ownerId: string, tenantId?: string) {
   for (const t of tenants) {
     const have = new Set(t.charges.map((c) => c.period));
     for (const p of duePeriods({
-      moveIn: t.moveInDate,
+      // Imported tenants: months before billFrom came in as one opening balance.
+      moveIn: t.billFrom ?? t.moveInDate,
       moveOut: t.moveOutDate,
       dueDay: t.rentDueDay,
       asOf,

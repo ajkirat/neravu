@@ -81,6 +81,9 @@ export default async function NewTenantPage({
               <Field label={t("emergencyPhone")}>
                 <input className="input" name="emergencyPhone" type="tel" defaultValue={jr?.emergencyPhone ?? ""} />
               </Field>
+              <Field label={t("permanentAddress")} className="sm:col-span-2">
+                <input className="input" name="permanentAddress" defaultValue={jr?.permanentAddress ?? ""} maxLength={300} />
+              </Field>
               <Field label={t("tenantLanguage")} hint={t("tenantLanguageHint")}>
                 <select className="input" name="language" defaultValue={jr?.language ?? lang}>
                   {LANGS.map((l) => (

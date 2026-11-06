@@ -10,6 +10,7 @@ export type JoinInput = {
   idNumber: string;
   emergencyName: string;
   emergencyPhone: string;
+  permanentAddress?: string;
   language: string;
 };
 
@@ -22,6 +23,7 @@ export type JoinClean = {
   idNumber: string | null;
   emergencyName: string | null;
   emergencyPhone: string | null;
+  permanentAddress: string | null;
   language: string | null;
 };
 
@@ -56,6 +58,7 @@ export function cleanJoin(
       idNumber,
       emergencyName: i.emergencyName.trim().slice(0, 80) || null,
       emergencyPhone: emergencyPhone || null,
+      permanentAddress: (i.permanentAddress ?? "").trim().slice(0, 300) || null,
       language: isLang(i.language) ? i.language : null,
     },
   };

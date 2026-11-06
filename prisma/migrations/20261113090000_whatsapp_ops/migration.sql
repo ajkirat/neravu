@@ -1,4 +1,3 @@
-
 -- AlterTable
 ALTER TABLE "Owner" ADD COLUMN     "autoReceipts" BOOLEAN NOT NULL DEFAULT true;
 
@@ -61,14 +60,3 @@ ALTER TABLE "ExpenseReceipt" ADD CONSTRAINT "ExpenseReceipt_expenseId_fkey" FORE
 
 -- AddForeignKey
 ALTER TABLE "PendingExpense" ADD CONSTRAINT "PendingExpense_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "Owner"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-┌─────────────────────────────────────────────────────────┐
-│  Update available 7.10.1 -> 8.0.0-rc.30                 │
-│                                                         │
-│  This is a major update - please follow the guide at    │
-│  https://pris.ly/d/major-version-upgrade                │
-│                                                         │
-│  Run the following to update                            │
-│    npm i --save-dev prisma@latest                       │
-│    npm i @prisma/client@latest                          │
-└─────────────────────────────────────────────────────────┘
-

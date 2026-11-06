@@ -59,6 +59,9 @@ export default async function JoinPage({ params }: { params: Promise<{ propertyI
             <input name="emergencyPhone" type="tel" inputMode="numeric" className="input" maxLength={20} />
           </Field>
         </div>
+        <Field label={t("permanentAddress")}>
+          <input name="permanentAddress" className="input" maxLength={300} autoComplete="street-address" />
+        </Field>
         <Field label={t("tenantLanguage")}>
           <select name="language" className="input" defaultValue={lang}>
             {LANGS.map((l) => (

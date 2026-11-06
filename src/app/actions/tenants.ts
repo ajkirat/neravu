@@ -47,6 +47,7 @@ function profile(fd: FormData) {
     idNumber: optStr(fd, "idNumber"),
     emergencyName: optStr(fd, "emergencyName"),
     emergencyPhone: optStr(fd, "emergencyPhone"),
+    permanentAddress: optStr(fd, "permanentAddress")?.slice(0, 300) ?? null,
     notes: optStr(fd, "notes"),
     language: isLang(str(fd, "language")) ? str(fd, "language") : null,
   };
