@@ -2,8 +2,8 @@ import type { Part } from "./types";
 
 // Upkeep: services (recurring servicing), checklists (housekeeping), equipment (warranty / AMC).
 export const upkeep = {
-  navUpkeep: { en: "Upkeep", kn: "ನಿರ್ವಹಣೆ", te: "నిర్వహణ", hi: "रखरखाव" },
-  upkeepTitle: { en: "Upkeep and servicing", kn: "ನಿರ್ವಹಣೆ ಮತ್ತು ಸರ್ವಿಸ್", te: "నిర్వహణ, సర్వీసింగ్", hi: "रखरखाव और सर्विसिंग" },
+  navUpkeep: { en: "Maintenance", kn: "ನಿರ್ವಹಣೆ", te: "నిర్వహణ", hi: "रखरखाव" },
+  upkeepTitle: { en: "PG maintenance", kn: "ನಿರ್ವಹಣೆ ಮತ್ತು ಸರ್ವಿಸ್", te: "నిర్వహణ, సర్వీసింగ్", hi: "रखरखाव और सर्विसिंग" },
   upkeepSub: { en: "Servicing, daily checklists and equipment. Due items show on Today.", kn: "ಸರ್ವಿಸ್, ದಿನದ ಪಟ್ಟಿ ಮತ್ತು ಉಪಕರಣಗಳು. ಬಾಕಿ ಕೆಲಸ ಇಂದಿನ ಪಟ್ಟಿಯಲ್ಲಿ.", te: "సర్వీసింగ్, రోజువారీ జాబితాలు, పరికరాలు. చేయాల్సినవి ఈరోజు జాబితాలో.", hi: "सर्विसिंग, रोज़ की चेकलिस्ट और उपकरण। बाकी काम आज की लिस्ट में।" },
   tabServices: { en: "Services", kn: "ಸರ್ವಿಸ್", te: "సర్వీసులు", hi: "सर्विस" },
   tabChecklists: { en: "Checklists", kn: "ಪಟ್ಟಿಗಳು", te: "చెక్‌లిస్టులు", hi: "चेकलिस्ट" },
