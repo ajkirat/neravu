@@ -14,7 +14,7 @@ import { JobFields } from "@/components/job-presets";
 import { ChecklistCard } from "@/components/checklist-card";
 import { Badge, Card, EmptyState, FoldCard, PageHeader } from "@/components/ui";
 
-export const metadata = { title: "Upkeep" };
+export const metadata = { title: "Maintenance" };
 
 const TABS = ["services", "checklists", "equipment"] as const;
 type Tab = (typeof TABS)[number];
@@ -41,7 +41,7 @@ export default async function UpkeepPage({ searchParams }: { searchParams: Promi
   const tabLink = (k: Tab, label: string, n: number) => (
     <Link
       key={k}
-      href={`/upkeep?tab=${k}`}
+      href={`/maintenance?tab=${k}`}
       scroll={false}
       className={`rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap ${tab === k ? "bg-brand-600 text-white" : "bg-white text-muted ring-1 ring-line"}`}
       data-testid={`tab-${k}`}
