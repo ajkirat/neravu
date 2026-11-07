@@ -12,7 +12,7 @@ export function csvCell(v: Cell): string {
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
-/** CSV with a UTF-8 byte-order mark so Excel shows Kannada and Telugu correctly. */
+/** CSV with a UTF-8 byte-order mark so Excel shows Kannada, Telugu and Hindi correctly. */
 export function toCsv(header: string[], rows: Cell[][]): string {
   const lines = [header, ...rows].map((r) => r.map(csvCell).join(","));
   return "﻿" + lines.join("\r\n") + "\r\n";

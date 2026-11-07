@@ -79,25 +79,25 @@ export function canonicalCategory(c: string | null | undefined): string {
 }
 
 /**
- * Extra words people type when searching for a category: everyday English, and Kannada / Telugu words
+ * Extra words people type when searching for a category: everyday English, and Kannada / Telugu / Hindi words
  * written in English letters. The category's own name in the chosen language is always searched too.
  * Words of merged categories are kept, so "tanker" still finds Water and "plumber" finds Repairs.
  */
 export const CATEGORY_KEYWORDS: Record<string, string> = {
-  Electricity: "current power bescom eb bill vidyut karent",
-  "Diesel (generator)": "dg genset generator fuel petrol bunk",
-  "Cooking gas": "lpg cylinder gas bharat indane hp",
-  Water: "bwssb water bill neeru neellu tanker borewell lorry can cans bisleri 20 litre drinking",
-  "Internet & TV": "wifi broadband jio airtel act net tv dish tata play cable dth recharge",
-  Groceries: "kirana dinasi provisions rice oil dal atta sugar akki enne bele biyyam nune pappu",
-  "Daily fresh": "vegetables veg tarakari kooragayalu fruits hannu pandlu onion tomato milk curd haalu mosaru paalu perugu nandini dairy paneer chicken mutton fish egg eggs motte gudlu meat",
-  "Food from outside": "hotel restaurant cafe darshini tiffin meals parcel swiggy zomato tea coffee snacks oota bhojanam",
-  "Staff salary": "salary sambala jeetham wages cook helper watchman guard security",
-  "Rent / lease": "rent lease badige adde owner",
-  "Repairs & maintenance": "repair maintenance plumber plumbing tap pipe leak nalli kulai electrician wiring fan light switch mcb fridge geyser washing machine ac ro purifier service paint painting mason cement tiles civil",
-  "Furniture & bedding": "furniture cot bed mattress table chair cupboard almirah bedsheet pillow blanket cover",
-  "Cleaning & housekeeping": "cleaning housekeeping sweeping mopping phenyl harpic soap broom mop detergent laundry dhobi washing ironing pest cockroach rat termite mosquito garbage waste kasa chetta",
-  Other: "other misc medicine medical tablet auto cab taxi ola uber travel xerox print stationery ads",
+  Electricity: "current power bescom eb bill vidyut karent bijli",
+  "Diesel (generator)": "dg genset generator fuel petrol bunk deezal",
+  "Cooking gas": "lpg cylinder gas bharat indane hp rasoi",
+  Water: "bwssb water bill neeru neellu tanker borewell lorry can cans bisleri 20 litre drinking pani paani tanki",
+  "Internet & TV": "wifi broadband jio airtel act net tv dish tata play cable dth recharge internet",
+  Groceries: "kirana dinasi provisions rice oil dal atta sugar akki enne bele biyyam nune pappu kirana chawal tel daal aata cheeni",
+  "Daily fresh": "vegetables veg tarakari kooragayalu fruits hannu pandlu onion tomato milk curd haalu mosaru paalu perugu nandini dairy paneer chicken mutton fish egg eggs motte gudlu meat sabzi sabji doodh dahi anda ande murga machli",
+  "Food from outside": "hotel restaurant cafe darshini tiffin meals parcel swiggy zomato tea coffee snacks oota bhojanam khana nashta dhaba",
+  "Staff salary": "salary sambala jeetham wages cook helper watchman guard security tankhwah vetan chowkidar",
+  "Rent / lease": "rent lease badige adde owner kiraya",
+  "Repairs & maintenance": "repair maintenance plumber plumbing tap pipe leak nalli kulai electrician wiring fan light switch mcb fridge geyser washing machine ac ro purifier service paint painting mason cement tiles civil marammat mistri",
+  "Furniture & bedding": "furniture cot bed mattress table chair cupboard almirah bedsheet pillow blanket cover gadda chadar takiya palang",
+  "Cleaning & housekeeping": "cleaning housekeeping sweeping mopping phenyl harpic soap broom mop detergent laundry dhobi washing ironing pest cockroach rat termite mosquito garbage waste kasa chetta safai jhadu dhulai kachra",
+  Other: "other misc medicine medical tablet auto cab taxi ola uber travel xerox print stationery ads dawai davai",
 };
 
 /** Does this category match what was typed? Every word typed must appear in its name, English name or keywords. */

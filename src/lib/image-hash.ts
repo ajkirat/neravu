@@ -53,4 +53,4 @@ export async function dhash(input: Buffer): Promise<string> {
 }
 
 /** "Sri Ganesh Stores." and "SRI GANESH STORES" are the same shop. */
-export const vendorKey = (v: string | null | undefined) => (v ?? "").toLowerCase().replace(/[^a-z0-9ఀ-೿ಀ-೿]/g, "");
+export const vendorKey = (v: string | null | undefined) => (v ?? "").toLowerCase().replace(/[^a-z0-9ऀ-ॿఀ-೿]/g, "");

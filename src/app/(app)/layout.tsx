@@ -24,7 +24,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </Link>
         <SideNav items={isOwner ? NAV : STAFF_NAV} />
         <div className="mt-auto space-y-3">
-          <LanguageSwitcher className="w-full justify-between" />
+          <LanguageSwitcher grid className="w-full" />
           <div className="rounded-xl bg-brand-900/40 p-3">
             <p className="truncate text-sm font-medium text-white">{isOwner ? owner.name : staff?.name}</p>
             <p className="truncate text-xs text-brand-200">{isOwner ? (owner.phone ?? owner.email) : `${t("roleStaff")} · ${owner.businessName ?? owner.name}`}</p>

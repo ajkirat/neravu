@@ -12,8 +12,20 @@ export const templateNames = () => ({
 
 export type SendResult = { ok: true } | { ok: false; reason: "auth" | "rejected" | "number" | "network" | "off"; detail: string };
 
-/** Send one approved template message. Never throws; the result says what happened. */
-export async function sendTemplate(o: { phone: string; template: string; language: string; params: string[]; headerImageId?: string }): Promise<SendResult> {
+type TemplateMsg = { phone: string; template: string; language: string; params: string[]; headerImageId?: string };
+
+/**
+ * Send one approved template message. Never throws; the result says what happened. A template is made
+ * per language in Meta: when the tenant's language version does not exist (#132001), the English one
+ * is used instead, so the message still goes out.
+ */
+export async function sendTemplate(o: TemplateMsg): Promise<SendResult> {
+  const res = await sendTemplateOnce(o);
+  if (!res.ok && o.language !== "en" && /#132001\b/.test(res.detail)) return sendTemplateOnce({ ...o, language: "en" });
+  return res;
+}
+
+async function sendTemplateOnce(o: TemplateMsg): Promise<SendResult> {
   if (!whatsappConfigured()) return { ok: false, reason: "off", detail: "WhatsApp is not connected" };
   const to = waNumber(o.phone);
   if (!to) return { ok: false, reason: "number", detail: "Phone number is not usable" };

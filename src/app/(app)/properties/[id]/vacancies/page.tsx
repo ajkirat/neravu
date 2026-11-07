@@ -68,11 +68,11 @@ export default async function VacanciesPage({ params, searchParams }: { params: 
         )}
       </div>
 
-      {/* The poster: what prints. Big, in all three languages, with the enquiry QR. */}
+      {/* The poster: what prints. Big, in all four languages, with the enquiry QR. */}
       {avail.length > 0 && (
         <div className="card mt-6 p-6 text-center print:mt-0 print:border-0 print:shadow-none">
           <p className="text-4xl font-black tracking-tight text-brand-900">TO-LET</p>
-          <p className="text-2xl font-bold text-brand-900">ಬಾಡಿಗೆಗೆ ಇದೆ · అద్దెకు ఉంది</p>
+          <p className="text-2xl font-bold text-brand-900">ಬಾಡಿಗೆಗೆ ಇದೆ · అద్దెకు ఉంది · किराये के लिए</p>
           <p className="mt-2 text-xl font-semibold">{pg}</p>
           {where && <p className="text-muted">{where}</p>}
           <ul className="mx-auto mt-4 max-w-md space-y-1 text-left text-lg">
