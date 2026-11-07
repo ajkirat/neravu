@@ -31,7 +31,10 @@ export async function jobDone(id: string): Promise<{ ok?: string; error?: string
   const j = await db.recurringJob.findFirst({ where: { id, ownerId: owner.id, active: true } });
   if (!j) return { error: t("claimGone") };
   const done = today();
-  await db.recurringJob.update({ where: { id }, data: { lastDone: done, lastDoneBy: staff?.name ?? null, nextDue: nextAfterDone(done, j.everyDays) } });
+  await db.$transaction([
+    db.serviceLog.create({ data: { ownerId: owner.id, jobId: j.id, doneOn: done, byName: staff?.name ?? null } }),
+    db.recurringJob.update({ where: { id }, data: { lastDone: done, lastDoneBy: staff?.name ?? null, nextDue: nextAfterDone(done, j.everyDays) } }),
+  ]);
   revalidatePath("/", "layout");
   return { ok: t("jobDoneOk") };
 }

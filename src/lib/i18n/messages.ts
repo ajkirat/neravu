@@ -27,10 +27,12 @@ import { staff } from "./parts/staff";
 import { tenantforms } from "./parts/tenantforms";
 import { tenants } from "./parts/tenants";
 import { pitch } from "./parts/pitch";
+import { upkeep } from "./parts/upkeep";
 
 export const messages = {
   ...common,
   ...pitch,
+  ...upkeep,
   ...nav,
   ...auth,
   ...properties,

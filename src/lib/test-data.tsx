@@ -71,6 +71,8 @@ export async function removeTestData(ownerId: string): Promise<void> {
   await db.lead.deleteMany({ where: { ownerId, propertyId: { in: propertyIds } } });
   await db.complaint.deleteMany({ where: { ownerId, propertyId: { in: propertyIds } } });
   await db.recurringJob.deleteMany({ where: { ownerId, propertyId: { in: propertyIds } } });
+  await db.checklist.deleteMany({ where: { ownerId, propertyId: { in: propertyIds } } });
+  await db.asset.deleteMany({ where: { ownerId, propertyId: { in: propertyIds } } });
   // Rooms, beds, electricity bills, tenants with their dues, payments, claims and requests, and joiners go with the PG.
   await db.property.deleteMany({ where: { id: { in: propertyIds } } });
   await db.staff.deleteMany({ where: { ownerId, name: TEST_STAFF_NAME } });
@@ -226,9 +228,28 @@ export async function addTestData(ownerId: string): Promise<{ staffPhone: string
   // Regular jobs: one due today, one overdue, one coming up.
   await db.recurringJob.createMany({
     data: [
-      { ownerId, propertyId: property.id, title: "Water tank cleaning (test)", everyDays: 90, nextDue: now },
-      { ownerId, propertyId: property.id, title: "RO filter service (test)", everyDays: 120, nextDue: addDays(now, -3) },
-      { ownerId, propertyId: property.id, title: "Pest control (test)", everyDays: 60, nextDue: addDays(now, 10) },
+      { ownerId, propertyId: property.id, title: "Water tank cleaning (test)", category: "WATER", everyDays: 90, nextDue: now, vendorName: "Clean Tanks Co", vendorPhone: "9811100010", cost: 1500 },
+      { ownerId, propertyId: property.id, title: "RO filter service (test)", category: "WATER", everyDays: 120, nextDue: addDays(now, -3), vendorName: "Aqua Care", vendorPhone: "9811100011", cost: 900 },
+      { ownerId, propertyId: property.id, title: "Pest control (test)", category: "PEST", everyDays: 60, nextDue: addDays(now, 3), remindDays: 3, vendorName: "Bug Busters", vendorPhone: "9811100012", cost: 2500 },
+      { ownerId, propertyId: property.id, title: "AC service (test)", category: "APPLIANCE", everyDays: 90, nextDue: addDays(now, 25), remindDays: 7, cost: 1800 },
+    ],
+  });
+  // A daily housekeeping list, half done today, and equipment with a warranty and an AMC running out.
+  await db.checklist.create({
+    data: {
+      ownerId,
+      propertyId: property.id,
+      title: "Daily housekeeping (test)",
+      frequency: "DAILY",
+      items: ["Bathrooms cleaned", "Common area swept and mopped", "Garbage taken out", "Drinking water filled", "Main gate locked at night"],
+      runs: { create: [{ period: now, doneItems: ["Bathrooms cleaned", "Garbage taken out"], byName: TEST_STAFF_NAME }, { period: addDays(now, -1), doneItems: ["Bathrooms cleaned", "Common area swept and mopped", "Garbage taken out", "Drinking water filled", "Main gate locked at night"], byName: TEST_STAFF_NAME }] },
+    },
+  });
+  await db.asset.createMany({
+    data: [
+      { ownerId, propertyId: property.id, name: "Kent RO (test)", kind: "RO", location: "Ground floor dining", boughtOn: addDays(now, -340), warrantyUntil: addDays(now, 25), vendorName: "Aqua Care", vendorPhone: "9811100011" },
+      { ownerId, propertyId: property.id, name: "Fire extinguishers (test)", kind: "EXTINGUISHER", location: "Every floor", amcUntil: addDays(now, -3) },
+      { ownerId, propertyId: property.id, name: "Geyser T1 (test)", kind: "GEYSER", location: "Room T1 bathroom", warrantyUntil: addDays(now, 400) },
     ],
   });
 
