@@ -6,6 +6,8 @@ import { toDateInput, today } from "@/lib/dates";
 import { ID_TYPES, PAYMENT_METHODS, methodText } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
 import { LANGS } from "@/lib/i18n";
+import { IdProofInput } from "@/components/id-proof-input";
+import { readIdForOwner } from "@/app/actions/tenants";
 import { ActionForm } from "@/components/action-form";
 import { BedBoard } from "@/components/bed-board";
 import { pickRooms } from "@/lib/rooms";
@@ -66,16 +68,13 @@ export default async function NewTenantPage({
               <Field label={t("occupation")}>
                 <input className="input" name="occupation" defaultValue={jr?.occupation ?? ""} />
               </Field>
-              <Field label={t("idProof")}>
-                <select className="input" name="idType" defaultValue={jr?.idType ?? "Aadhaar"}>
-                  {ID_TYPES.map((idt) => (
-                    <option key={idt}>{idt}</option>
-                  ))}
-                </select>
-              </Field>
-              <Field label={t("idNumber")}>
-                <input className="input" name="idNumber" defaultValue={jr?.idNumber ?? ""} />
-              </Field>
+              <div className="sm:col-span-2">
+                <span className="label">{t("idPhotoLabel")}</span>
+                <IdProofInput
+                  read={readIdForOwner}
+                  current={jr ? { photoUrl: jr.idPhotoMime ? `/tenants/joining/${jr.id}/id-photo` : null, type: jr.idType, number: jr.idNumber } : undefined}
+                />
+              </div>
               <Field label={t("emergencyName")}>
                 <input className="input" name="emergencyName" defaultValue={jr?.emergencyName ?? ""} />
               </Field>

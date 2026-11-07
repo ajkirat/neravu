@@ -130,7 +130,11 @@ model Tenant {
   email                String?
   occupation           String?
   idType               String?
+  // Read from the ID photo, never typed in
   idNumber             String?
+  // Photo of the ID proof (JPEG, shrunk); the type and number above come from it
+  idPhotoMime          String?
+  idPhoto              Bytes?
   emergencyName        String?
   emergencyPhone       String?
   // Home address, for the police tenant register
@@ -281,6 +285,9 @@ model JoinRequest {
   occupation       String?
   idType           String?
   idNumber         String?
+  // Photo of the ID proof; carried to the tenant when the owner approves
+  idPhotoMime      String?
+  idPhoto          Bytes?
   emergencyName    String?
   emergencyPhone   String?
   permanentAddress String?

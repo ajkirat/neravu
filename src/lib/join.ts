@@ -1,4 +1,3 @@
-import { ID_TYPES } from "@/lib/format";
 import { isLang } from "@/lib/i18n";
 
 export type JoinInput = {
@@ -6,8 +5,6 @@ export type JoinInput = {
   phone: string;
   email: string;
   occupation: string;
-  idType: string;
-  idNumber: string;
   emergencyName: string;
   emergencyPhone: string;
   permanentAddress?: string;
@@ -37,16 +34,13 @@ export function phoneKey(phone: string): string {
 /** Validate a public Join form. Errors are message keys so the caller can translate them. */
 export function cleanJoin(
   i: JoinInput,
-): { error: "errJoinName" | "errJoinPhone" | "errJoinEmail" | "errJoinId" } | { value: JoinClean } {
+): { error: "errJoinName" | "errJoinPhone" | "errJoinEmail" } | { value: Omit<JoinClean, "idType" | "idNumber"> } {
   const name = i.name.trim().slice(0, 80);
   if (name.length < 2) return { error: "errJoinName" };
   const phone = i.phone.trim().slice(0, 20);
   if (!/^[0-9+\-\s()]{10,20}$/.test(phone) || phoneKey(phone).length < 10) return { error: "errJoinPhone" };
   const email = i.email.trim().slice(0, 120);
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "errJoinEmail" };
-  const idType = ID_TYPES.includes(i.idType as never) ? i.idType : null;
-  const idNumber = i.idNumber.trim().slice(0, 40);
-  if (!idNumber) return { error: "errJoinId" };
   const emergencyPhone = i.emergencyPhone.trim().slice(0, 20);
   return {
     value: {
@@ -54,8 +48,6 @@ export function cleanJoin(
       phone,
       email: email || null,
       occupation: i.occupation.trim().slice(0, 80) || null,
-      idType,
-      idNumber,
       emergencyName: i.emergencyName.trim().slice(0, 80) || null,
       emergencyPhone: emergencyPhone || null,
       permanentAddress: (i.permanentAddress ?? "").trim().slice(0, 300) || null,

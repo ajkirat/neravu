@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { submitJoin } from "@/app/actions/join";
+import { readIdForJoin, submitJoin } from "@/app/actions/join";
+import { IdProofInput } from "@/components/id-proof-input";
 import { ActionForm } from "@/components/action-form";
 import { Card, Field } from "@/components/ui";
 import { getT } from "@/lib/i18n/server";
 import { LANGS } from "@/lib/i18n";
-import { ID_TYPES } from "@/lib/format";
 
 export const metadata = { title: "Join this PG", robots: { index: false, follow: false } };
 
@@ -33,17 +33,10 @@ export default async function JoinPage({ params }: { params: Promise<{ propertyI
         <Field label={t("mobile")}>
           <input name="phone" type="tel" inputMode="numeric" className="input" required maxLength={20} autoComplete="tel" placeholder="98xxxxxxxx" />
         </Field>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label={t("idProof")}>
-            <select name="idType" className="input" defaultValue="Aadhaar">
-              {ID_TYPES.map((x) => (
-                <option key={x}>{x}</option>
-              ))}
-            </select>
-          </Field>
-          <Field label={t("idNumber")}>
-            <input name="idNumber" className="input" required maxLength={40} />
-          </Field>
+        {/* Not a <label>: the box holds its own buttons. The number is read from the photo, never typed. */}
+        <div>
+          <span className="label">{t("idPhotoLabel")}</span>
+          <IdProofInput read={readIdForJoin.bind(null, propertyId)} />
         </div>
         <Field label={t("occupation")}>
           <input name="occupation" className="input" maxLength={80} />

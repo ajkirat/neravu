@@ -13,6 +13,8 @@ import { int, optStr, str } from "@/lib/forms";
 import { syncRentCharges } from "@/lib/ledger";
 import { CHARGE_TYPES, PAYMENT_METHODS, chargeLabel } from "@/lib/format";
 import type { FormState } from "@/components/action-form";
+import { tooMany } from "@/lib/throttle";
+import { idFromForm, readIdForForm, type IdReadResult } from "@/lib/id-proof";
 
 const OCCUPYING = { in: ["ACTIVE", "NOTICE"] };
 
@@ -42,8 +44,6 @@ function profile(fd: FormData) {
     phone: str(fd, "phone"),
     email: optStr(fd, "email"),
     occupation: optStr(fd, "occupation"),
-    idType: optStr(fd, "idType"),
-    idNumber: optStr(fd, "idNumber"),
     emergencyName: optStr(fd, "emergencyName"),
     emergencyPhone: optStr(fd, "emergencyPhone"),
     permanentAddress: optStr(fd, "permanentAddress")?.slice(0, 300) ?? null,
@@ -77,9 +77,21 @@ export async function createTenant(_: FormState, fd: FormData): Promise<FormStat
   const dueDay = int(fd, "rentDueDay") ?? Math.min(moveIn.getUTCDate(), 28);
   if (dueDay < 1 || dueDay > 28) return { error: tr("errDueDay") };
 
+  // ID proof: a new photo (number read from it), or the one the person sent with their Join form.
+  const id = await idFromForm(fd);
+  if (id && "error" in id) return { error: tr("idBadPhoto") };
+  const joinId0 = str(fd, "joinId");
+  const fromJoin = !id && joinId0 ? await db.joinRequest.findFirst({ where: { id: joinId0, ownerId: owner.id }, select: { idType: true, idNumber: true, idPhoto: true, idPhotoMime: true } }) : null;
+  const idData = id
+    ? { idType: id.type, idNumber: id.number, idPhoto: id.photo, idPhotoMime: id.mime }
+    : fromJoin
+      ? { idType: fromJoin.idType, idNumber: fromJoin.idNumber, idPhoto: fromJoin.idPhoto, idPhotoMime: fromJoin.idPhotoMime }
+      : {};
+
   const tenant = await db.tenant.create({
     data: {
       ...p,
+      ...idData,
       ownerId: owner.id,
       propertyId: bed.room.propertyId,
       bedId: bed.id,
@@ -140,7 +152,11 @@ export async function updateTenant(id: string, _: FormState, fd: FormData): Prom
   if (rent === null || rent <= 0) return { error: tr("errMonthlyRent") };
   const dueDay = int(fd, "rentDueDay");
   if (!dueDay || dueDay < 1 || dueDay > 28) return { error: tr("errDueDay") };
-  await db.tenant.update({ where: { id }, data: { ...p, monthlyRent: rent, rentDueDay: dueDay } });
+  // A new ID photo replaces the old one (and its number); no photo leaves the ID as it was.
+  const idUp = await idFromForm(fd);
+  if (idUp && "error" in idUp) return { error: tr("idBadPhoto") };
+  const idData = idUp ? { idType: idUp.type, idNumber: idUp.number, idPhoto: idUp.photo, idPhotoMime: idUp.mime } : {};
+  await db.tenant.update({ where: { id }, data: { ...p, ...idData, monthlyRent: rent, rentDueDay: dueDay } });
   revalidatePath(`/tenants/${id}`);
   return { ok: tr("tenantSavedRent"), at: Date.now() };
 }
@@ -244,4 +260,15 @@ export async function deleteCharge(chargeId: string, _: FormState): Promise<Form
   }
   revalidatePath(`/tenants/${c.tenantId}`);
   return { ok: tr("chargeRemoved"), at: Date.now() };
+}
+
+/** Owner: read an ID photo in the tenant form, so the owner sees the number before saving. */
+export async function readIdForOwner(fd: FormData): Promise<IdReadResult | { error: string }> {
+  const owner = await requireOwner();
+  const { t: tr } = await getT();
+  if (await tooMany(`id-read:${owner.id}`, 60, 60 * 60 * 1000)) return { error: tr("tryAgainLater") };
+  const file = fd.get("idPhoto");
+  if (!(file instanceof File)) return { error: tr("errIdPhoto") };
+  const r = await readIdForForm(file);
+  return "error" in r ? { error: tr("idBadPhoto") } : r;
 }

@@ -1,6 +1,10 @@
 // Demo data for pilots and the seed script: two PGs, tenants with a mix of paid / late / on notice,
 // expenses, a caretaker, leads, a complaint and someone waiting to join. Only ever touches one owner.
 import type { PrismaClient } from "../generated/prisma/client";
+
+// Any client: the app's (which leaves photos out of queries) or the seed script's plain one.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Db = PrismaClient<never, any>;
 import bcrypt from "bcryptjs";
 import { duePeriods } from "./billing";
 import { addDays, today } from "./dates";
@@ -10,7 +14,7 @@ export const DEMO_STAFF_PHONE = "9000012345";
 export const DEMO_STAFF_PASSWORD = "ramesh123";
 
 /** Remove everything this owner has entered, keeping the account itself (so the person stays logged in). */
-export async function clearOwnerData(db: PrismaClient, ownerId: string) {
+export async function clearOwnerData(db: Db, ownerId: string) {
   const where = { ownerId };
   await db.pendingExpense.deleteMany({ where });
   await db.paymentClaim.deleteMany({ where });
@@ -28,7 +32,7 @@ export async function clearOwnerData(db: PrismaClient, ownerId: string) {
 }
 
 /** Fill an (empty) owner account with realistic demo data. */
-export async function fillDemo(db: PrismaClient, ownerId: string) {
+export async function fillDemo(db: Db, ownerId: string) {
   const owner = { id: ownerId };
   const props = [
     {
