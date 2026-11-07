@@ -17,6 +17,7 @@ const I = {
   sliders: "M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M16 4v4M10 10v4M18 16v4",
   help: "M9 9a3 3 0 115 2c-1 1-2 1.5-2 3M12 18h.01M12 22a10 10 0 100-20 10 10 0 000 20z",
   grid: "M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z",
+  wrench: "M14.7 6.3a4 4 0 005 5L21 13l-8 8-3-3 8-8-1.3-1.3a4 4 0 01-5-5L14 2l-2.3 2.3a4 4 0 003 2zM3 21l6-6",
 };
 
 /** Main sections, shown in the desktop sidebar. */
@@ -29,6 +30,7 @@ export const NAV: NavItem[] = [
   { href: "/electricity", key: "navElectricity", icon: I.bolt },
   { href: "/leads", key: "navLeads", icon: I.phone },
   { href: "/complaints", key: "navComplaints", icon: I.flag },
+  { href: "/upkeep", key: "navUpkeep", icon: I.wrench },
   { href: "/reports", key: "navReports", icon: I.chart },
   { href: "/staff", key: "navStaff", icon: I.people },
 ];
@@ -47,7 +49,6 @@ export const MORE: NavItem[] = [
   ...NAV,
   { href: "/announce", key: "navAnnounce", icon: I.bell },
   { href: "/cashbook", key: "navCashbook", icon: I.rupee },
-  { href: "/upkeep", key: "navUpkeep", icon: I.flag },
   { href: "/reminders", key: "navReminders", icon: I.bell },
   { href: "/auto-reminders", key: "navAuto", icon: I.bell },
   { href: "/export", key: "navExport", icon: I.download },
@@ -59,6 +60,6 @@ export const navIcon = (href: string): string => MORE.find((n) => n.href === hre
 const pick = (hrefs: string[]) => hrefs.map((h) => MORE.find((n) => n.href === h)!).filter(Boolean);
 
 /** What a caretaker sees in the sidebar, on the phone bottom bar, and on the More screen. */
-export const STAFF_NAV: NavItem[] = pick(["/dashboard", "/tenants", "/payments", "/expenses", "/complaints", "/leads"]);
+export const STAFF_NAV: NavItem[] = pick(["/dashboard", "/tenants", "/payments", "/expenses", "/complaints", "/upkeep", "/leads"]);
 export const STAFF_BOTTOM: NavItem[] = [...pick(["/dashboard", "/tenants", "/payments", "/expenses"]), { href: "/more", key: "navMore", icon: I.grid }];
 export const STAFF_MORE: NavItem[] = pick(["/dashboard", "/tenants", "/payments", "/expenses", "/complaints", "/leads", "/announce", "/upkeep", "/reminders", "/help"]);
