@@ -108,7 +108,7 @@ export async function TodayList({ ownerId, isOwner, staffId, autoReminders }: Pr
                   {t("svcWaVendor")}
                 </a>
               ) : (
-                <Link href="/upkeep?tab=services" className="btn-secondary btn-sm">
+                <Link href="/maintenance?tab=services" className="btn-secondary btn-sm">
                   {t("todayCkOpen")}
                 </Link>
               )}
@@ -117,7 +117,7 @@ export async function TodayList({ ownerId, isOwner, staffId, autoReminders }: Pr
           {openCks.map(({ c, done }) => (
             <Row key={`ck-${c.id}`}>
               <span className="min-w-0 text-base font-semibold">{t("todayCk", { title: c.title, done, total: c.items.length })}</span>
-              <Link href="/upkeep?tab=checklists" className="btn-primary btn-sm">
+              <Link href="/maintenance?tab=checklists" className="btn-primary btn-sm">
                 {t("todayCkOpen")}
               </Link>
             </Row>
@@ -128,7 +128,7 @@ export async function TodayList({ ownerId, isOwner, staffId, autoReminders }: Pr
             return (
               <Row key={`asset-${a.id}-${al.kind}`}>
                 <span className="min-w-0 text-base font-semibold">{t("todayAsset", { name: a.name, what: t(key, { date: fmtDate(end, lang) }) })}</span>
-                <Link href="/upkeep?tab=equipment" className="btn-secondary btn-sm">
+                <Link href="/maintenance?tab=equipment" className="btn-secondary btn-sm">
                   {t("todayCkOpen")}
                 </Link>
               </Row>
