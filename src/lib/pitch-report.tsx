@@ -4,7 +4,7 @@ import sharp from "sharp";
 import { fmtDate, rupees } from "./format";
 import { makeT, type MsgKey } from "./i18n";
 import { jpegsToPdf } from "./pdf";
-import { cleanPitchInputs, computePitch, type PitchInputs } from "./pitch";
+import { cleanPitchInputs, computePitch, customPainText, isCustomPain, type PitchInputs } from "./pitch";
 
 // The PDF is in English: the drawing library cannot join Kannada / Telugu / Hindi letters correctly.
 const t = makeT("en");
@@ -91,7 +91,7 @@ function page2(p: PitchRecord, by: { name: string; phone: string | null }) {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 14, marginTop: 20 }}>
         {(p.pains.length ? p.pains : ["none"]).map((k) => (
           <div key={k} style={{ display: "flex", fontSize: 24, padding: "10px 20px", borderRadius: 999, background: C.goldSoft, color: "#8a5a0c" }}>
-            {k === "none" ? "Nothing ticked" : safe(t(`pain_${k}` as MsgKey))}
+            {k === "none" ? "Nothing ticked" : isCustomPain(k) ? safe(customPainText(k)) : safe(t(`pain_${k}` as MsgKey))}
           </div>
         ))}
       </div>

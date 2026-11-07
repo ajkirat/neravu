@@ -34,3 +34,15 @@ describe("pitch calculator", () => {
     expect(r.lines.find((l) => l.key === "unpaid")!.rupees).toBe(0);
   });
 });
+
+import { cleanPains } from "./pitch";
+describe("problems ticked in a pitch", () => {
+  it("keeps known ones and the owner's own words, drops junk and repeats", () => {
+    expect(cleanPains(["chase", "hacker", "custom:  Water   shortage ", "custom:water shortage", "custom:", "chase"])).toEqual(["chase", "custom:Water shortage"]);
+  });
+  it("keeps at most 10 of their own and shortens long ones", () => {
+    const many = Array.from({ length: 15 }, (_, i) => `custom:Problem ${i}`);
+    expect(cleanPains(many)).toHaveLength(10);
+    expect(cleanPains([`custom:${"x".repeat(200)}`])[0]).toHaveLength("custom:".length + 80);
+  });
+});

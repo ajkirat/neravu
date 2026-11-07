@@ -101,6 +101,8 @@ export const pitch = {
   pain_staff: { en: "Staff can't use English apps", kn: "ಸಿಬ್ಬಂದಿಗೆ ಇಂಗ್ಲಿಷ್ ಆ್ಯಪ್ ಕಷ್ಟ", te: "సిబ్బందికి ఇంగ్లీష్ యాప్‌లు కష్టం", hi: "स्टाफ अंग्रेज़ी ऐप नहीं चला पाता" },
   pain_records: { en: "Everything is in a notebook", kn: "ಎಲ್ಲವೂ ನೋಟ್‌ಬುಕ್‌ನಲ್ಲಿ", te: "అన్నీ నోట్‌బుక్‌లో", hi: "सब कुछ कॉपी में" },
   pain_food: { en: "Running the kitchen / mess", kn: "ಅಡುಗೆಮನೆ / ಮೆಸ್ ನಡೆಸುವುದು", te: "వంటగది / మెస్ నడపడం", hi: "रसोई / मेस चलाना" },
+  pitchAddPain: { en: "Add a problem", kn: "ತೊಂದರೆ ಸೇರಿಸಿ", te: "సమస్య చేర్చండి", hi: "समस्या जोड़ें" },
+  pitchAddPainPh: { en: "Their problem in a few words", kn: "ಅವರ ತೊಂದರೆ ಕೆಲವು ಪದಗಳಲ್ಲಿ", te: "వారి సమస్య కొన్ని మాటల్లో", hi: "उनकी समस्या कुछ शब्दों में" },
   pitchOtherPains: { en: "Anything else? (type or speak)", kn: "ಇನ್ನೇನಾದರೂ? (ಬರೆಯಿರಿ ಅಥವಾ ಮಾತನಾಡಿ)", te: "ఇంకేమైనా? (రాయండి లేదా మాట్లాడండి)", hi: "और कुछ? (लिखें या बोलें)" },
   pitchWouldPay: { en: "What would they pay a month? (₹)", kn: "ತಿಂಗಳಿಗೆ ಎಷ್ಟು ಕೊಡುತ್ತಾರೆ? (₹)", te: "నెలకు ఎంత ఇస్తారు? (₹)", hi: "महीने का कितना देंगे? (₹)" },
   pitchInterest: { en: "How interested?", kn: "ಎಷ್ಟು ಆಸಕ್ತಿ?", te: "ఎంత ఆసక్తి?", hi: "कितनी रुचि?" },

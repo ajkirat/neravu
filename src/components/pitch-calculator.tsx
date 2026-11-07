@@ -14,8 +14,11 @@ const GROUPS: { title: MsgKey; keys: (keyof PitchInputs)[] }[] = [
   { title: "pitchSecMoney", keys: ["unpaidPct", "elecLost", "cashPct", "leakPct", "emptyDays"] },
 ];
 
-/** Savings calculator + pain points, filled in together with a prospective PG owner. */
-export function PitchCalculator() {
+/**
+ * Savings calculator + pain points, filled in together with a prospective PG owner. `extraPains` are
+ * problems added in earlier pitches: they show as options too, so the list grows with what owners say.
+ */
+export function PitchCalculator({ extraPains = [] }: { extraPains?: string[] }) {
   const { t } = useI18n();
   const formRef = useRef<HTMLFormElement>(null);
   const [vals, setVals] = useState<Record<keyof PitchInputs, string>>(
@@ -26,6 +29,18 @@ export function PitchCalculator() {
   const [err, setErr] = useState<string | null>(null);
   const [sharing, setSharing] = useState(false);
   const [pending, start] = useTransition();
+  // Problems that are not in the fixed list: earlier ones (not ticked) plus any added now (ticked).
+  const [customs, setCustoms] = useState(() => extraPains.map((text) => ({ text, checked: false })));
+  const [newPain, setNewPain] = useState("");
+  const addPain = () => {
+    const text = newPain.replace(/\s+/g, " ").trim().slice(0, 80);
+    if (!text) return;
+    setCustoms((cs) => {
+      const same = cs.find((c) => c.text.toLowerCase() === text.toLowerCase());
+      return same ? cs.map((c) => (c === same ? { ...c, checked: true } : c)) : [...cs, { text, checked: true }];
+    });
+    setNewPain("");
+  };
 
   const save = () =>
     start(async () => {
@@ -59,6 +74,7 @@ export function PitchCalculator() {
     formRef.current?.reset();
     setVals(Object.fromEntries(Object.entries(PITCH_DEFAULTS).map(([k, v]) => [k, String(v)])) as Record<keyof PitchInputs, string>);
     setSaved(null);
+    setCustoms((cs) => cs.map((c) => ({ ...c, checked: false })));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -143,6 +159,40 @@ export function PitchCalculator() {
               <span className="text-sm font-medium text-brand-900">{t(`pain_${p}` as MsgKey)}</span>
             </label>
           ))}
+          {customs.map((c, i) => (
+            <label key={c.text} className="flex cursor-pointer items-start gap-3 rounded-xl border border-dashed border-line p-3 has-[:checked]:border-solid has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50" data-testid="custom-pain">
+              <input
+                type="checkbox"
+                name="pain"
+                value={`custom:${c.text}`}
+                checked={c.checked}
+                onChange={(e) => setCustoms((cs) => cs.map((x, j) => (j === i ? { ...x, checked: e.target.checked } : x)))}
+                className="mt-0.5 h-5 w-5 shrink-0"
+              />
+              <span className="text-sm font-medium break-words text-brand-900">{c.text}</span>
+            </label>
+          ))}
+        </div>
+        {/* Their own problem: becomes a ticked option here, and an option in later pitches. */}
+        <div className="mt-3 flex max-w-xl gap-2">
+          <input
+            className="input"
+            value={newPain}
+            maxLength={80}
+            placeholder={t("pitchAddPainPh")}
+            onChange={(e) => setNewPain(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault(); // add the problem, don't save the pitch
+                addPain();
+              }
+            }}
+            aria-label={t("pitchAddPain")}
+            data-testid="new-pain"
+          />
+          <button type="button" className="btn-secondary shrink-0" onClick={addPain} data-testid="add-pain">
+            + {t("pitchAddPain")}
+          </button>
         </div>
         <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
           <div className="min-w-0">
