@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
-import { INTEREST, PAINS, PITCH_DEFAULTS, cleanPitchInputs, type PitchInputs } from "@/lib/pitch";
+import { INTEREST, PITCH_DEFAULTS, cleanPains, cleanPitchInputs, type PitchInputs } from "@/lib/pitch";
 import { tooMany } from "@/lib/throttle";
 
 const text = (fd: FormData, k: string, max: number) => String(fd.get(k) ?? "").trim().slice(0, max);
@@ -18,7 +18,7 @@ export async function savePitch(fd: FormData): Promise<{ id?: string; error?: st
   if (prospectName.length < 2) return { error: t("errPitchName") };
   const raw: Partial<Record<keyof PitchInputs, unknown>> = {};
   for (const k of Object.keys(PITCH_DEFAULTS) as (keyof PitchInputs)[]) raw[k] = fd.get(`in_${k}`) ?? undefined;
-  const pains = [...new Set(fd.getAll("pain").map(String))].filter((p) => (PAINS as readonly string[]).includes(p));
+  const pains = cleanPains(fd.getAll("pain").map(String));
   const interest = String(fd.get("interest") ?? "");
   const wouldPay = Number(String(fd.get("wouldPay") ?? "").replace(/\D/g, ""));
   const p = await db.pitch.create({

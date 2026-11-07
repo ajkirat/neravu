@@ -144,3 +144,28 @@ export const PAINS = [
 export type Pain = (typeof PAINS)[number];
 
 export const INTEREST = ["HOT", "MAYBE", "NO"] as const;
+
+/** A problem the owner named that is not in the list is stored as "custom:<their words>". */
+export const CUSTOM_PAIN = "custom:";
+export const isCustomPain = (p: string) => p.startsWith(CUSTOM_PAIN);
+export const customPainText = (p: string) => p.slice(CUSTOM_PAIN.length);
+
+/** Keep the ticked problems that are real: known keys, and short custom ones (deduplicated, at most 10). */
+export function cleanPains(values: string[]): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const v of values) {
+    let p = v;
+    if (isCustomPain(v)) {
+      const text = customPainText(v).replace(/\s+/g, " ").trim().slice(0, 80);
+      if (!text) continue;
+      p = CUSTOM_PAIN + text;
+    } else if (!(PAINS as readonly string[]).includes(v)) continue;
+    const key = p.toLowerCase();
+    if (seen.has(key)) continue;
+    if (isCustomPain(p) && out.filter(isCustomPain).length >= 10) continue;
+    seen.add(key);
+    out.push(p);
+  }
+  return out;
+}

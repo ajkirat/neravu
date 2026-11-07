@@ -3,7 +3,7 @@ import { requireOwner } from "@/lib/auth";
 import { getT } from "@/lib/i18n/server";
 import type { MsgKey } from "@/lib/i18n";
 import { fmtDate, rupees } from "@/lib/format";
-import { cleanPitchInputs, computePitch } from "@/lib/pitch";
+import { cleanPitchInputs, computePitch, customPainText, isCustomPain } from "@/lib/pitch";
 import { Badge, FoldCard, PageHeader } from "@/components/ui";
 import { PitchCalculator } from "@/components/pitch-calculator";
 import { ActionButton } from "@/components/today-actions";
@@ -17,6 +17,15 @@ export default async function PitchPage() {
   const owner = await requireOwner();
   const { t, lang } = await getT();
   const saved = await db.pitch.findMany({ where: { ownerId: owner.id }, orderBy: { createdAt: "desc" }, take: 30 });
+  // Problems owners named that are not in the fixed list, most often named first: offered as options.
+  const earlier = await db.pitch.findMany({ where: { ownerId: owner.id }, select: { pains: true }, orderBy: { createdAt: "desc" }, take: 500 });
+  const counts = new Map<string, { text: string; n: number }>();
+  for (const p of earlier) for (const x of p.pains.filter(isCustomPain)) {
+    const text = customPainText(x);
+    const c = counts.get(text.toLowerCase());
+    counts.set(text.toLowerCase(), { text: c?.text ?? text, n: (c?.n ?? 0) + 1 });
+  }
+  const extraPains = [...counts.values()].sort((a, b) => b.n - a.n).slice(0, 24).map((c) => c.text);
 
   return (
     <>
@@ -41,7 +50,7 @@ export default async function PitchPage() {
         <div>
           <h2 className="text-lg font-bold text-brand-900">{t("pitchCalcTitle")}</h2>
           <p className="mb-3 text-sm text-muted">{t("pitchCalcHint")}</p>
-          <PitchCalculator />
+          <PitchCalculator extraPains={extraPains} />
         </div>
 
         <section className="card p-4 sm:p-5">
@@ -63,6 +72,11 @@ export default async function PitchPage() {
                       <p className="text-sm text-muted">
                         {[p.city, fmtDate(p.createdAt, lang), t("pitchPerYearShort", { amt: rupees(r.perYear) }), t("pitchPainsN", { n: p.pains.length }), p.wouldPay ? `${rupees(p.wouldPay)}/mo` : null].filter(Boolean).join(" · ")}
                       </p>
+                      {p.pains.length > 0 && (
+                        <p className="mt-0.5 text-sm break-words text-brand-900">
+                          {p.pains.map((x) => (isCustomPain(x) ? customPainText(x) : t(`pain_${x}` as MsgKey))).join(" · ")}
+                        </p>
+                      )}
                       {p.otherPains && <p className="mt-0.5 text-sm break-words text-brand-900">“{p.otherPains}”</p>}
                     </div>
                     <div className="flex items-center gap-2">
