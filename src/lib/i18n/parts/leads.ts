@@ -2,7 +2,7 @@ import type { Part } from "./types";
 
 export const leads = {
   leadsTitle: { en: "Leads", kn: "ವಿಚಾರಣೆಗಳು", te: "విచారణలు" },
-  leadsSub: { en: "Enquiries from your property QR codes, plus anyone you add by hand.", kn: "ನಿಮ್ಮ ಆಸ್ತಿಯ QR ಕೋಡ್‌ನಿಂದ ಬಂದ ವಿಚಾರಣೆಗಳು ಮತ್ತು ನೀವು ಸೇರಿಸಿದವರು.", te: "మీ ఆస్తి QR కోడ్ నుండి వచ్చిన విచారణలు మరియు మీరు జోడించినవారు." },
+  leadsSub: { en: "Enquiries from your QR codes, and people you add.", kn: "ನಿಮ್ಮ ಆಸ್ತಿಯ QR ಕೋಡ್‌ನಿಂದ ಬಂದ ವಿಚಾರಣೆಗಳು ಮತ್ತು ನೀವು ಸೇರಿಸಿದವರು.", te: "మీ ఆస్తి QR కోడ్ నుండి వచ్చిన విచారణలు మరియు మీరు జోడించినవారు." },
   showAll: { en: "Show all", kn: "ಎಲ್ಲವನ್ನೂ ತೋರಿಸಿ", te: "అన్నీ చూపించు" },
   showOpen: { en: "Show open only", kn: "ತೆರೆದವನ್ನು ಮಾತ್ರ ತೋರಿಸಿ", te: "తెరిచినవి మాత్రమే" },
   openLeads: { en: "Open leads", kn: "ತೆರೆದ ವಿಚಾರಣೆಗಳು", te: "తెరిచిన విచారణలు" },
@@ -10,7 +10,7 @@ export const leads = {
   followUpsDue: { en: "Follow-ups due", kn: "ಅನುಸರಣೆ ಬಾಕಿ", te: "ఫాలో-అప్ బకాయి" },
   won: { en: "Won", kn: "ಯಶಸ್ವಿ", te: "విజయవంతం" },
   noLeads: { en: "No leads yet", kn: "ಇನ್ನೂ ವಿಚಾರಣೆಗಳಿಲ್ಲ", te: "ఇంకా విచారణలు లేవు" },
-  noLeadsBody: { en: "Open a property and print its enquiry QR code. Anyone who scans it lands here.", kn: "ಆಸ್ತಿ ತೆರೆದು ಅದರ ವಿಚಾರಣೆ QR ಕೋಡ್ ಪ್ರಿಂಟ್ ಮಾಡಿ. ಸ್ಕ್ಯಾನ್ ಮಾಡಿದವರು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತಾರೆ.", te: "ఆస్తిని తెరిచి దాని విచారణ QR కోడ్ ప్రింట్ చేయండి. స్కాన్ చేసినవారు ఇక్కడ కనిపిస్తారు." },
+  noLeadsBody: { en: "Print your property's enquiry QR code. People who scan it show up here.", kn: "ಆಸ್ತಿ ತೆರೆದು ಅದರ ವಿಚಾರಣೆ QR ಕೋಡ್ ಪ್ರಿಂಟ್ ಮಾಡಿ. ಸ್ಕ್ಯಾನ್ ಮಾಡಿದವರು ಇಲ್ಲಿ ಕಾಣಿಸುತ್ತಾರೆ.", te: "ఆస్తిని తెరిచి దాని విచారణ QR కోడ్ ప్రింట్ చేయండి. స్కాన్ చేసినవారు ఇక్కడ కనిపిస్తారు." },
   anyProperty: { en: "Any property", kn: "ಯಾವುದೇ ಆಸ್ತಿ", te: "ఏ ఆస్తి అయినా" },
   followUpDueOn: { en: "Follow up due {date}", kn: "{date} ರಂದು ಅನುಸರಣೆ ಬಾಕಿ", te: "{date} న ఫాలో-అప్ బకాయి" },
   qrBadge: { en: "QR", kn: "QR", te: "QR" },

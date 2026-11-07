@@ -5,12 +5,12 @@ export const settleMsgs = {
   setBtn: { en: "Move-out settlement", kn: "ಬಿಡುವಾಗಿನ ಲೆಕ್ಕ", te: "ఖాళీ చేసేటప్పటి లెక్క" },
   setTitle: { en: "Move-out settlement", kn: "ಬಿಡುವಾಗಿನ ಲೆಕ್ಕ", te: "ఖాళీ చేసేటప్పటి లెక్క" },
   setSub: {
-    en: "Deposit, what is still owed, deductions and the refund, on one sheet you can print or send.",
+    en: "Deposit, dues, deductions and refund on one sheet. Print or send it.",
     kn: "ಠೇವಣಿ, ಇನ್ನೂ ಬಾಕಿ, ಕಡಿತಗಳು ಮತ್ತು ಹಿಂತಿರುಗಿಸುವ ಹಣ, ಒಂದೇ ಹಾಳೆಯಲ್ಲಿ. ಪ್ರಿಂಟ್ ಮಾಡಿ ಅಥವಾ ಕಳುಹಿಸಿ.",
     te: "డిపాజిట్, ఇంకా బకాయి, తగ్గింపులు మరియు తిరిగి ఇచ్చే డబ్బు, ఒకే షీట్‌లో. ప్రింట్ చేయండి లేదా పంపండి.",
   },
   setNotLeaving: {
-    en: "This tenant is still staying. The sheet shows the settlement if they left today.",
+    en: "This tenant still stays here. This shows the settlement as if they left today.",
     kn: "ಈ ಬಾಡಿಗೆದಾರರು ಇನ್ನೂ ಇದ್ದಾರೆ. ಇಂದು ಬಿಟ್ಟರೆ ಲೆಕ್ಕ ಹೇಗಿರುತ್ತದೆ ಎಂದು ಈ ಹಾಳೆ ತೋರಿಸುತ್ತದೆ.",
     te: "ఈ అద్దెదారు ఇంకా ఉన్నారు. ఈరోజు ఖాళీ చేస్తే లెక్క ఎలా ఉంటుందో ఈ షీట్ చూపిస్తుంది.",
   },
@@ -54,7 +54,7 @@ export const settleMsgs = {
   errNoRefund: { en: "There is no refund to give.", kn: "ಹಿಂತಿರುಗಿಸಲು ಏನೂ ಇಲ್ಲ.", te: "తిరిగి ఇవ్వాల్సింది ఏమీ లేదు." },
   testDataTitle: { en: "Test data (testing phase)", kn: "ಪರೀಕ್ಷಾ ಡೇಟಾ (ಪರೀಕ್ಷಾ ಹಂತ)", te: "టెస్ట్ డేటా (పరీక్ష దశ)" },
   testDataBody: {
-    en: "Adds one extra PG called \"Test PG (sample data)\" with rooms, tenants, dues, payments, electricity, expenses with bill photos, complaints, enquiries, a joiner, regular jobs and a test caretaker. One tenant uses your own mobile, so receipts come to your WhatsApp. Your real data is not changed. Remove it any time.",
+    en: "Adds a sample PG, “Test PG (sample data)”, with tenants, payments, bills, complaints and a test caretaker. One tenant has your mobile, so receipts come to you. Your real data stays. Remove it any time.",
     kn: "\"Test PG (sample data)\" ಎಂಬ ಒಂದು ಹೆಚ್ಚುವರಿ PG ಸೇರಿಸುತ್ತದೆ: ಕೋಣೆಗಳು, ಬಾಡಿಗೆದಾರರು, ಬಾಕಿ, ಪಾವತಿ, ವಿದ್ಯುತ್, ಬಿಲ್ ಫೋಟೋ ಸಹಿತ ಖರ್ಚು, ದೂರು, ವಿಚಾರಣೆ, ಸೇರುವವರು, ನಿಯಮಿತ ಕೆಲಸ ಮತ್ತು ಒಬ್ಬ ಪರೀಕ್ಷಾ ಕೇರ್‌ಟೇಕರ್. ಒಬ್ಬ ಬಾಡಿಗೆದಾರರಿಗೆ ನಿಮ್ಮದೇ ಮೊಬೈಲ್ ಇದೆ, ಹಾಗಾಗಿ ರಸೀದಿ ನಿಮ್ಮ ವಾಟ್ಸಾಪ್‌ಗೆ ಬರುತ್ತದೆ. ನಿಮ್ಮ ನಿಜವಾದ ಡೇಟಾ ಬದಲಾಗುವುದಿಲ್ಲ. ಯಾವಾಗ ಬೇಕಾದರೂ ತೆಗೆಯಬಹುದು.",
     te: "\"Test PG (sample data)\" అనే ఒక అదనపు PG జోడిస్తుంది: గదులు, అద్దెదారులు, బకాయిలు, చెల్లింపులు, కరెంటు, బిల్లు ఫోటోలతో ఖర్చులు, ఫిర్యాదులు, విచారణలు, చేరేవారు, క్రమ పనులు మరియు ఒక టెస్ట్ కేర్‌టేకర్. ఒక అద్దెదారుకు మీ మొబైల్ ఉంది, కాబట్టి రసీదులు మీ వాట్సాప్‌కి వస్తాయి. మీ అసలు డేటా మారదు. ఎప్పుడైనా తీసేయవచ్చు.",
   },
@@ -66,10 +66,10 @@ export const settleMsgs = {
   testDataRemoved: { en: "Test data removed.", kn: "ಪರೀಕ್ಷಾ ಡೇಟಾ ತೆಗೆಯಲಾಗಿದೆ.", te: "టెస్ట్ డేటా తీసేయబడింది." },
   testDataOff: { en: "Test data is switched off.", kn: "ಪರೀಕ್ಷಾ ಡೇಟಾ ಆಫ್ ಆಗಿದೆ.", te: "టెస్ట్ డేటా ఆఫ్‌లో ఉంది." },
   testDataHas: { en: "The sample PG is in your account now.", kn: "ಮಾದರಿ PG ಈಗ ನಿಮ್ಮ ಖಾತೆಯಲ್ಲಿದೆ.", te: "నమూనా PG ఇప్పుడు మీ ఖాతాలో ఉంది." },
-  testDataSamePhone: { en: "Testing phase: one mobile can be an owner and a caretaker at the same time (login tells them apart by name and password).", kn: "ಪರೀಕ್ಷಾ ಹಂತ: ಒಂದೇ ಮೊಬೈಲ್ ಮಾಲೀಕರು ಮತ್ತು ಕೇರ್‌ಟೇಕರ್ ಎರಡೂ ಆಗಬಹುದು (ಹೆಸರು ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದ ಲಾಗಿನ್ ಗುರುತಿಸುತ್ತದೆ).", te: "పరీక్ష దశ: ఒకే మొబైల్ యజమాని మరియు కేర్‌టేకర్ రెండూ కావచ్చు (పేరు, పాస్‌వర్డ్‌తో లాగిన్ గుర్తిస్తుంది)." },
+  testDataSamePhone: { en: "Testing: one mobile can be owner and caretaker. Name and password decide who logs in.", kn: "ಪರೀಕ್ಷಾ ಹಂತ: ಒಂದೇ ಮೊಬೈಲ್ ಮಾಲೀಕರು ಮತ್ತು ಕೇರ್‌ಟೇಕರ್ ಎರಡೂ ಆಗಬಹುದು (ಹೆಸರು ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್‌ನಿಂದ ಲಾಗಿನ್ ಗುರುತಿಸುತ್ತದೆ).", te: "పరీక్ష దశ: ఒకే మొబైల్ యజమాని మరియు కేర్‌టేకర్ రెండూ కావచ్చు (పేరు, పాస్‌వర్డ్‌తో లాగిన్ గుర్తిస్తుంది)." },
   demoTitle: { en: "Demo account", kn: "ಡೆಮೊ ಖಾತೆ", te: "డెమో ఖాతా" },
   demoBody: {
-    en: "Before showing Neravu to an owner, fill this account with fresh sample PGs, tenants, dues, bills and a caretaker. Everything in this account is replaced.",
+    en: "Fill this account with fresh sample PGs, tenants, dues and a caretaker. Everything here is replaced.",
     kn: "ಮಾಲೀಕರಿಗೆ ನೆರವು ತೋರಿಸುವ ಮೊದಲು, ಈ ಖಾತೆಯನ್ನು ಹೊಸ ಮಾದರಿ ಪಿಜಿ, ಬಾಡಿಗೆದಾರರು, ಬಾಕಿ, ಬಿಲ್‌ಗಳು ಮತ್ತು ಕೇರ್‌ಟೇಕರ್‌ನಿಂದ ತುಂಬಿಸಿ. ಈ ಖಾತೆಯಲ್ಲಿರುವ ಎಲ್ಲವೂ ಬದಲಾಗುತ್ತದೆ.",
     te: "యజమానికి నెరవు చూపించే ముందు, ఈ ఖాతాను కొత్త నమూనా పిజిలు, అద్దెదారులు, బకాయిలు, బిల్లులు మరియు కేర్‌టేకర్‌తో నింపండి. ఈ ఖాతాలోని అన్నీ మారిపోతాయి.",
   },

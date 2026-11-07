@@ -3,8 +3,8 @@ import type { Part } from "./types";
 export const exportmsgs = {
   navExport: { en: "Download data", kn: "ಡೇಟಾ ಡೌನ್‌ಲೋಡ್", te: "డేటా డౌన్‌లోడ్" },
   exportTitle: { en: "Download your data", kn: "ನಿಮ್ಮ ಡೇಟಾ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ", te: "మీ డేటాను డౌన్‌లోడ్ చేయండి" },
-  exportSub: { en: "Your records are yours. Download them as spreadsheets any time, for your accountant or as a backup.", kn: "ನಿಮ್ಮ ದಾಖಲೆಗಳು ನಿಮ್ಮವು. ಲೆಕ್ಕಿಗರಿಗೆ ಅಥವಾ ಬ್ಯಾಕಪ್‌ಗಾಗಿ ಯಾವಾಗ ಬೇಕಾದರೂ ಸ್ಪ್ರೆಡ್‌ಶೀಟ್ ಆಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.", te: "మీ రికార్డులు మీవే. మీ అకౌంటెంట్ కోసం లేదా బ్యాకప్ కోసం ఎప్పుడైనా స్ప్రెడ్‌షీట్‌గా డౌన్‌లోడ్ చేయండి." },
-  exportWarn: { en: "These files include phone numbers and ID numbers. Keep them safe and do not share them.", kn: "ಈ ಫೈಲ್‌ಗಳಲ್ಲಿ ಫೋನ್ ಮತ್ತು ಗುರುತಿನ ಸಂಖ್ಯೆಗಳಿವೆ. ಸುರಕ್ಷಿತವಾಗಿ ಇಡಿ, ಬೇರೆಯವರಿಗೆ ಹಂಚಬೇಡಿ.", te: "ఈ ఫైళ్లలో ఫోన్ మరియు గుర్తింపు నంబర్లు ఉన్నాయి. భద్రంగా ఉంచండి, ఇతరులకు పంచకండి." },
+  exportSub: { en: "Download your records as spreadsheets, for your accountant or as a backup.", kn: "ನಿಮ್ಮ ದಾಖಲೆಗಳು ನಿಮ್ಮವು. ಲೆಕ್ಕಿಗರಿಗೆ ಅಥವಾ ಬ್ಯಾಕಪ್‌ಗಾಗಿ ಯಾವಾಗ ಬೇಕಾದರೂ ಸ್ಪ್ರೆಡ್‌ಶೀಟ್ ಆಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.", te: "మీ రికార్డులు మీవే. మీ అకౌంటెంట్ కోసం లేదా బ్యాకప్ కోసం ఎప్పుడైనా స్ప్రెడ్‌షీట్‌గా డౌన్‌లోడ్ చేయండి." },
+  exportWarn: { en: "These files have phone and ID numbers. Keep them safe.", kn: "ಈ ಫೈಲ್‌ಗಳಲ್ಲಿ ಫೋನ್ ಮತ್ತು ಗುರುತಿನ ಸಂಖ್ಯೆಗಳಿವೆ. ಸುರಕ್ಷಿತವಾಗಿ ಇಡಿ, ಬೇರೆಯವರಿಗೆ ಹಂಚಬೇಡಿ.", te: "ఈ ఫైళ్లలో ఫోన్ మరియు గుర్తింపు నంబర్లు ఉన్నాయి. భద్రంగా ఉంచండి, ఇతరులకు పంచకండి." },
   exportBtn: { en: "Download", kn: "ಡೌನ್‌ಲೋಡ್", te: "డౌన్‌లోడ్" },
   exp_tenants: { en: "Tenants", kn: "ಬಾಡಿಗೆದಾರರು", te: "అద్దెదారులు" },
   exp_tenants_d: { en: "Everyone, with room, rent, deposit and ID details.", kn: "ಎಲ್ಲರೂ, ಕೋಣೆ, ಬಾಡಿಗೆ, ಠೇವಣಿ ಮತ್ತು ಗುರುತಿನ ವಿವರಗಳೊಂದಿಗೆ.", te: "అందరూ, గది, అద్దె, డిపాజిట్ మరియు గుర్తింపు వివరాలతో." },
@@ -21,5 +21,5 @@ export const exportmsgs = {
   exp_complaints: { en: "Complaints", kn: "ದೂರುಗಳು", te: "ఫిర్యాదులు" },
   exp_complaints_d: { en: "All complaints and whether they were fixed.", kn: "ಎಲ್ಲಾ ದೂರುಗಳು ಮತ್ತು ಸರಿಯಾಯಿತೇ ಎಂಬುದು.", te: "అన్ని ఫిర్యాదులు మరియు పరిష్కారమయ్యాయా అనేది." },
   exp_backup: { en: "Full backup", kn: "ಪೂರ್ಣ ಬ್ಯಾಕಪ್", te: "పూర్తి బ్యాకప్" },
-  exp_backup_d: { en: "Everything above in one file, for safekeeping. Passwords and payment keys are never included.", kn: "ಮೇಲಿನ ಎಲ್ಲವೂ ಒಂದೇ ಫೈಲ್‌ನಲ್ಲಿ, ಭದ್ರತೆಗಾಗಿ. ಪಾಸ್‌ವರ್ಡ್ ಮತ್ತು ಪಾವತಿ ಕೀಗಳನ್ನು ಎಂದಿಗೂ ಸೇರಿಸುವುದಿಲ್ಲ.", te: "పైవన్నీ ఒకే ఫైల్‌లో, భద్రత కోసం. పాస్‌వర్డ్‌లు మరియు చెల్లింపు కీలు ఎప్పుడూ చేర్చబడవు." },
+  exp_backup_d: { en: "Everything above in one file. No passwords or payment keys.", kn: "ಮೇಲಿನ ಎಲ್ಲವೂ ಒಂದೇ ಫೈಲ್‌ನಲ್ಲಿ, ಭದ್ರತೆಗಾಗಿ. ಪಾಸ್‌ವರ್ಡ್ ಮತ್ತು ಪಾವತಿ ಕೀಗಳನ್ನು ಎಂದಿಗೂ ಸೇರಿಸುವುದಿಲ್ಲ.", te: "పైవన్నీ ఒకే ఫైల్‌లో, భద్రత కోసం. పాస్‌వర్డ్‌లు మరియు చెల్లింపు కీలు ఎప్పుడూ చేర్చబడవు." },
 } satisfies Part;

@@ -28,6 +28,19 @@ async function shrinkPhoto(file: File): Promise<{ data: Uint8Array<ArrayBuffer>;
 }
 
 /** Public, from the tenant's My PG link: report a problem, optionally with a photo. */
+// A recorded or chosen video, after the phone has made it small (see ComplaintMedia).
+const VIDEO_LIMIT = 3_600_000;
+
+/** MP4 / MOV ("ftyp" box) or WebM (EBML header), from the first bytes; null for anything else. */
+function videoKind(b: Uint8Array): string | null {
+  if (b.length > 12 && b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70) {
+    const brand = String.fromCharCode(b[8], b[9], b[10], b[11]);
+    return brand === "qt  " ? "video/quicktime" : "video/mp4";
+  }
+  if (b.length > 4 && b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3) return "video/webm";
+  return null;
+}
+
 export async function submitTenantComplaint(token: string, _: FormState, fd: FormData): Promise<FormState> {
   const { t } = await getT();
   if (await tooMany("tenant-complaint", 8, 60 * 60 * 1000)) return { error: t("tryAgainLater") };
@@ -40,6 +53,16 @@ export async function submitTenantComplaint(token: string, _: FormState, fd: For
   const file = fd.get("photo");
   const photo = file instanceof File && file.size > 0 ? await shrinkPhoto(file) : null;
   if (file instanceof File && file.size > 0 && !photo) return { error: t("mpBadPhoto") };
+  const vf = fd.get("video");
+  let video: { data: Uint8Array<ArrayBuffer>; mime: string } | null = null;
+  if (vf instanceof File && vf.size > 0) {
+    if (vf.size > VIDEO_LIMIT) return { error: t("mpVideoTooBig") };
+    const bytes = new Uint8Array(await vf.arrayBuffer());
+    // The label a phone gives a recording is unreliable, so look at the file itself.
+    const mime = videoKind(bytes);
+    if (!mime) return { error: t("mpBadVideo") };
+    video = { data: bytes, mime };
+  }
   await db.complaint.create({
     data: {
       ownerId: tn.ownerId,
@@ -50,6 +73,8 @@ export async function submitTenantComplaint(token: string, _: FormState, fd: For
       source: "TENANT",
       photo: photo?.data,
       photoMime: photo?.mime,
+      video: video?.data,
+      videoMime: video?.mime,
     },
   });
   revalidatePath("/", "layout");

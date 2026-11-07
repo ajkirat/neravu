@@ -18,7 +18,7 @@ import { ActionForm } from "@/components/action-form";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { PaymentSettingsForm } from "@/components/payment-settings-form";
 import { TextSizeToggle } from "@/components/text-size-toggle";
-import { Card, Field, PageHeader } from "@/components/ui";
+import { Card, Field, PageHeader, Badge } from "@/components/ui";
 
 export const maxDuration = 60;
 
@@ -34,6 +34,7 @@ export default async function SettingsPage() {
   });
   const inboxDomain = process.env.INBOUND_EMAIL_DOMAIN;
   const inbox = full?.bankInbox && inboxDomain ? `pay-${full.bankInbox}@${inboxDomain}` : null;
+  const bankAvailable = !!inboxDomain || isDemoOwner(owner.email) || full?.payConfirm === "BANK";
   const credits = full?.payConfirm === "BANK"
     ? await db.bankCredit.findMany({ where: { ownerId: owner.id }, orderBy: { createdAt: "desc" }, take: 5 })
     : [];
@@ -104,16 +105,21 @@ export default async function SettingsPage() {
                 <span className="block text-sm text-muted">{t("confirmAHint")}</span>
               </span>
             </label>
-            <label className="flex items-start gap-3 rounded-xl border border-line p-3">
-              <input type="radio" name="payConfirm" value="BANK" defaultChecked={full?.payConfirm === "BANK"} className="mt-1 h-5 w-5" />
+            {/* Bank alerts need the server's inbound email set up; until then the choice is shown, but off. */}
+            <label className={`flex items-start gap-3 rounded-xl border border-line p-3 ${bankAvailable ? "" : "opacity-60"}`}>
+              <input type="radio" name="payConfirm" value="BANK" defaultChecked={full?.payConfirm === "BANK"} disabled={!bankAvailable} className="mt-1 h-5 w-5" />
               <span>
-                <span className="block font-semibold text-brand-900">{t("confirmC")}</span>
+                <span className="block font-semibold text-brand-900">
+                  {t("confirmC")} {!bankAvailable && <Badge tone="amber">{t("comingSoon")}</Badge>}
+                </span>
                 <span className="block text-sm text-muted">{t("confirmCHint")}</span>
               </span>
             </label>
-            <Field label={t("bankLast4")} hint={t("bankLast4Hint")}>
-              <input name="bankLast4" className="input sm:max-w-40" inputMode="numeric" maxLength={4} defaultValue={full?.bankLast4 ?? ""} />
-            </Field>
+            {bankAvailable && (
+              <Field label={t("bankLast4")} hint={t("bankLast4Hint")}>
+                <input name="bankLast4" className="input sm:max-w-40" inputMode="numeric" maxLength={4} defaultValue={full?.bankLast4 ?? ""} />
+              </Field>
+            )}
           </ActionForm>
           {full?.payConfirm === "BANK" && (
             <div className="mt-5 space-y-3 border-t border-line pt-4 text-sm">

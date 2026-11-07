@@ -2,7 +2,7 @@ import type { Part } from "./types";
 
 export const bulk = {
   bulkOpen: { en: "Add many rooms at once", kn: "ಒಮ್ಮೆಲೇ ಹಲವು ಕೋಣೆಗಳನ್ನು ಸೇರಿಸಿ", te: "ఒకేసారి చాలా గదులు జోడించండి" },
-  bulkSub: { en: "Pick how your rooms are numbered. You can change every row before saving.", kn: "ನಿಮ್ಮ ಕೋಣೆಗಳಿಗೆ ಸಂಖ್ಯೆ ಹೇಗೆ ಹಾಕುತ್ತೀರಿ ಆರಿಸಿ. ಉಳಿಸುವ ಮೊದಲು ಪ್ರತಿ ಸಾಲನ್ನು ಬದಲಿಸಬಹುದು.", te: "మీ గదులకు నంబర్లు ఎలా ఇస్తారో ఎంచుకోండి. సేవ్ చేసే ముందు ప్రతి వరుసను మార్చవచ్చు." },
+  bulkSub: { en: "Choose how your rooms are numbered. You can edit every row before saving.", kn: "ನಿಮ್ಮ ಕೋಣೆಗಳಿಗೆ ಸಂಖ್ಯೆ ಹೇಗೆ ಹಾಕುತ್ತೀರಿ ಆರಿಸಿ. ಉಳಿಸುವ ಮೊದಲು ಪ್ರತಿ ಸಾಲನ್ನು ಬದಲಿಸಬಹುದು.", te: "మీ గదులకు నంబర్లు ఎలా ఇస్తారో ఎంచుకోండి. సేవ్ చేసే ముందు ప్రతి వరుసను మార్చవచ్చు." },
   bulkModePattern: { en: "Make a pattern", kn: "ಮಾದರಿ ಮಾಡಿ", te: "నమూనా చేయండి" },
   bulkModeList: { en: "Type or paste a list", kn: "ಪಟ್ಟಿ ಬರೆಯಿರಿ ಅಥವಾ ಅಂಟಿಸಿ", te: "జాబితా టైప్ చేయండి లేదా పేస్ట్ చేయండి" },
   bulkDefaultBeds: { en: "Beds in each room", kn: "ಪ್ರತಿ ಕೋಣೆಯಲ್ಲಿ ಹಾಸಿಗೆಗಳು", te: "ప్రతి గదిలో మంచాలు" },
@@ -15,7 +15,7 @@ export const bulk = {
   bulkP_floorLetter: { en: "A1, A2 · B1, B2", kn: "A1, A2 · B1, B2", te: "A1, A2 · B1, B2" },
   bulkFloors: { en: "Number of floors", kn: "ಮಹಡಿಗಳ ಸಂಖ್ಯೆ", te: "అంతస్తుల సంఖ్య" },
   bulkPerFloor: { en: "Rooms on each floor", kn: "ಪ್ರತಿ ಮಹಡಿಯಲ್ಲಿ ಕೋಣೆಗಳು", te: "ప్రతి అంతస్తులో గదులు" },
-  bulkPerFloorHint: { en: "One number for every floor (10), or one per floor (10, 10, 8).", kn: "ಎಲ್ಲಾ ಮಹಡಿಗೆ ಒಂದು ಸಂಖ್ಯೆ (10), ಅಥವಾ ಪ್ರತಿ ಮಹಡಿಗೆ ಒಂದು (10, 10, 8).", te: "అన్ని అంతస్తులకు ఒక సంఖ్య (10), లేదా ప్రతి అంతస్తుకు ఒకటి (10, 10, 8)." },
+  bulkPerFloorHint: { en: "Same for every floor (10), or one per floor (10, 10, 8).", kn: "ಎಲ್ಲಾ ಮಹಡಿಗೆ ಒಂದು ಸಂಖ್ಯೆ (10), ಅಥವಾ ಪ್ರತಿ ಮಹಡಿಗೆ ಒಂದು (10, 10, 8).", te: "అన్ని అంతస్తులకు ఒక సంఖ్య (10), లేదా ప్రతి అంతస్తుకు ఒకటి (10, 10, 8)." },
   bulkGround: { en: "The building has a ground floor", kn: "ಕಟ್ಟಡಕ್ಕೆ ನೆಲ ಮಹಡಿ ಇದೆ", te: "భవనానికి గ్రౌండ్ ఫ్లోర్ ఉంది" },
   bulkGroundLabel: { en: "Ground floor is called", kn: "ನೆಲ ಮಹಡಿಯ ಹೆಸರು", te: "గ్రౌండ్ ఫ్లోర్ పేరు" },
   bulkMore: { en: "More options", kn: "ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು", te: "మరిన్ని ఎంపికలు" },
@@ -31,7 +31,7 @@ export const bulk = {
   bulkRoomLetters: { en: "Use letters for rooms (A, B, C)", kn: "ಕೋಣೆಗೆ ಅಕ್ಷರ ಬಳಸಿ (A, B, C)", te: "గదులకు అక్షరాలు వాడండి (A, B, C)" },
   bulkSuffix: { en: "End with", kn: "ಇದರಿಂದ ಮುಗಿಸಿ", te: "దీనితో ముగించండి" },
   bulkListLabel: { en: "Your rooms", kn: "ನಿಮ್ಮ ಕೋಣೆಗಳು", te: "మీ గదులు" },
-  bulkListHint: { en: "One line: separate with commas, like 101-110, 201-210, G1. Several lines (for example pasted from Excel): one room per line, then optionally beds, rent and floor.", kn: "ಒಂದು ಸಾಲು: ಅಲ್ಪವಿರಾಮದಿಂದ ಬೇರ್ಪಡಿಸಿ, ಉದಾ 101-110, 201-210, G1. ಹಲವು ಸಾಲು (ಉದಾ Excel ನಿಂದ): ಒಂದು ಸಾಲಿಗೆ ಒಂದು ಕೋಣೆ, ನಂತರ ಬೇಕಾದರೆ ಹಾಸಿಗೆ, ಬಾಡಿಗೆ, ಮಹಡಿ.", te: "ఒక వరుస: కామాలతో వేరు చేయండి, ఉదా 101-110, 201-210, G1. అనేక వరుసలు (ఉదా Excel నుండి): ఒక వరుసకు ఒక గది, తర్వాత కావాలంటే మంచాలు, అద్దె, అంతస్తు." },
+  bulkListHint: { en: "Type rooms with commas, like 101-110, 201-210, G1. Or paste from Excel: one room per line.", kn: "ಒಂದು ಸಾಲು: ಅಲ್ಪವಿರಾಮದಿಂದ ಬೇರ್ಪಡಿಸಿ, ಉದಾ 101-110, 201-210, G1. ಹಲವು ಸಾಲು (ಉದಾ Excel ನಿಂದ): ಒಂದು ಸಾಲಿಗೆ ಒಂದು ಕೋಣೆ, ನಂತರ ಬೇಕಾದರೆ ಹಾಸಿಗೆ, ಬಾಡಿಗೆ, ಮಹಡಿ.", te: "ఒక వరుస: కామాలతో వేరు చేయండి, ఉదా 101-110, 201-210, G1. అనేక వరుసలు (ఉదా Excel నుండి): ఒక వరుసకు ఒక గది, తర్వాత కావాలంటే మంచాలు, అద్దె, అంతస్తు." },
   bulkListProblems: { en: "Could not understand: {items}", kn: "ಅರ್ಥವಾಗಲಿಲ್ಲ: {items}", te: "అర్థం కాలేదు: {items}" },
   bulkCount: { en: "{rooms} rooms · {beds} beds", kn: "{rooms} ಕೋಣೆ · {beds} ಹಾಸಿಗೆ", te: "{rooms} గదులు · {beds} మంచాలు" },
   bulkColRoom: { en: "Room", kn: "ಕೋಣೆ", te: "గది" },

@@ -309,6 +309,9 @@ model Complaint {
   source     String    @default("OWNER")
   photoMime  String?
   photo      Bytes?
+  // A short video the tenant recorded or uploaded (kept under ~3.5 MB)
+  videoMime  String?
+  video      Bytes?
   createdAt  DateTime  @default(now())
 
   @@index([ownerId, status])

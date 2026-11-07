@@ -3,6 +3,7 @@ import { ActionForm } from "@/components/action-form";
 import { Field } from "@/components/ui";
 import { login } from "@/app/actions/auth";
 import { getT } from "@/lib/i18n/server";
+import { emailEnabled } from "@/lib/email";
 
 export const metadata = { title: "Log in" };
 
@@ -31,11 +32,14 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </Field>
       </ActionForm>
       <p className="mt-4 rounded-lg bg-canvas px-3 py-2 text-sm text-muted">{t("loginStaffNote")}</p>
-      <p className="mt-3 text-sm">
-        <Link href="/forgot-password" className="font-medium text-brand-600 hover:underline">
-          {t("forgotLink")}
-        </Link>
-      </p>
+      {/* Shown only when reset emails can actually be sent. */}
+      {emailEnabled() && (
+        <p className="mt-3 text-sm">
+          <Link href="/forgot-password" className="font-medium text-brand-600 hover:underline">
+            {t("forgotLink")}
+          </Link>
+        </p>
+      )}
       <p className="mt-6 text-sm text-muted">
         {t("newHere")}{" "}
         <Link href="/signup" className="font-medium text-brand-600 hover:underline">

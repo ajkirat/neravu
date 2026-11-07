@@ -5,7 +5,7 @@ export const properties = {
   propsSub: { en: "Your PGs, their rooms and beds.", kn: "ನಿಮ್ಮ PG ಗಳು, ಕೋಣೆಗಳು ಮತ್ತು ಹಾಸಿಗೆಗಳು.", te: "మీ PG లు, గదులు మరియు మంచాలు." },
   noPropsTitle: { en: "No properties yet", kn: "ಇನ್ನೂ ಆಸ್ತಿಗಳಿಲ್ಲ", te: "ఇంకా ఆస్తులు లేవు" },
   noPropsBody: {
-    en: "Add your first PG on the right, then set up its rooms and beds.",
+    en: "Add your first PG, then its rooms.",
     kn: "ನಿಮ್ಮ ಮೊದಲ PG ಅನ್ನು ಸೇರಿಸಿ, ನಂತರ ಅದರ ಕೋಣೆ ಮತ್ತು ಹಾಸಿಗೆಗಳನ್ನು ಸೇರಿಸಿ.",
     te: "మీ మొదటి PG ని జోడించండి, తర్వాత దాని గదులు మరియు మంచాలను జోడించండి.",
   },
@@ -30,7 +30,7 @@ export const properties = {
   pendingDues: { en: "Pending dues", kn: "ಬಾಕಿ ಮೊತ್ತ", te: "బకాయి మొత్తం" },
   noRooms: { en: "No rooms yet", kn: "ಇನ್ನೂ ಕೋಣೆಗಳಿಲ್ಲ", te: "ఇంకా గదులు లేవు" },
   noRoomsBody: {
-    en: "Add rooms with their sharing type. Beds are created for you automatically.",
+    en: "Add rooms with their sharing. Beds are made for you.",
     kn: "ಕೋಣೆಗಳನ್ನು ಅವುಗಳ ಹಂಚಿಕೆ ಪ್ರಕಾರದೊಂದಿಗೆ ಸೇರಿಸಿ. ಹಾಸಿಗೆಗಳು ತಾನಾಗಿ ಸೃಷ್ಟಿಯಾಗುತ್ತವೆ.",
     te: "గదులను వాటి షేరింగ్ రకంతో జోడించండి. మంచాలు ఆటోమేటిక్‌గా తయారవుతాయి.",
   },
@@ -52,7 +52,7 @@ export const properties = {
   propDetails: { en: "Property details", kn: "ಆಸ್ತಿಯ ವಿವರ", te: "ఆస్తి వివరాలు" },
   deleteProperty: { en: "Delete property", kn: "ಆಸ್ತಿ ಅಳಿಸಿ", te: "ఆస్తిని తొలగించండి" },
   deletePropertyConfirm: {
-    en: "Delete this property, its rooms and its history? This cannot be undone.",
+    en: "Delete this property with its rooms and history? This cannot be undone.",
     kn: "ಈ ಆಸ್ತಿ, ಅದರ ಕೋಣೆಗಳು ಮತ್ತು ಇತಿಹಾಸವನ್ನು ಅಳಿಸಬೇಕೇ? ಇದನ್ನು ಹಿಂತಿರುಗಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.",
     te: "ఈ ఆస్తిని, దాని గదులను మరియు చరిత్రను తొలగించాలా? దీన్ని వెనక్కి తీసుకోలేరు.",
   },

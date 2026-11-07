@@ -27,6 +27,7 @@ export default async function ComplaintsPage() {
         status: true,
         source: true,
         photoMime: true,
+        videoMime: true,
         createdAt: true,
         tenant: { select: { name: true, phone: true, language: true } },
         property: { select: { name: true } },
@@ -87,6 +88,9 @@ export default async function ComplaintsPage() {
                     <p className="mt-1 flex flex-wrap items-center gap-3 text-sm">
                       {c.source === "TENANT" && <Badge tone="green">{t("cmpFromTenant")}</Badge>}
                       {c.photoMime && <PhotoThumb src={`/complaints/${c.id}/photo`} alt={t("cmpPhoto")} className="h-14 w-14" />}
+                      {c.videoMime && (
+                        <video src={`/complaints/${c.id}/video`} controls playsInline preload="metadata" className="h-32 max-w-56 rounded-lg bg-black" aria-label={t("cmpVideo")} data-testid="complaint-video" />
+                      )}
                       {c.status === "RESOLVED" && c.tenant?.phone && (
                         <a
                           className="text-brand-600 underline"
