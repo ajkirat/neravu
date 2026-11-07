@@ -19,6 +19,8 @@ model Owner {
   phoneKey                 String?           @unique
   passwordHash             String
   pitches                  Pitch[]
+  checklists               Checklist[]
+  assets                   Asset[]
   // Shown on tenant messages and pay pages; optional
   businessName             String?
   // Shown to new tenants in the welcome WhatsApp message (wifi, timings, rules)
@@ -553,9 +555,85 @@ model RecurringJob {
   lastDone   DateTime?
   lastDoneBy String?
   active     Boolean   @default(true)
+  // WATER | PEST | HOUSEKEEPING | KITCHEN | APPLIANCE | ELECTRICAL | SAFETY | BUILDING | OTHER
+  category   String    @default("OTHER")
+  // Who does it, and what it usually costs (pre-fills "Done")
+  vendorName  String?
+  vendorPhone String?
+  cost        Int?
+  // Show a heads-up on Today this many days before it is due (0 = only when due)
+  remindDays  Int       @default(0)
+  notes       String?
   createdAt  DateTime  @default(now())
+  logs       ServiceLog[]
 
   @@index([ownerId, nextDue])
+}
+
+// One time a recurring service was done: when, by whom, what it cost, and the expense it became.
+model ServiceLog {
+  id        String       @id @default(cuid())
+  ownerId   String
+  jobId     String
+  job       RecurringJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  doneOn    DateTime
+  byName    String?
+  cost      Int?
+  note      String?
+  expenseId String?
+  createdAt DateTime     @default(now())
+
+  @@index([jobId, doneOn])
+}
+
+// A housekeeping checklist the caretaker ticks every day (or week).
+model Checklist {
+  id         String         @id @default(cuid())
+  ownerId    String
+  owner      Owner          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  propertyId String?
+  title      String
+  // DAILY | WEEKLY
+  frequency  String         @default("DAILY")
+  items      String[]
+  active     Boolean        @default(true)
+  createdAt  DateTime       @default(now())
+  runs       ChecklistRun[]
+
+  @@index([ownerId])
+}
+
+// What was ticked on one day (or in one week, keyed by its Monday).
+model ChecklistRun {
+  id          String    @id @default(cuid())
+  checklistId String
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  period      DateTime
+  doneItems   String[]
+  byName      String?
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([checklistId, period])
+}
+
+// Equipment that needs servicing: RO, geyser, AC, pump, fire extinguisher... with warranty / AMC dates.
+model Asset {
+  id            String    @id @default(cuid())
+  ownerId       String
+  owner         Owner     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  propertyId    String?
+  name          String
+  kind          String    @default("OTHER")
+  location      String?
+  boughtOn      DateTime?
+  warrantyUntil DateTime?
+  amcUntil      DateTime?
+  vendorName    String?
+  vendorPhone   String?
+  notes         String?
+  createdAt     DateTime  @default(now())
+
+  @@index([ownerId])
 }
 
 // A pitch made to a prospective PG owner with the savings calculator: their numbers, the problems they

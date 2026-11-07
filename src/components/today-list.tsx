@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { fmtDate, rupees } from "@/lib/format";
+import { fmtDate, rupees, whatsappNumber } from "@/lib/format";
 import { taggedRupees } from "@/lib/paycode";
 import { cashWithStaff } from "@/lib/cash";
 import { ladder, ownerSelect } from "@/lib/auto-reminders";
@@ -12,7 +12,8 @@ import { assignCredit, ignoreCredit } from "@/app/actions/pay-confirm";
 import { acceptLeave, dismissRequest } from "@/app/actions/requests";
 import { ActionButton, AssignCredit } from "@/components/today-actions";
 import { jobDone, jobLater } from "@/app/actions/jobs";
-import { diffDays, today } from "@/lib/dates";
+import { addDays, diffDays, today } from "@/lib/dates";
+import { assetAlerts, dueState, periodFor, vendorMessage } from "@/lib/upkeep";
 
 type Props = { ownerId: string; isOwner: boolean; staffId: string | null; autoReminders: boolean };
 
@@ -35,13 +36,31 @@ export async function TodayList({ ownerId, isOwner, staffId, autoReminders }: Pr
     billCandidates(ownerId),
     isOwner ? db.tenant.findMany({ where: { ownerId, status: { in: ["ACTIVE", "NOTICE"] } }, select: { id: true, name: true }, orderBy: { name: "asc" } }) : [],
   ]);
+  // Upkeep: services in their heads-up window, checklists not finished for today / this week, and
+  // equipment whose warranty or AMC is ending.
+  const asOf = today();
+  const [soonJobs, cks, assets] = await Promise.all([
+    db.recurringJob.findMany({ where: { ownerId, active: true, remindDays: { gt: 0 }, nextDue: { gt: asOf, lte: addDays(asOf, 30) } }, orderBy: { nextDue: "asc" }, take: 10 }),
+    db.checklist.findMany({ where: { ownerId, active: true }, include: { runs: { where: { period: { gte: addDays(asOf, -6) } } } } }),
+    isOwner ? db.asset.findMany({ where: { ownerId, OR: [{ warrantyUntil: { not: null } }, { amcUntil: { not: null } }] } }) : [],
+  ]);
+  const soon = soonJobs.filter((j) => dueState(j.nextDue, j.remindDays, asOf).state === "soon");
+  const openCks = cks
+    .map((c) => {
+      const period = periodFor(c.frequency, asOf);
+      const run = c.runs.find((r) => r.period.getTime() === period.getTime());
+      return { c, done: (run?.doneItems ?? []).filter((i) => c.items.includes(i)).length };
+    })
+    .filter((x) => x.done < x.c.items.length);
+  const assetRows = assets.flatMap((a) => assetAlerts(a, asOf).map((al) => ({ a, al })));
+  const pgLabel = ownerRow?.businessName ?? ownerRow?.name ?? "";
   // With automatic WhatsApp on, reminders go out by themselves; otherwise they wait here for a tap.
   const autoOn = autoReminders && whatsappConfigured();
   const remind = autoOn ? [] : lad.items.filter((i) => i.kind === "OVERDUE");
   const cashTotal = cash.reduce((n, c) => n + c.amount, 0);
   const billIds = new Set(bills.map((b) => b.id));
   const remindOnly = remind.filter((r) => !billIds.has(r.tenantId));
-  const count = jobs.length + claims.length + credits.length + leaves.length + (complaints ? 1 : 0) + (joining ? 1 : 0) + (cashTotal ? 1 : 0) + bills.length + remindOnly.length + lad.calls.length;
+  const count = jobs.length + soon.length + openCks.length + assetRows.length + claims.length + credits.length + leaves.length + (complaints ? 1 : 0) + (joining ? 1 : 0) + (cashTotal ? 1 : 0) + bills.length + remindOnly.length + lad.calls.length;
 
   const Row = ({ children }: { children: React.ReactNode }) => <li className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-4 py-3 sm:px-5">{children}</li>;
 
@@ -67,6 +86,51 @@ export async function TodayList({ ownerId, isOwner, staffId, autoReminders }: Pr
                   <ActionButton action={jobDone.bind(null, j.id)} label={t("jobDoneBtn")} className="btn-primary btn-sm" />
                   <ActionButton action={jobLater.bind(null, j.id)} label={t("jobLaterBtn")} />
                 </span>
+              </Row>
+            );
+          })}
+          {soon.map((j) => (
+            <Row key={`soon-${j.id}`}>
+              <span className="min-w-0 text-base">
+                <span className="font-semibold">{t("todaySvcSoon", { title: j.title, n: diffDays(j.nextDue, asOf) })}</span>
+                <span className="block text-sm text-muted">
+                  {fmtDate(j.nextDue, lang)}
+                  {j.vendorName ? ` · ${j.vendorName}` : ""} · {t("todaySvcSoonHint")}
+                </span>
+              </span>
+              {j.vendorPhone ? (
+                <a
+                  className="btn-accent btn-sm"
+                  target="_blank"
+                  rel="noreferrer"
+                  href={`https://wa.me/${whatsappNumber(j.vendorPhone)}?text=${encodeURIComponent(vendorMessage({ vendor: j.vendorName, service: j.title, pg: pgLabel, date: fmtDate(j.nextDue, "en") }))}`}
+                >
+                  {t("svcWaVendor")}
+                </a>
+              ) : (
+                <Link href="/upkeep?tab=services" className="btn-secondary btn-sm">
+                  {t("todayCkOpen")}
+                </Link>
+              )}
+            </Row>
+          ))}
+          {openCks.map(({ c, done }) => (
+            <Row key={`ck-${c.id}`}>
+              <span className="min-w-0 text-base font-semibold">{t("todayCk", { title: c.title, done, total: c.items.length })}</span>
+              <Link href="/upkeep?tab=checklists" className="btn-primary btn-sm">
+                {t("todayCkOpen")}
+              </Link>
+            </Row>
+          ))}
+          {assetRows.map(({ a, al }) => {
+            const end = al.kind === "warranty" ? a.warrantyUntil! : a.amcUntil!;
+            const key = al.kind === "warranty" ? (al.days < 0 ? "eqWarrantyEnded" : "eqWarrantyEnds") : al.days < 0 ? "eqAmcEnded" : "eqAmcEnds";
+            return (
+              <Row key={`asset-${a.id}-${al.kind}`}>
+                <span className="min-w-0 text-base font-semibold">{t("todayAsset", { name: a.name, what: t(key, { date: fmtDate(end, lang) }) })}</span>
+                <Link href="/upkeep?tab=equipment" className="btn-secondary btn-sm">
+                  {t("todayCkOpen")}
+                </Link>
               </Row>
             );
           })}

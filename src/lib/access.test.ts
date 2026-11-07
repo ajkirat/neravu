@@ -35,6 +35,8 @@ const ACTOR_FILES = new Set([
   "(app)/announce/page.tsx",
   "(app)/jobs/page.tsx",
   "actions/jobs.ts",
+  "actions/upkeep.ts",
+  "(app)/upkeep/page.tsx",
   "(app)/expenses/[id]/page.tsx",
   "(app)/expenses/[id]/bill/route.ts",
   "(app)/reminders/page.tsx",
@@ -46,7 +48,7 @@ const ACTOR_FILES = new Set([
 ]);
 
 /** Actions a caretaker may call. Anything else that changes data must use requireOwner(). */
-const ACTOR_ACTIONS = new Set(["recordPayment", "collectFull", "markReminded", "createComplaint", "setComplaintStatus", "createLead", "setLeadStatus", "setLeadFollowUp", "createExpense", "jobDone", "jobLater", "resendReceipt"]);
+const ACTOR_ACTIONS = new Set(["recordPayment", "collectFull", "markReminded", "createComplaint", "setComplaintStatus", "createLead", "setLeadStatus", "setLeadFollowUp", "createExpense", "jobDone", "jobLater", "resendReceipt", "serviceDone", "tickChecklist"]);
 
 /** Actions anyone may call without signing in (they protect themselves another way). */
 const PUBLIC_ACTIONS = new Set([

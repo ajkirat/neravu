@@ -27,6 +27,9 @@ export async function clearOwnerData(db: Db, ownerId: string) {
   await db.electricityBill.deleteMany({ where });
   await db.expense.deleteMany({ where });
   await db.tenant.deleteMany({ where });
+  await db.checklist.deleteMany({ where });
+  await db.asset.deleteMany({ where });
+  await db.recurringJob.deleteMany({ where });
   await db.property.deleteMany({ where });
   await db.staff.deleteMany({ where });
 }
