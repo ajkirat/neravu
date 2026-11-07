@@ -25,6 +25,7 @@ import { appOrigin } from "@/lib/url";
 import { getT } from "@/lib/i18n/server";
 import { TenantStatusBadge } from "@/components/tenant-status";
 import { LANGS, asLang } from "@/lib/i18n";
+import { IdProofInput } from "@/components/id-proof-input";
 import { parseElectricityDescription } from "@/lib/electricity";
 import { CopyButton } from "@/components/copy-button";
 import { ActionForm } from "@/components/action-form";
@@ -40,6 +41,7 @@ import {
   giveNotice,
   moveOut,
   updateTenant,
+  readIdForOwner,
 } from "@/app/actions/tenants";
 import { deletePayment, recordRefund } from "@/app/actions/payments";
 
@@ -419,17 +421,10 @@ export default async function TenantPage({
                 <Field label={tr("occupation")}>
                   <input className="input" name="occupation" defaultValue={t.occupation ?? ""} />
                 </Field>
-                <Field label={tr("idProof")}>
-                  <select className="input" name="idType" defaultValue={t.idType ?? ""}>
-                    <option value="">—</option>
-                    {ID_TYPES.map((x) => (
-                      <option key={x}>{x}</option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label={tr("idNumber")}>
-                  <input className="input" name="idNumber" defaultValue={t.idNumber ?? ""} />
-                </Field>
+                <div className="sm:col-span-2">
+                  <span className="label">{tr("idPhotoLabel")}</span>
+                  <IdProofInput read={readIdForOwner} current={{ photoUrl: t.idPhotoMime ? `/tenants/${t.id}/id-photo` : null, type: t.idType, number: t.idNumber }} />
+                </div>
                 <Field label={tr("emergencyName")}>
                   <input className="input" name="emergencyName" defaultValue={t.emergencyName ?? ""} />
                 </Field>

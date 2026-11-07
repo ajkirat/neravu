@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { requireOwner } from "@/lib/auth";
 import { fmtDate, whatsappNumber } from "@/lib/format";
 import { getT } from "@/lib/i18n/server";
+import { PhotoThumb } from "@/components/photo-lightbox";
 import { ActionForm } from "@/components/action-form";
 import { Card, EmptyState, PageHeader } from "@/components/ui";
 import { rejectJoin } from "@/app/actions/join";
@@ -41,8 +42,9 @@ export default async function JoiningPage() {
                   </p>
                   <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-sm">
                     <dt className="text-muted">{t("idProof")}</dt>
-                    <dd>
-                      {r.idType} · {r.idNumber}
+                    <dd className="flex flex-wrap items-center gap-2">
+                      {r.idPhotoMime && <PhotoThumb src={`/tenants/joining/${r.id}/id-photo`} alt={t("idSeePhoto")} className="h-12 w-16" />}
+                      <span>{r.idNumber ? `${r.idType ?? "ID"} · ${r.idNumber}` : r.idPhotoMime ? t("idNotRead") : "—"}</span>
                     </dd>
                     {r.occupation && (
                       <>
