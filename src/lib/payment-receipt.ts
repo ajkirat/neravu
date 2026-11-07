@@ -2,7 +2,7 @@ import "server-only";
 import { db } from "./db";
 import { summarizeLedger } from "./billing";
 import { fmtDate, methodText, rupees } from "./format";
-import { asLang, makeT } from "./i18n";
+import { asLang, makeT, type Lang } from "./i18n";
 import { today } from "./dates";
 import { receiptImageData, renderReceiptPng } from "./receipt-image";
 import { sendTemplate, templateHasImageHeader, uploadMedia, whatsappConfigured, type SendResult } from "./whatsapp";
@@ -10,7 +10,7 @@ import { sendTemplate, templateHasImageHeader, uploadMedia, whatsappConfigured, 
 export const receiptTemplate = () => process.env.WHATSAPP_TEMPLATE_RECEIPT ?? "payment_receipt";
 
 /** The 5 template values: first name, amount, PG, "date · method · receipt no.", what is still pending. */
-export async function receiptParams(paymentId: number) {
+export async function receiptParams(paymentId: number, langOverride?: Lang) {
   const p = await db.payment.findUnique({
     where: { id: paymentId },
     include: {
@@ -29,7 +29,7 @@ export async function receiptParams(paymentId: number) {
   });
   if (!p || p.amount <= 0) return null;
   const tn = p.tenant;
-  const lang = asLang(tn.language ?? tn.owner.language);
+  const lang = langOverride ?? asLang(tn.language ?? tn.owner.language);
   const t = makeT(lang);
   const s = summarizeLedger(tn.charges, tn.payments, today());
   return {
@@ -66,7 +66,7 @@ export async function sendPaymentReceipt(paymentId: number): Promise<{ ok: boole
   if (!whatsappConfigured()) return null;
   let status: string;
   try {
-    const r = await receiptParams(paymentId);
+    let r = await receiptParams(paymentId);
     if (!r || !r.auto) return null;
     const tpl = receiptTemplate();
     // If the template has a picture on top, the receipt goes as a picture with the text as its caption.
@@ -76,7 +76,15 @@ export async function sendPaymentReceipt(paymentId: number): Promise<{ ok: boole
       const up = await uploadMedia(await renderReceiptPng(d), "image/png", `receipt-${d.no}.png`);
       return up.ok ? { id: up.id } : { error: up.detail };
     };
-    const hasImage = await templateHasImageHeader(tpl, r.lang);
+    let hasImage = await templateHasImageHeader(tpl, r.lang);
+    // No template in the tenant's language yet: send the English one (with English blanks) instead.
+    if (hasImage === null && r.lang !== "en") {
+      const en = await templateHasImageHeader(tpl, "en");
+      if (en !== null) {
+        hasImage = en;
+        r = (await receiptParams(paymentId, "en")) ?? r;
+      }
+    }
     let img = hasImage ? await picture() : {};
     let res: SendResult = img.error
       ? { ok: false, reason: "rejected", detail: img.error }

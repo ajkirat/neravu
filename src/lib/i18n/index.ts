@@ -4,6 +4,7 @@ export const LANGS = [
   { code: "en", label: "English", short: "EN" },
   { code: "kn", label: "ಕನ್ನಡ", short: "ಕ" },
   { code: "te", label: "తెలుగు", short: "తె" },
+  { code: "hi", label: "हिन्दी", short: "हि" },
 ] as const;
 export type Lang = (typeof LANGS)[number]["code"];
 export const DEFAULT_LANG: Lang = "en";
@@ -13,7 +14,7 @@ export const isLang = (v: unknown): v is Lang => LANGS.some((l) => l.code === v)
 export const asLang = (v: unknown): Lang => (isLang(v) ? v : DEFAULT_LANG);
 
 /** BCP-47 locale used for dates and speech recognition. */
-export const localeFor = (lang: Lang) => ({ en: "en-IN", kn: "kn-IN", te: "te-IN" })[lang];
+export const localeFor = (lang: Lang) => ({ en: "en-IN", kn: "kn-IN", te: "te-IN", hi: "hi-IN" })[lang];
 
 export type TVars = Record<string, string | number>;
 export type TFn = (key: MsgKey, vars?: TVars) => string;

@@ -23,12 +23,12 @@ hunt through notebooks and chats.
 | **Add many rooms at once** | On a property, describe your numbering instead of typing rooms one by one: pick a style (101/201, G1/11, 1-2-3, A-101, A1/B1) and set floors and rooms per floor, or type or paste a list with ranges (`101-110, 201-210, G1, Rose`) or rows copied from Excel with beds and rent. Every row is previewed and editable, clashes are flagged, and up to 300 rooms with their beds are created in one go. |
 | **Electricity bills** | Enter each room's bill (a total, or meter readings x rate) and Neravu splits it by the days each person stayed, to the rupee. Preview the shares, add them to tenants' dues in one tap, and undo if you made a mistake. |
 | **Caretaker access** | Give a caretaker or manager their own sign-in (mobile number + password). They can record payments, log complaints, follow up leads and send reminders, and every payment carries their name. They cannot see profit, expenses, reports, settings or ID details, and cannot delete anything. Switch one off and they are signed out at once. |
-| **Download your data** | Tenants, payments, rent and charges, expenses, rooms, leads and complaints as spreadsheets (Kannada and Telugu show correctly in Excel), plus a full JSON backup. Passwords and keys are never included. |
+| **Download your data** | Tenants, payments, rent and charges, expenses, rooms, leads and complaints as spreadsheets (Kannada, Telugu and Hindi show correctly in Excel), plus a full JSON backup. Passwords and keys are never included. |
 | **Automatic reminders** | Turn on once; WhatsApp messages then go out by themselves a chosen number of days before rent is due and repeat when it is overdue, in each tenant's own language, with the pay link. Nobody is messaged twice in a day, anyone who says they have paid is left alone, and it stops after 4 overdue messages for one month. See exactly who would get a message today and a log of everything sent. Needs WhatsApp to be connected (below). |
 | **How tenants pay you** | Each owner picks one in Settings: **I collect it myself** (no pay links), **Direct to my UPI ID** (free; you confirm each payment), or **Razorpay** (optional, automatic). With Razorpay a tenant pays online and the payment is recorded and receipted for you with no typing. Each owner uses their own Razorpay account, so the money goes straight to them and never through Neravu. Keys are stored encrypted. |
-| **Scan a bill** | Take a photo of a bill in Expenses. The shop, date, category and each item are filled in and the total adds up by itself. You check, fix anything, and save. Works with printed or handwritten bills in English, Kannada or Telugu. Items are kept with each expense. The photo is read, then thrown away: Neravu does not store it. |
+| **Scan a bill** | Take a photo of a bill in Expenses. The shop, date, category and each item are filled in and the total adds up by itself. You check, fix anything, and save. Works with printed or handwritten bills in English, Kannada, Telugu or Hindi. Items are kept with each expense. The photo is read, then thrown away: Neravu does not store it. |
 | **Account safety** | Forgot-password by email (1-hour one-time link), email verification, a reset signs out other sessions, and login attempts are rate limited. Links are stored hashed. |
-| **Kannada, Telugu and English** | Switch the whole app (menus, forms, messages) with one tap. WhatsApp reminders and the tenant pay page go out in each tenant's own language. Remembered on your account across devices. Translations should be reviewed by a native speaker. |
+| **English, Kannada, Telugu and Hindi** | Switch the whole app (menus, forms, messages) with one tap. WhatsApp reminders and the tenant pay page go out in each tenant's own language. Remembered on your account across devices. Translations should be reviewed by a native speaker. |
 | **Made for everyone** | Big picture buttons on the home screen, a "More" screen of large tiles, one-tap "Paid cash / Paid UPI" for dues, voice typing for notes (Chrome), a large-text switch, a plain-language Help page, and install-to-home-screen. |
 | **Complaints** | Write down tenant problems (by voice or typing) and mark them open, being fixed or fixed. |
 | **Online pay links (UPI)** | Add your UPI ID in Settings. Every tenant gets a private pay link (`/pay/...`) showing what they owe, a "Pay with UPI app" button and a QR code. Money goes straight to your UPI ID. Tenants tap "I've paid" and you confirm by recording the payment. |
@@ -139,7 +139,7 @@ or create your own owner account.
 Owners switch the feature on in the app. Sending uses **one WhatsApp Business account** that you connect once, through Meta's WhatsApp Cloud API. Neravu does not work around Meta's rules: business messages must use **pre-approved templates**.
 
 1. Create a WhatsApp Business account and a phone number in [Meta for Developers](https://developers.facebook.com) (WhatsApp → API setup). Create a permanent access token (a System User token).
-2. In WhatsApp Manager create **two templates**, category *Utility*, each in **English, Kannada and Telugu**, with exactly **4 variables** in this order: `{{1}}` tenant first name, `{{2}}` PG name, `{{3}}` amount, `{{4}}` pay link (or the owner's phone when online payment is off). Suggested texts:
+2. In WhatsApp Manager create **two templates**, category *Utility*, each in **English, Kannada, Telugu and Hindi**, with exactly **4 variables** in this order: `{{1}}` tenant first name, `{{2}}` PG name, `{{3}}` amount, `{{4}}` pay link (or the owner's phone when online payment is off). Suggested texts:
 
    `rent_due_soon`
    - en: `Hi {{1}}, a friendly reminder from {{2}}: your rent of {{3}} is due soon. Pay or contact: {{4}}. Thank you!`
@@ -155,10 +155,12 @@ Owners switch the feature on in the app. Sending uses **one WhatsApp Business ac
 3. In Vercel add `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` and `CRON_SECRET`, then redeploy. `vercel.json` already schedules the daily job (09:00 IST).
 4. In the app open **Auto reminders**: it says "WhatsApp is connected". Use *Send a test message to my phone* before turning it on for real.
 
-5. **Payment receipts**: create a third Utility template `payment_receipt` (en, kn, te) with **5 variables**: `{{1}}` first name, `{{2}}` amount, `{{3}}` PG name, `{{4}}` date · method · receipt no., `{{5}}` what is still pending. Suggested text:
+5. **Payment receipts**: create a third Utility template `payment_receipt` (en, kn, te, hi) with **5 variables**: `{{1}}` first name, `{{2}}` amount, `{{3}}` PG name, `{{4}}` date · method · receipt no., `{{5}}` what is still pending. Suggested text:
    - en: `Hi {{1}}, {{3}} received {{2}} from you ({{4}}). {{5}}. Thank you!`
    - kn: `ನಮಸ್ಕಾರ {{1}}, {{3}} ನಿಮ್ಮಿಂದ {{2}} ಸ್ವೀಕರಿಸಿದೆ ({{4}}). {{5}}. ಧನ್ಯವಾದಗಳು!`
    - te: `నమస్కారం {{1}}, {{3}} మీ నుండి {{2}} అందుకుంది ({{4}}). {{5}}. ధన్యవాదాలు!`
+
+   If a template is missing in a tenant's language, Neravu sends the English one instead, so messages still go out.
 
    Receipts go out after every payment (cash, UPI, Razorpay) while the owner keeps "Send a WhatsApp receipt" ticked on the Auto reminders page.
 
