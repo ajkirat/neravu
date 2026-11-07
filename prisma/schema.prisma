@@ -18,6 +18,7 @@ model Owner {
   // Last 10 digits of phone: what the owner signs in with. Unique, and never the same as a caretaker's.
   phoneKey                 String?           @unique
   passwordHash             String
+  pitches                  Pitch[]
   // Shown on tenant messages and pay pages; optional
   businessName             String?
   // Shown to new tenants in the welcome WhatsApp message (wifi, timings, rules)
@@ -555,4 +556,27 @@ model RecurringJob {
   createdAt  DateTime  @default(now())
 
   @@index([ownerId, nextDue])
+}
+
+// A pitch made to a prospective PG owner with the savings calculator: their numbers, the problems they
+// named, and how interested they were. Belongs to the Neravu user who made the pitch.
+model Pitch {
+  id            String   @id @default(cuid())
+  ownerId       String
+  owner         Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  prospectName  String
+  prospectPhone String?
+  pgName        String?
+  city          String?
+  // Calculator inputs (beds, rent, hours...) as entered
+  inputs        Json
+  // Pain point keys ticked, plus anything else they said
+  pains         String[]
+  otherPains    String?
+  // What they would pay per month (rupees), and HOT | MAYBE | NO
+  wouldPay      Int?
+  interest      String?
+  createdAt     DateTime @default(now())
+
+  @@index([ownerId, createdAt])
 }
