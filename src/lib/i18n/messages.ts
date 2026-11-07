@@ -26,9 +26,11 @@ import { settings } from "./parts/settings";
 import { staff } from "./parts/staff";
 import { tenantforms } from "./parts/tenantforms";
 import { tenants } from "./parts/tenants";
+import { pitch } from "./parts/pitch";
 
 export const messages = {
   ...common,
+  ...pitch,
   ...nav,
   ...auth,
   ...properties,
